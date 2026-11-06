@@ -246,7 +246,7 @@ La automatización de vuelos, navegación autónoma, telemetría en tiempo real 
 - [x] Verificar conexión de Spring Boot a Supabase mediante Session pooler.
 - [x] Incorporar `.env` local, plantilla `.env.example` y reglas de `.gitignore` en el repositorio compartido.
 - [x] Configurar Spring Security como OAuth2 Resource Server para validar JWT emitidos por Supabase Auth (ES256, JWKS).
-- [ ] Crear endpoint de prueba protegido `GET /api/me` y configurar CORS base para desarrollo con React (`http://localhost:5173`).
+- [x] Crear endpoint de prueba protegido `GET /api/me` y configurar CORS base para desarrollo con React (`http://localhost:5173`).
 - [ ] Crear la especificación `001-foundation` en Kiro.
 - [ ] Diseñar y versionar las migraciones iniciales del esquema.
 - [ ] Inicializar y conectar el frontend React.
