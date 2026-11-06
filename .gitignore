@@ -1,33 +1,47 @@
-HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
+# =================================
+# VS Code
+# =================================
 .vscode/
+
+# =================================
+# VARIABLES DE ENTORNO Y SECRETOS
+# =================================
+
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Permitir subir las plantillas
+!.env.example
+!**/.env.example
+
+# =================================
+# JAVA / MAVEN
+# =================================
+
+**/target/
+*.class
+*.log
+
+# =================================
+# NODE / REACT
+# =================================
+
+**/node_modules/
+**/dist/
+
+# =================================
+# IDE Y SISTEMA OPERATIVO
+# =================================
+
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# =================================
+# SUPABASE
+# =================================
+
+supabase/.temp/
