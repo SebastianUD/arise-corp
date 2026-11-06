@@ -27,15 +27,18 @@ sequenceDiagram
     participant AUTH as Supabase Auth
     participant API as Spring Boot
     participant DB as Supabase PostgreSQL
-    U->>FE: credenciales
-    FE->>AUTH: inicio de sesión (supabase-js)
-    AUTH-->>FE: access token (JWT ES256) y refresh token
-    FE->>API: petición HTTP/JSON con Authorization: Bearer <JWT>
-    API->>AUTH: descarga de JWKS (se cachea)
-    API->>API: valida firma, iss, aud y exp; autoriza; valida el DTO
-    API->>DB: consulta JPA/JDBC (Session pooler, SSL)
-    DB-->>API: datos
-    API-->>FE: JSON y código HTTP
+
+    U->>FE: Introduce credenciales
+    FE->>AUTH: Inicia sesión mediante supabase-js
+    AUTH-->>FE: Devuelve access token JWT ES256 y refresh token
+    FE->>API: Solicitud HTTP con token Bearer
+    API->>AUTH: Obtiene claves públicas mediante JWKS
+    AUTH-->>API: Devuelve claves públicas
+    API->>API: Valida firma, emisor, audiencia y expiración
+    API->>API: Aplica autorización y valida DTO
+    API->>DB: Consulta mediante JPA y JDBC con SSL
+    DB-->>API: Devuelve los datos
+    API-->>FE: Respuesta JSON y código HTTP
 ```
 
 - Estado: [Implementado] desde la recepción de la petición hasta la validación del JWT (`GET /api/me`). Inicio de sesión en React, autorización por rol y acceso a tablas de negocio: [Aprobado], pendientes.
