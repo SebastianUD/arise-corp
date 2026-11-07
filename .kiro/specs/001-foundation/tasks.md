@@ -15,40 +15,40 @@ Cada tarea indica su **área** (backend / frontend / base de datos / documentaci
 
 ## Tasks
 
-- [ ] 1. Configurar el perfil de pruebas aislado del backend (DP-TEC-02, aprobada)
+- [x] 1. Configurar el perfil de pruebas aislado del backend (DP-TEC-02, aprobada)
   - Área: backend · Responsable: Sebastián
   - Crear `backend/src/test/resources/application.properties` (o `application-test.properties` con perfil `test` activo en las pruebas) con datasource H2 en memoria y `spring.jpa.hibernate.ddl-auto` adecuado para H2
   - Definir valores ficticios para las propiedades JWT (`issuer-uri`, `jwk-set-uri`, `jws-algorithms=ES256`, `audiences[0]=authenticated`) para que el contexto arranque sin conectarse a Supabase ni a `arise-corp-dev`
   - Verificar que `AriseBackendApplicationTests.contextLoads()` arranca con el perfil de pruebas sin credenciales reales
   - _Requisitos: 9.1, 9.4, NF-07, CA-03_
 
-- [ ] 2. Verificar `GET /api/me` con pruebas de controlador/seguridad (MockMvc)
-  - [ ] 2.1 Escribir prueba: `GET /api/me` sin token → 401 sin cuerpo JSON
+- [x] 2. Verificar `GET /api/me` con pruebas de controlador/seguridad (MockMvc)
+  - [x] 2.1 Escribir prueba: `GET /api/me` sin token → 401 sin cuerpo JSON
     - Área: backend · Responsable: Sebastián
     - Usar MockMvc contra el contexto de Spring Security real; afirmar status 401 y ausencia de cuerpo JSON
     - _Requisitos: 9.1, 4.6, 5.6, CA-02, CA-03_
 
-  - [ ] 2.2 Escribir prueba: `GET /api/me` con JWT simulado (claim `sub`) → 200
+  - [x] 2.2 Escribir prueba: `GET /api/me` con JWT simulado (claim `sub`) → 200
     - Área: backend · Responsable: Sebastián
     - Usar `SecurityMockMvcRequestPostProcessors.jwt()` con el claim `sub`; afirmar status 200
     - _Requisitos: 9.2, 5.1, CA-02, CA-03_
 
-  - [ ] 2.3 Escribir prueba: el cuerpo 200 contiene `id`, `email` y `role`
+  - [x] 2.3 Escribir prueba: el cuerpo 200 contiene `id`, `email` y `role`
     - Área: backend · Responsable: Sebastián
     - JWT simulado con claims `sub`, `email` y `role`; afirmar que el JSON de respuesta contiene `id`, `email` y `role` derivados del token
     - _Requisitos: 9.3, 5.1, 5.2, 5.4_
 
-  - [ ] 2.4 Escribir prueba: token inválido o vencido → 401
+  - [x] 2.4 Escribir prueba: token inválido o vencido → 401
     - Área: backend · Responsable: Sebastián
     - Afirmar que una petición con token manipulado/expirado recibe 401
     - _Requisitos: 9.5, 4.7, 4.8, CA-02_
 
-  - [ ]* 2.5 Verificar que ninguna prueba usa tokens reales de Supabase ni la base compartida
+  - [x] 2.5 Verificar que ninguna prueba usa tokens reales de Supabase ni la base compartida
     - Área: backend · Responsable: Sebastián
     - Revisar que todas las pruebas de endpoints usan `jwt()` simulado y el perfil H2; sin credenciales de `arise-corp-dev`
     - _Requisitos: 9.4, NF-07_
 
-- [ ] 3. Checkpoint del backend
+- [x] 3. Checkpoint del backend
   - Ejecutar `.\mvnw.cmd test` desde `backend/` y asegurar que todas las pruebas pasan; ask the user if questions arise.
 
 - [ ] 4. Inicializar el proyecto frontend (DEPENDE DE APROBAR DP-TEC-01)
