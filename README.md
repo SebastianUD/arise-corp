@@ -112,7 +112,7 @@ Las versiones y dependencias adicionales que aún no estén aprobadas se definir
 
 ### Pendiente de implementación o validación
 - Prueba completa de autenticación desde React hasta Spring Boot con un usuario real.
-- Inicialización del frontend React y conexión con Supabase Auth y la API.
+- Frontend React inicializado con login, estado de sesión, rutas protegidas y consumo de `/api/me`; pendiente validación manual con una cuenta autorizada de Supabase.
 - Modelo de perfiles, roles empresariales y autorización por módulo.
 - Migraciones iniciales y tablas de negocio.
 - Pruebas unitarias ampliadas de backend y frontend.
@@ -538,6 +538,53 @@ Para detener el servidor, utilizar `Ctrl + C`.
 
 El comando `spring-boot:run` mantiene el proceso activo porque inicia el servidor web.
 
+### 10.6 Instalar e iniciar el frontend
+
+DP-TEC-01 aprobada. Usar Node.js 24 LTS (>=24.14.0 y <25; referencia en `frontend/.nvmrc`) y npm 11 (referencia 11.9.0).
+
+Desde la raíz, en PowerShell:
+
+```powershell
+cd frontend
+npm ci
+Copy-Item .env.example .env
+npm run dev
+```
+
+La SPA se ejecuta en `http://localhost:5173`. El puerto es estricto para coincidir con el CORS del backend; si está ocupado, liberarlo antes de iniciar. Detener con `Ctrl + C`.
+
+`frontend/.env.example` define únicamente configuración pública:
+
+| Variable | Valor local / uso |
+|---|---|
+| `VITE_SUPABASE_URL` | URL pública del proyecto Supabase; sustituir el marcador ficticio |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Clave publishable pública; sustituir el marcador ficticio |
+| `VITE_API_BASE_URL` | URL base de Spring Boot: `http://localhost:8080` |
+
+Las variables `VITE_*` se incorporan al navegador: no contienen contraseñas de PostgreSQL ni claves secretas. Reiniciar Vite al cambiar `.env`. Sin configuración de Supabase la aplicación muestra un mensaje de indisponibilidad. Para autenticar, sustituir los marcadores por la URL y clave publishable del proyecto. La API debe estar iniciada en el puerto configurado.
+
+Comandos desde `frontend/`:
+
+```powershell
+npm test             # Vitest, una ejecución; no necesita Supabase ni backend
+npm run test:watch   # pruebas en modo observación
+npm run build        # bundle de producción en dist/
+npm run check:secrets # verifica patrones de credenciales en fuente y bundle
+npm run preview      # vista previa local del bundle
+```
+
+Dependencias fijadas en `package.json` y `package-lock.json`; usar `npm ci` para reproducir la instalación. Tailwind CSS usa `@tailwindcss/vite`; las pruebas usan React Testing Library + jsdom.
+
+### 10.7 Validar la integración de autenticación
+
+Las pruebas automáticas se ejecutan sin servicios externos: el backend usa H2 y JWT simulados, y el frontend simula Supabase y la API. La configuración en `backend/src/test/resources/application.properties` reemplaza la principal y no importa el archivo `.env`. Los tokens inválidos/vencidos se prueban simulando el rechazo del decoder de Spring Security.
+
+Con ambos servidores iniciados, abrir `http://localhost:5173/login` y usar una cuenta autorizada existente en el proyecto Supabase. Verificar que el login lleva a `/perfil`, muestra ID/correo obtenidos de `GET /api/me` y que Cerrar sesión devuelve al login. Al visitar `/perfil` sin sesión, se redirige al login. La app no incluye registro de usuarios.
+
+Ante una sesión rechazada por la API, se vuelve al login con un mensaje de expiración; ante falta de permisos se conserva la sesión. Los errores de conexión permiten reintentar. Login y API tienen un límite de 30 segundos. El cierre usa el alcance local para eliminar la sesión del dispositivo aun si falla la revocación remota; no cierra las sesiones de otros dispositivos.
+
+La validación con una cuenta real es manual y no forma parte de la suite automática. No compartir credenciales ni tokens en capturas o logs. El verificador de patrones no sustituye la revisión de cambios y nunca abre archivos `.env`.
+
 ## 12. Seguridad y manejo de secretos
 
 - Nunca versionar `backend/.env`.
@@ -601,7 +648,7 @@ Una funcionalidad se considera terminada cuando:
 
 Las siguientes decisiones deben resolverse en las especificaciones SDD antes de implementarlas como definitivas:
 
-- Herramientas y versiones concretas del frontend, incluyendo framework de pruebas y cliente HTTP.
+- DP-TEC-01 resuelta: herramientas y versiones del frontend en `frontend/package.json`; instalación y ejecución en §10.6.
 - Herramienta para pruebas de integración PostgreSQL (Testcontainers es una propuesta).
 - Herramienta y procedimiento para crear y aplicar migraciones SQL.
 - Almacenamiento de roles empresariales y mecanismo de autorización.
@@ -615,3 +662,7 @@ Las decisiones pendientes no deben implementarse como definitivas sin aprobació
 **Arise Corp.**  
 Proyecto académico — Construcción de Software  
 Repositorio: https://github.com/SebastianUD/arise-corp
+
+### Referencia visual del acceso
+
+La pantalla `/login` implementa el diseño [01 · Acceso · Claro de Figma](https://www.figma.com/design/1Cj9qZtJ9HeBpdTWhrX2sC/Sin-t%C3%ADtulo?node-id=9-2), con logo y tipografías locales en `frontend/public/assets/`, y disposición adaptable a escritorio, tablet y móvil. La autenticación conserva su configuración de Supabase descrita en §10.6.

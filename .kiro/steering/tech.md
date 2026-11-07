@@ -14,7 +14,7 @@ Etiquetas de estado: ver `product.md`. Las reglas de seguridad están en `securi
 | Validación | Bean Validation (`spring-boot-starter-validation`) | gestionada por Spring Boot | Dependencia [Implementado]; aún sin uso |
 | Base de datos | Supabase PostgreSQL vía JDBC y Session pooler | proyecto Supabase `arise-corp-dev` | [Implementado] |
 | Autenticación | Supabase Auth (JWT firmados con ES256) | — | [Implementado] en el backend |
-| Frontend | React, Vite, Tailwind CSS, React Router, `@supabase/supabase-js` | versiones por definir (DP-TEC-01) | [Aprobado] |
+| Frontend | React, Vite, Tailwind CSS, React Router, `@supabase/supabase-js` | versiones fijadas en `frontend/package.json` y `package-lock.json` (DP-TEC-01) | [Implementado: autenticación y perfil] |
 | Contenedores | Docker y Docker Compose para empaquetar/ejecutar el backend | versiones por fijar en el proyecto | [Aprobado; implementación pendiente] |
 | CI | GitHub Actions | workflows por crear | [Aprobado; implementación pendiente] |
 | Herramientas | Kiro, Git, GitHub (`SebastianUD/arise-corp`) | — | [Implementado] |
@@ -66,7 +66,7 @@ Plantilla versionada: `backend/.env.example`. Formato `CLAVE=valor`, sin comilla
 | `SUPABASE_DB_PASSWORD` | Contraseña de la base de datos (no la de la cuenta Supabase) |
 | `SUPABASE_URL` | URL base del proyecto; se usa para el issuer y el JWKS |
 
-Toda variable nueva se agrega a `.env.example` con un valor ficticio y se documenta en el README. Las variables del frontend todavía no están definidas (DP-TEC-01).
+Toda variable nueva se agrega a `.env.example` con un valor ficticio y se documenta en el README. Frontend (DP-TEC-01 aprobada): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` y `VITE_API_BASE_URL`, con valores ficticios en `frontend/.env.example` y documentación en README §10.6.
 
 ## Base de datos
 - Una única instancia de Supabase PostgreSQL, con separación lógica por tablas y relaciones [Aprobado].
@@ -88,7 +88,7 @@ Toda variable nueva se agrega a `.env.example` con un valor ficticio y se docume
 - Deben existir pruebas unitarias de componentes, hooks, validaciones y servicios según corresponda.
 - Deben existir pruebas de integración del frontend para flujos de autenticación, rutas, estado y comunicación con la API.
 - Paula es responsable de los tests y de documentar los comandos reproducibles.
-- Runner y librerías de pruebas frontend se deciden en DP-TEC-01; propuesta inicial: Vitest y React Testing Library.
+- DP-TEC-01 aprobada: Vitest + React Testing Library, jsdom y jest-dom. Ejecutar `npm test` desde `frontend/`; `npm run test:watch` para modo observación.
 
 ### Integración y extremo a extremo
 - Las pruebas de integración de backend con PostgreSQL son distintas de las pruebas unitarias con H2 y deben ejecutarse con datos aislados.
@@ -97,7 +97,7 @@ Toda variable nueva se agrega a `.env.example` con un valor ficticio y se docume
 
 ### Estado observado al crear este documento
 - Existe `AriseBackendApplicationTests.contextLoads()` con `@SpringBootTest`.
-- H2 está declarado en alcance `test`; la separación de perfiles/configuración de pruebas debe completarse según DP-TEC-02.
+- H2 está declarado en alcance `test`; `backend/src/test/resources/application.properties` reemplaza la configuración principal sin importar `.env`. Las pruebas de contexto y `/api/me` se ejecutan con datos ficticios (DP-TEC-02).
 - La cobertura unitaria e integración de los módulos aún está pendiente.
 
 ## Docker del backend [Aprobado; implementación pendiente]
@@ -133,16 +133,16 @@ docker compose build backend
 docker compose up backend
 ```
 
-Frontend: los comandos de instalación, pruebas y build se documentarán cuando se inicialice `frontend/` (DP-TEC-01).
+Frontend, desde `frontend/` (Node.js 24 LTS >=24.14.0 y <25, npm 11): `npm ci`, `npm run dev` (puerto 5173 estricto), `npm test`, `npm run build`, `npm run check:secrets` y `npm run preview`. Detalle y variables públicas en README §10.6.
 
 ## Requisitos del entorno de desarrollo
 Git, JDK 21, Docker Engine o Docker Desktop con Docker Compose, acceso al repositorio de GitHub y al proyecto Supabase `arise-corp-dev`, y PowerShell en Windows (README §5). Para el frontend, Node.js en una versión LTS compatible con Vite.
 
 ## Decisiones pendientes de aprobación
-- **DP-TEC-01** Inicialización del frontend: versiones de Node.js, React, Vite, Tailwind CSS, React Router y `@supabase/supabase-js`; gestor de paquetes; JavaScript o TypeScript; cliente HTTP (`fetch` nativo o una librería); herramientas de lint, formato y pruebas (propuesta: Vitest y React Testing Library); nombres de las variables `VITE_*` (URL de Supabase, clave publishable, URL base de la API) y su archivo `frontend/.env.example`. Se resuelve en la especificación que inicialice el frontend.
 - **DP-TEC-03** Migraciones: (a) Supabase CLI (`supabase migration new <nombre>`, archivos `<timestamp>_<nombre>.sql`; el `.gitignore` ya excluye `supabase/.temp/`, que genera la CLI); (b) archivos SQL aplicados manualmente con una nomenclatura acordada. Definir también quién aplica las migraciones en `arise-corp-dev` y si `spring.jpa.hibernate.ddl-auto` pasa de `none` a `validate` para detectar al arrancar diferencias entre las entidades y el esquema.
 
 ## Decisiones aprobadas
+- **DP-TEC-01** Inicialización del frontend aprobada por Paula el 2026-11-07: JavaScript, npm 11, Node.js 24 LTS, React/Vite/Tailwind CSS, React Router DOM, Supabase JS, `fetch` nativo y Vitest/React Testing Library. Versiones en `frontend/package.json` y `package-lock.json`, configuración pública en `frontend/.env.example`; decisión concreta en `001-foundation/design.md`, D5. La tarea 4 implementa la base y las tareas 5–11 completan autenticación y perfil; la comprobación con una cuenta real es manual.
 - **DP-TEC-02** Estrategia de pruebas unitarias/contexto del backend: perfil de pruebas en `src/test/resources` con H2 (ya declarado) y valores ficticios para las propiedades de JWT, más pruebas de controladores con JWT simulado. Esta decisión no sustituye las pruebas de integración PostgreSQL.
 
 ## Decisiones pendientes de aprobación

@@ -15,14 +15,14 @@ Parte del backend **ya está implementada** y este diseño la documenta sin re-i
 | `SecurityConfig` (OAuth2 Resource Server, CORS, STATELESS) | [Implementado] | Nada estructural; se documenta y se verifica mediante pruebas |
 | `AuthController` → `GET /api/me` | [Implementado] | Se documenta el contrato; se añaden pruebas |
 | `application.properties` (datasource, JWT issuer/JWKS/ES256/aud) | [Implementado] | Nada; se documenta |
-| Pruebas de `/api/me` + perfil de pruebas con H2 | Pendiente | Diseñar la estrategia (DP-TEC-02, aprobada) |
-| Frontend React (login, rutas privadas, consumo de `/api/me`) | `frontend/` vacío | Diseñar la estructura mínima (propuesta, DP-TEC-01) |
+| Pruebas de `/api/me` + configuración de pruebas con H2 | Implementado | Verificado con 6 pruebas (DP-TEC-02 aprobada) |
+| Frontend React (login, rutas privadas, consumo de `/api/me`) | Implementado | 25 pruebas automáticas; pendiente validación manual con cuenta real |
 
 ### Decisiones pendientes que afectan a esta spec
 
 Esta especificación **no resuelve decisiones pendientes como definitivas**. Presenta propuestas recomendadas marcadas como pendientes de aprobación del equipo (ver `sdd-workflow.md`), y las concreta en la sección "Decisiones de diseño":
 
-- **DP-TEC-01** (inicialización del frontend): se propone un stack concreto, pero su confirmación corresponde al equipo.
+- **DP-TEC-01** (inicialización del frontend): aprobada por Paula el 2026-11-07. Versiones concretas en D5; la tarea 4 inicializa la base del frontend.
 - **DP-SEG-01 / DP-SEG-02** (rol empresarial y mecanismo de autorización): **diferidas**. Esta spec entrega autenticación + autorización por defecto (JWT válido requerido). No se diseña una matriz de roles definitiva.
 - **DP-EST-01 / DP-EST-03** (organización de paquetes y estilo de código): `AuthController` y `SecurityConfig` **no se mueven** sin aprobación; el estilo (4 espacios, inyección por constructor, DTO como `record`) es propuesta pendiente DP-EST-03.
 - **DP-TEC-02** (**aprobada**): perfil de pruebas con H2 + propiedades JWT ficticias + pruebas de controlador con JWT simulado. Se diseña como la solución de pruebas de `/api/me`.
@@ -110,7 +110,7 @@ sequenceDiagram
     FE->>FE: Redirige a Login e indica "sesión expirada/no válida" (AUTH-02, AUTH-05)
 ```
 
-Estado: el tramo desde la recepción de la petición hasta la validación del JWT en `GET /api/me` está [Implementado]. El login en React y el consumo del endpoint son el trabajo pendiente de esta spec.
+Estado: el tramo desde la recepción de la petición hasta la validación del JWT en `GET /api/me` está [Implementado]. El login en React y el consumo del endpoint están implementados y verificados con servicios simulados; la validación con cuenta real es manual.
 
 ## Components and Interfaces
 
@@ -153,7 +153,7 @@ Reglas de derivación de identidad (AUTH-03, AUTH-04, `security.md`):
 - `role` = `jwt.getClaimAsString("role")` = claim técnico de Supabase (p. ej. `authenticated`). **No es el rol empresarial** y no se usa para autorizar operaciones de negocio (AUTH-04 criterio 5).
 - La identidad se deriva del `Jwt` ya validado por Spring Security vía `@AuthenticationPrincipal`; no se decodifica el token a mano (Requirement 5.3).
 
-> Nota de estilo (DP-EST-03, pendiente): la implementación actual devuelve `Map.of(...)`. La propuesta de evolucionar a un DTO `record` (p. ej. `MeResponse`) queda sujeta a la aprobación de DP-EST-03 y no se realiza en esta spec para no introducir cambios fuera de alcance.
+> Corrección de conformidad con 5.5: se conserva el contrato de mapa, usando `LinkedHashMap` para permitir claims opcionales nulos. `Map.of` rechazaba esos valores y provocaba un error. La migración a DTO `record` sigue diferida a DP-EST-03.
 
 #### Manejo de 401 / 403
 
@@ -164,9 +164,9 @@ Esta spec mantiene el **comportamiento por defecto** de Spring Security (coheren
 
 El formato uniforme de errores (`@RestControllerAdvice` + Problem Details RFC 9457) se difiere a una spec posterior (DP-API-02). El backend ya no expone trazas, SQL ni datos internos en 401 (CA-06, Requirement 7.4) porque la respuesta de autenticación fallida no tiene cuerpo.
 
-### Frontend (propuesta, DP-TEC-01 pendiente de aprobación)
+### Frontend (DP-TEC-01 aprobada)
 
-La estructura y el stack siguen la propuesta de `structure.md`/`tech.md`, marcada como pendiente hasta que el equipo apruebe DP-TEC-01:
+La estructura y el stack siguen la propuesta de `structure.md`/`tech.md`, aprobada mediante DP-TEC-01:
 
 ```text
 frontend/
@@ -257,11 +257,11 @@ Ningún mensaje del frontend expone detalles técnicos, códigos internos, traza
 
 `backend/.env.example` ya versiona las variables (`SUPABASE_DB_HOST`, `SUPABASE_DB_PORT`, `SUPABASE_DB_NAME`, `SUPABASE_DB_USERNAME`, `SUPABASE_DB_PASSWORD`, `SUPABASE_URL`) con valores ficticios. No se añaden variables nuevas en esta spec. `backend/.env` nunca se versiona (NF-01, Requirement 8.4).
 
-### Frontend — propuesta (DP-TEC-01, pendiente de aprobación)
+### Frontend (DP-TEC-01 aprobada)
 
-`frontend/.env.example` versionado, solo con variables públicas `VITE_*` (NF-01, Requirements 8.1, 8.4). Nombres propuestos, pendientes de aprobación:
+`frontend/.env.example` versionado, solo con variables públicas `VITE_*` (NF-01, Requirements 8.1, 8.4). Nombres aprobados:
 
-| Variable propuesta | Uso | Valor |
+| Variable | Uso | Valor |
 |---|---|---|
 | `VITE_SUPABASE_URL` | URL del proyecto Supabase para `supabase-js` | público |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Clave publishable (pública por diseño) | público |
@@ -292,7 +292,7 @@ Se conserva `AriseBackendApplicationTests.contextLoads()`, que al activarse el p
 
 El criterio 9.6 (JWT válido sin el rol requerido → 403) queda **diferido** junto con DP-SEG-01/DP-SEG-02, en coherencia con el Requirement 6.
 
-### Frontend (propuesta, DP-TEC-01: Vitest + React Testing Library, pendiente)
+### Frontend (DP-TEC-01 aprobada: Vitest + React Testing Library)
 
 Pruebas por ejemplo, con Supabase y la API simulados (sin tokens reales ni la base compartida):
 
@@ -313,11 +313,11 @@ El flujo login → `/api/me` con un usuario real contra Supabase se valida de fo
 **Alternativas:** (a) tabla de perfiles en PostgreSQL consultada por petición; (b) claim propio vía Custom Access Token Hook; (c) `app_metadata`. 
 **Razón:** DP-SEG-01/DP-SEG-02 son decisiones pendientes del equipo; implementar una matriz de roles ahora la asumiría como definitiva, contra `sdd-workflow.md`. La recomendación registrada (no implementada) es la opción (a).
 
-### D2 — Mantener `Map.of` vs DTO `record` en `/api/me` (DP-EST-03)
+### D2 — Mapa con claims opcionales vs DTO `record` en `/api/me` (DP-EST-03)
 
-**Decisión:** no cambiar la implementación actual (`Map.of`) en esta spec.
+**Decisión:** conservar la respuesta como mapa y usar `LinkedHashMap` para aceptar `email`/`role` nulos, conforme al requisito 5.5. No se introduce un DTO nuevo.
 **Alternativa:** DTO `MeResponse` como `record`.
-**Razón:** el estilo (DTO `record`, inyección por constructor, 4 espacios) es la propuesta pendiente DP-EST-03; cambiarlo sería un refactor fuera de alcance sin aprobación.
+**Razón:** corregir el fallo de claims ausentes sin cambiar el contrato ni asumir la decisión pendiente de estilo DP-EST-03.
 
 ### D3 — No mover `AuthController`/`SecurityConfig` a módulos (DP-EST-01)
 
@@ -333,9 +333,11 @@ El flujo login → `/api/me` con un usuario real contra Supabase se valida de fo
 
 ### D5 — Stack del frontend (DP-TEC-01)
 
-**Decisión (propuesta, pendiente de aprobación):** Vite + React + Tailwind CSS + React Router + `@supabase/supabase-js`; `fetch` nativo como cliente HTTP; Vitest + React Testing Library para pruebas; JavaScript (no TypeScript) para el MVP; variables `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_API_BASE_URL`.
+**Decisión (aprobada por Paula el 2026-11-07):** Vite + React + Tailwind CSS + React Router + `@supabase/supabase-js`; `fetch` nativo como cliente HTTP; Vitest + React Testing Library para pruebas; JavaScript (no TypeScript) para el MVP; variables `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_API_BASE_URL`.
 **Alternativas:** TypeScript; librería HTTP (axios); otros runners de pruebas.
-**Razón:** se alinea con `tech.md` y minimiza dependencias. Requiere aprobación del equipo antes de fijar versiones y nombres (DP-TEC-01).
+**Razón:** se alinea con `tech.md` y minimiza dependencias. Aprobada mediante DP-TEC-01.
+
+**Inicialización (tarea 4):** Node.js 24 LTS (>=24.14.0 y <25, referencia en `.nvmrc`) y npm 11 (11.9.0); React/React DOM 19.3.1, Vite 8.3.6, `@vitejs/plugin-react` 6.2.1, Tailwind CSS/`@tailwindcss/vite` 4.3.5, React Router DOM 7.18.5 y `@supabase/supabase-js` 2.119.0. Vitest 5.1.0 + React Testing Library, con jsdom y jest-dom como soporte DOM; versiones exactas en `package.json` y `package-lock.json`. Tailwind usa su plugin de Vite; el puerto 5173 es estricto para coincidir con CORS. Las seis carpetas propuestas incluyen `context/`; pruebas junto a los componentes y preparación común en `src/test/setup.js`. El router base se monta sin rutas de autenticación. El cliente Supabase y el flujo de sesión se completan en las tareas 5–11. No se añaden herramientas de lint ni formato en esta tarea.
 
 ## Mapeo de requisitos a componentes de diseño
 
@@ -351,3 +353,22 @@ El flujo login → `/api/me` con un usuario real contra Supabase se valida de fo
 | **R8** Secretos y configuración (NF-01, CA-01) | `frontend/.env.example`, `backend/.env.example`, README, verificación de secretos |
 | **R9** Pruebas de endpoints (NF-07, CA-03) | Estrategia de pruebas backend (perfil H2 + `jwt()`); criterio 9.6 diferido |
 | **R10** Integración vertical E2E | Flujo completo Login→Perfil→`/api/me`; validación manual controlada |
+
+## Resultado de implementación de las tareas 1–14
+
+- Las pruebas del backend reemplazan la configuración de producción con H2 en memoria y URLs JWT ficticias en `src/test/resources/application.properties`, sin importar `.env`. Los éxitos usan `jwt()`; los casos inválido/vencido simulan el rechazo del `JwtDecoder` con `@MockitoBean` y verifican la cadena real de seguridad. No son pruebas criptográficas ni de PostgreSQL.
+- `AuthProvider` restaura la sesión y se suscribe a cambios del SDK; ignora restauraciones obsoletas y eventos tardíos después del cierre. `signOut({ scope: 'local' })` elimina la sesión del dispositivo incluso cuando la revocación falla. No se mantiene una copia de tokens fuera del SDK.
+- Login valida campos antes de llamar a Supabase, bloquea envíos duplicados y limita la espera a 30 segundos. El cliente configura un fetch con aborto; un resultado tardío se descarta y se vuelve a limpiar la sesión. Sin variables de Supabase, se presenta un mensaje de indisponibilidad sin inicializar el SDK.
+- `apiRequest` obtiene el token vigente para cada petición y limita a 30 segundos la lectura de sesión, la petición y el cuerpo de respuesta. Un 401 limpia sesión y notifica al proveedor para redirigir con motivo de expiración; 403 conserva la sesión. Los fallos de red y de servidor permiten reintentar sin revelar sus cuerpos internos.
+- Rutas: `/login` pública y `/perfil` protegida. El perfil comparte una única promesa de petición durante los efectos de StrictMode, muestra ID/correo y permite reintentar o cerrar sesión.
+- Pruebas frontend: formulario, proveedor, rutas y perfil integrados con Supabase/API simulados; cliente HTTP; configuración pública; y prueba del SDK real con almacenamiento local y transporte simulado para el cierre sin conexión.
+- Verificación reproducible de patrones de credenciales en fuente, plantilla y bundle: `npm run check:secrets`. El prefijo literal de validación del SDK no es una clave: se detectan claves completas con sufijo. El build de verificación usa únicamente valores públicos ficticios; no se leen ni comparan secretos locales.
+- La prueba manual con una cuenta autorizada de Supabase sigue siendo una comprobación externa a la suite automática. No se ejecuta ni se da por verificada con estas pruebas simuladas.
+
+## Diseño visual del acceso — referencia aprobada por Paula
+
+Solicitud: adaptar el frontend a [01 · Acceso · Claro](https://www.figma.com/design/1Cj9qZtJ9HeBpdTWhrX2sC/Sin-t%C3%ADtulo?node-id=9-2), nodo 9:2. Se implementa la pantalla enlazada de login con logo oficial local, fuente Inter, fondo claro, panel de marca azul y formulario blanco. Escritorio de referencia: 1440 × 960; disposición adaptable en tablet y móvil, sin posicionamiento absoluto del formulario. Los errores de validación y configuración amplían el formulario sin superponer contenido. Se conserva íntegro el flujo de sesión, timeout y rutas protegidas; la pantalla de perfil no tiene diseño en este nodo y se conserva. CRM, ERP y SGA en el panel son información de marca, no enlaces a módulos aún no implementados. No se añaden dependencias.
+
+### Adaptación responsive del acceso
+
+En móvil y tablet (hasta 900 px) el formulario aparece antes del panel de marca, también en el orden del documento para teclado y lectores de pantalla. Se mantienen las dos columnas de Figma en escritorio. El encabezado permite ajustar el texto del idioma, los campos móviles usan texto de 16 px y controles de al menos 48 px, y tarjetas/mensajes permiten crecer sin anchos mínimos que causen desbordamiento. Se verifica desde 320 px, tablet, escritorio y orientación horizontal.

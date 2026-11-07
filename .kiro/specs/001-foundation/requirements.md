@@ -9,7 +9,7 @@ Esta funcionalidad es la base técnica sobre la que se construirán los módulos
 Alcance parcial o diferido (no se resuelven decisiones pendientes como definitivas):
 
 - **Perfil y rol empresarial (AUTH-04):** el almacenamiento del rol empresarial (DP-SEG-01) y el mecanismo de autorización por rol (DP-SEG-02) son decisiones pendientes del equipo. Esta especificación entrega la autenticación completa y la autorización por defecto (JWT válido requerido), pero trata la autorización por rol empresarial como alcance condicional: queda documentada como diferida hasta que el equipo apruebe DP-SEG-01 y DP-SEG-02. No se implementa una matriz de roles empresariales como definitiva.
-- **Inicialización del frontend (DP-TEC-01):** las versiones concretas de Node.js, React, Vite, Tailwind CSS, React Router y `@supabase/supabase-js`, el gestor de paquetes, el uso de JavaScript o TypeScript, el cliente HTTP, las herramientas de pruebas y los nombres de las variables `VITE_*` son una decisión pendiente. Esta especificación describe el comportamiento mínimo del frontend de login sin fijar esas herramientas como definitivas; su confirmación corresponde al equipo.
+- **Inicialización del frontend (DP-TEC-01):** aprobada por Paula el 2026-11-07. Versiones, npm, JavaScript, fetch nativo, herramientas de pruebas y nombres de variables `VITE_*` concretados en `design.md`, D5.
 
 Parte del backend ya está implementada (OAuth2 Resource Server, endpoint `GET /api/me`, CORS, sesiones STATELESS). Esta especificación no re-implementa esos componentes, pero sí define los requisitos de comportamiento e integración que deben verificarse sobre ellos.
 
@@ -133,7 +133,7 @@ Parte del backend ya está implementada (OAuth2 Resource Server, endpoint `GET /
 4. THE proyecto SHALL versionar un archivo `.env.example` por cada componente que requiera variables de entorno (frontend y backend), conteniendo cada archivo todas las variables requeridas por ese componente con valores ficticios y sin ningún valor secreto real. _(NF-01, CA-01)_
 5. THE proyecto SHALL documentar, en el README versionado, las instrucciones para ejecutar el frontend y el backend en local, incluyendo los comandos de instalación, de arranque y las variables de entorno requeridas por cada componente. _(CA-01)_
 
-> **Nota de alcance (DP-TEC-01):** los nombres concretos de las variables `VITE_*`, el gestor de paquetes y las herramientas del frontend son una decisión pendiente. Esta especificación describe el comportamiento esperado sin fijar esas herramientas como definitivas.
+> **Nota de alcance (DP-TEC-01):** aprobada. Nombres `VITE_*`, gestor de paquetes y herramientas del frontend concretados en `design.md`, D5.
 
 ### Requirement 9: Pruebas de los endpoints protegidos (NF-07, CA-03)
 

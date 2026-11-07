@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/inter-regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/assets/inter-medium.ttf') format('truetype');
+}
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/assets/inter-semibold.ttf') format('truetype');
+}
+
+@layer base {
+  body { margin: 0; font-family: Inter, system-ui, sans-serif; }
+  .profile-workspace input { @apply w-full rounded-lg border border-slate-600 bg-slate-950 px-3 py-3 text-slate-100; }
+  input:focus-visible, button:focus-visible { @apply outline-2 outline-offset-4 outline-sky-300; }
+  button { @apply cursor-pointer; }
+  button:disabled { @apply cursor-not-allowed opacity-60; }
+}
+
+:root {
+  --access-background: #f4f7fb;
+  --access-brand: #093653;
+  --access-text: #142b43;
+  --access-muted: #607389;
+  --access-accent: #1265e8;
+  --access-border: #e0e7f0;
+  --brand-secondary: #cfdeef;
+  --brand-highlight: #8fd6ff;
+}
+
+.app-root { min-height: 100vh; min-height: 100svh; }
+.profile-workspace { min-height: 100vh; display: flex; align-items: center; padding: 48px 24px; background: #020617; color: #f1f5f9; }
+.access-loading { min-height: 100vh; display: grid; place-items: center; background: var(--access-background); color: var(--access-text); }
+.access-page { min-height: 100vh; min-height: 100svh; background: var(--access-background); color: var(--access-text); }
+.access-header { height: 160px; display: flex; justify-content: space-between; align-items: flex-start; padding: 48px 14.3% 0 64px; }
+.access-logo { display: block; width: 200px; height: 77.009px; object-fit: contain; border-radius: 6px; }
+.access-locale { display: flex; gap: 4px; margin-top: 16px; color: var(--access-muted); font-size: 12px; line-height: normal; }
+.access-locale span { white-space: nowrap; }
+.access-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: 'brand form'; min-height: max(800px, calc(100vh - 160px)); }
+.access-brand { grid-area: brand; min-width: 0; background: var(--access-brand); padding: 62px 64px 42px; color: white; }
+.brand-eyebrow { color: var(--brand-highlight); font-size: 12px; font-weight: 600; line-height: 15px; }
+.brand-heading { margin-top: 38px; font-size: 50px; font-weight: 600; line-height: 1.21; letter-spacing: 0; }
+.brand-description { margin-top: 29.5px; color: var(--brand-secondary); font-size: 17px; line-height: 1.21; }
+.brand-modules { margin-top: 108px; list-style: none; padding: 0; }
+.brand-module { min-height: 80px; display: grid; grid-template-columns: 44px 128px 1fr; align-items: start; padding-top: 14px; border-top: 1px solid #29536d; }
+.module-number { padding-top: 5px; font-size: 12px; line-height: normal; font-weight: 500; color: var(--brand-highlight); }
+.module-name { font-size: 20px; line-height: normal; font-weight: 600; }
+.module-description { padding-top: 6px; font-size: 14px; line-height: normal; color: var(--brand-secondary); }
+.brand-signature { margin-top: 29px; color: var(--brand-highlight); font-size: 11px; font-weight: 600; line-height: normal; }
+.access-workspace { grid-area: form; min-width: 0; padding: 66px max(32px, calc((100% - 524px) / 2)) 60px; }
+.access-card { width: 508px; max-width: 100%; min-height: 555px; background: white; border-radius: 16px; padding: 38px 40px 41px; }
+.access-eyebrow { color: var(--access-accent); font-size: 11px; font-weight: 600; line-height: 14px; }
+.access-title { margin-top: 24px; font-size: 30px; line-height: 36px; font-weight: 600; }
+.access-subtitle { margin-top: 11px; color: var(--access-muted); font-size: 14px; line-height: 17px; }
+.access-form { margin-top: 43px; }
+.access-field label { display: block; margin-bottom: 9px; font-size: 12px; line-height: 15px; font-weight: 500; }
+.access-email { margin-bottom: 24px; }
+.access-field input { display: block; width: 100%; height: 48px; border: 1px solid var(--access-border); border-radius: 7px; background: white; padding: 0 13px; font-size: 14px; color: var(--access-text); }
+.access-field input::placeholder { color: var(--access-muted); opacity: 1; }
+.access-field input:focus-visible { outline: 2px solid var(--access-accent); outline-offset: 2px; }
+.access-field input[aria-invalid="true"] { border-color: #b42318; }
+.access-field-error { margin-top: 8px; font-size: 12px; line-height: 18px; color: #b42318; }
+.access-alert { overflow-wrap: anywhere; margin-bottom: 20px; padding: 12px; border: 1px solid #f2c2bc; border-radius: 7px; background: #fff5f3; color: #9a2820; font-size: 13px; line-height: 20px; }
+.access-submit { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 48px; margin-top: 32px; padding: 12px 16px; border-radius: 7px; background: var(--access-accent); color: white; font-size: 14px; line-height: 24px; font-weight: 600; transition: background 150ms ease; }
+.access-submit:hover:not(:disabled) { background: #0b50be; }
+.access-submit:focus-visible { outline-color: var(--access-accent); }
+.access-form [role="status"] { margin-top: 12px; font-size: 12px; line-height: 18px; color: var(--access-muted); }
+.access-help { margin-top: 28px; color: var(--access-muted); font-size: 12px; line-height: 15px; }
+.access-security { margin-top: 26px; color: var(--access-muted); font-size: 11px; line-height: 14px; }
+.access-footer { margin-top: 76px; color: var(--access-muted); font-size: 11px; line-height: 14px; }
+
+@media (min-width: 901px) and (max-width: 1250px) {
+  .access-brand { padding-right: 36px; padding-left: 36px; }
+  .brand-heading { font-size: clamp(34px, 3.47vw, 50px); }
+  .brand-description { font-size: 15px; }
+  .brand-module { grid-template-columns: 36px 75px 1fr; }
+  .module-description { font-size: 12px; }
+  .access-workspace { padding-right: 32px; padding-left: 32px; }
+  .access-card { padding-right: 28px; padding-left: 28px; }
+  .access-title { font-size: 25px; }
+}
+@media (max-width: 900px) {
+  .access-header { height: auto; min-height: 112px; padding: 24px 32px; gap: 24px; align-items: center; }
+  .access-logo { width: 170px; height: 65.46px; }
+  .access-locale { flex-wrap: wrap; justify-content: flex-end; margin: 0; font-size: 11px; line-height: 16px; text-align: right; }
+  .access-columns { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'form' 'brand'; min-height: auto; }
+  .access-brand { padding: 40px 32px; }
+  .brand-heading { margin-top: 24px; font-size: 40px; }
+  .brand-description { margin-top: 24px; font-size: 16px; }
+  .brand-modules { margin-top: 36px; }
+  .brand-module { min-height: 64px; }
+  .brand-signature { margin-top: 24px; }
+  .access-workspace { padding: 16px 32px 40px; }
+  .access-card { margin: 0 auto; min-height: auto; }
+  .access-field input { font-size: 16px; }
+  .access-footer { max-width: 508px; margin: 32px auto 0; }
+}
+@media (max-width: 480px) {
+  .access-header { min-height: 96px; padding: 20px; gap: 12px; }
+  .access-logo { flex-shrink: 0; width: clamp(128px, 37vw, 145px); height: auto; aspect-ratio: 200 / 77.009; }
+  .access-locale { max-width: 150px; font-size: 11px; }
+  .access-brand { padding: 32px 24px; }
+  .brand-heading { font-size: clamp(30px, 8.2vw, 38px); }
+  .brand-description { font-size: 14px; }
+  .brand-description br { display: none; }
+  .brand-module { grid-template-columns: 32px 62px minmax(0, 1fr); }
+  .module-name { font-size: 18px; }
+  .module-description { font-size: 12px; }
+  .access-workspace { padding: 8px 16px 28px; }
+  .access-card { padding: 32px 24px; min-height: auto; }
+  .access-title { font-size: 25px; line-height: 32px; }
+  .access-form { margin-top: 28px; }
+  .access-help { margin-top: 24px; line-height: 18px; }
+  .access-security { margin-top: 20px; line-height: 17px; }
+  .access-footer { margin-top: 24px; }
+  .access-footer { padding: 0 8px; line-height: 18px; }
+}
+
+@media (max-width: 900px) and (max-height: 500px) {
+  .access-header { min-height: 80px; padding-top: 12px; padding-bottom: 12px; }
+  .access-logo { width: 128px; height: auto; }
+  .access-card { padding-top: 24px; padding-bottom: 24px; }
+}
+
+@media (max-width: 480px) {
+  .profile-workspace { align-items: flex-start; padding: 24px 16px; }
+  .profile-workspace > section { min-width: 0; padding: 24px 20px; }
+  .profile-workspace dd { overflow-wrap: anywhere; }
+}
+
+@layer components {
+  .button { @apply rounded-lg bg-sky-300 px-4 py-3 font-semibold text-slate-950 transition hover:bg-sky-200; }
+  .message { @apply mb-5 rounded-lg border border-rose-400/40 bg-rose-400/10 p-3 text-sm text-rose-200; }
+}
