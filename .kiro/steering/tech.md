@@ -16,8 +16,7 @@ Etiquetas de estado: ver `product.md`. Las reglas de seguridad están en `securi
 | Autenticación | Supabase Auth (JWT firmados con ES256) | — | [Implementado] en el backend |
 | Frontend | React, Vite, Tailwind CSS, React Router, `@supabase/supabase-js` | versiones por definir (DP-TEC-01) | [Aprobado] |
 | Contenedores | Docker y Docker Compose para empaquetar/ejecutar el backend | versiones por fijar en el proyecto | [Aprobado; implementación pendiente] |
-| CI/CD | GitHub Actions | workflows por crear | [Aprobado; implementación pendiente] |
-| Registro de imágenes | GitHub Container Registry (GHCR) | propuesta | [Pendiente de aprobación, DP-TEC-05] |
+| CI | GitHub Actions | workflows por crear | [Aprobado; implementación pendiente] |
 | Herramientas | Kiro, Git, GitHub (`SebastianUD/arise-corp`) | — | [Implementado] |
 
 ## Dependencias del backend (`backend/pom.xml`)
@@ -109,12 +108,12 @@ Toda variable nueva se agrega a `.env.example` con un valor ficticio y se docume
 - `docker-compose.yml` se utilizará para facilitar el arranque local del backend. Supabase PostgreSQL permanece como servicio administrado externo; no se dockeriza la base de datos de desarrollo.
 - Sebastián es responsable del Dockerfile, `.dockerignore` y configuración Compose del backend.
 
-## GitHub Actions y CI/CD [Aprobado; implementación pendiente]
+## GitHub Actions y CI [Aprobado; implementación pendiente]
 - Davidson es responsable principal de crear y mantener los workflows de GitHub Actions.
 - El CI debe instalar dependencias, ejecutar pruebas unitarias de backend y frontend, ejecutar las pruebas de integración automatizables, compilar ambos proyectos y comprobar que la imagen Docker del backend se construye correctamente.
 - Los workflows no deben necesitar secretos de la instancia compartida Supabase para pruebas unitarias o de integración.
-- La publicación de imágenes y el despliegue automático forman parte del CD. El registro (propuesta: GHCR), el entorno de destino, sus credenciales y las reglas de despliegue deben aprobarse antes de activar publicaciones/despliegues automáticos (DP-TEC-05).
-- No incluir credenciales en YAML, Dockerfile, argumentos de build, logs ni artefactos. Usar GitHub Actions Secrets/Environments cuando el despliegue requiera secretos.
+- El proyecto se ejecuta en local (`localhost`): no hay despliegue continuo (CD), publicación de imágenes a un registro externo ni entornos de destino. El alcance de GitHub Actions se limita a CI (validación, pruebas y comprobación del build de la imagen Docker).
+- No incluir credenciales en YAML, Dockerfile, argumentos de build, logs ni artefactos.
 
 ## Comandos
 Backend, en PowerShell y desde `backend/`:
@@ -148,4 +147,3 @@ Git, JDK 21, Docker Engine o Docker Desktop con Docker Compose, acceso al reposi
 
 ## Decisiones pendientes de aprobación
 - **DP-TEC-04** Tecnología para pruebas de integración PostgreSQL: propuesta principal Testcontainers con PostgreSQL efímero para que las pruebas sean reproducibles en local y GitHub Actions. Alternativa: una base PostgreSQL aislada y dedicada a pruebas. No utilizar `arise-corp-dev` compartida para pruebas automáticas.
-- **DP-TEC-05** Detalles del CD: confirmar registro de imágenes (propuesta: GHCR), política de etiquetas/versionado, entornos GitHub, hosting del backend y frontend, secretos de despliegue, aprobaciones y disparadores del despliegue. GitHub Actions como herramienta de automatización CI/CD ya está aprobada; el destino de despliegue no.

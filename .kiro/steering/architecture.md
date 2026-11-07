@@ -8,7 +8,7 @@ Etiquetas de estado: ver `product.md`. El diagrama general de componentes está 
 - El backend es un monolito modular: una sola aplicación Spring Boot, desplegada como una unidad, con los módulos `login`, `crm`, `erp` y `sga` separados lógicamente.
 - Supabase aporta dos servicios: Auth (identidad y JWT) y PostgreSQL (persistencia).
 - El backend Spring Boot se empaqueta y ejecuta en un contenedor Docker; Docker Compose facilita su ejecución local. Supabase permanece como servicio administrado externo y no se dockeriza.
-- GitHub Actions automatiza CI: pruebas, compilación y construcción de la imagen. El CD/publicación/despliegue se completa cuando se aprueben el registro de imágenes y los entornos de destino.
+- GitHub Actions automatiza CI: pruebas, compilación y comprobación de la construcción de la imagen. El proyecto se ejecuta en local (`localhost`): no hay despliegue continuo (CD), publicación de imágenes ni entornos de destino.
 - Quedan excluidos del MVP los microservicios, las colas de eventos, Kubernetes y cualquier arquitectura distribuida.
 
 ## Componentes y responsabilidades
@@ -88,14 +88,14 @@ Todos los módulos dependen de la autorización por rol. La forma en que un mód
 - La unidad contenedorizada inicial es el backend Spring Boot. La imagen se construye desde `backend/Dockerfile`; el proceso y las variables de entorno se describen en `tech.md`.
 - El contenedor no incluye `.env`, credenciales, claves privadas ni archivos locales de configuración. Los secretos se inyectan en tiempo de ejecución.
 - `docker-compose.yml` facilita la ejecución local del backend. No debe iniciar una base local como sustituto de Supabase, salvo que una especificación de pruebas defina explícitamente una PostgreSQL efímera o aislada.
-- GitHub Actions valida el backend y frontend, ejecuta pruebas unitarias y de integración, y comprueba la construcción Docker. La publicación de imagen y despliegue pertenecen al CD y dependen de la aprobación del registro y hosting (DP-ARQ-03, DP-TEC-05).
+- GitHub Actions valida el backend y frontend, ejecuta pruebas unitarias y de integración, y comprueba la construcción Docker. El backend se ejecuta en local con Docker Compose; no hay publicación de imagen ni despliegue a un entorno remoto.
 
 ## Estrategia de pruebas [Aprobado]
 - Las pruebas unitarias verifican reglas y componentes aislados en backend y frontend.
 - Las pruebas de integración backend deben verificar la interacción de repositorios/JPA con PostgreSQL real en una instancia aislada o efímera; no se ejecutan contra la base compartida de desarrollo.
 - Las pruebas de integración frontend comprueban la colaboración entre componentes, estado de autenticación, cliente HTTP y contrato de API.
 - Las pruebas de extremo a extremo validan los flujos críticos completos; su herramienta y automatización se definirán en la especificación correspondiente.
-- GitHub Actions ejecuta las suites aplicables y bloquea la promoción/publicación si fallan los controles requeridos.
+- GitHub Actions ejecuta las suites aplicables y bloquea la integración de un cambio si fallan los controles requeridos.
 
 ## Comunicación frontend–backend [Aprobado]
 - API REST sobre HTTP con cuerpos JSON. Convenciones en `api-conventions.md`.
@@ -106,4 +106,3 @@ Todos los módulos dependen de la autorización por rol. La forma en que un mód
 ## Decisiones pendientes de aprobación
 - **DP-ARQ-01** Dependencias entre módulos. Propuesta: dependencias en un solo sentido (`erp` → `crm`, `sga` → `crm`; `crm` no depende de `erp` ni de `sga`); un módulo usa los datos de otro a través de su servicio, nunca de su repositorio. Decidir también si las entidades de módulos distintos se relacionan con asociaciones JPA (`@ManyToOne`) o solo por identificador con una FK en la base. Lo segundo mantiene los módulos más independientes.
 - **DP-ARQ-02** Esquema de PostgreSQL para las tablas de negocio: `public` (expuesto por defecto por la Data API de Supabase) o un esquema propio no expuesto. Afecta a la seguridad; ver DP-SEG-05.
-- **DP-ARQ-03** Despliegue y ambientes: hoy solo existe el entorno local con el proyecto Supabase `arise-corp-dev`. Faltan por definir el hosting del frontend y del backend, un proyecto Supabase para producción o demostración, los perfiles de Spring y los entornos y aprobaciones del CD. GitHub Actions para CI/CD y la dockerización del backend están aprobadas; el destino final de despliegue sigue pendiente.

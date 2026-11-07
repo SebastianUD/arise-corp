@@ -30,11 +30,10 @@ arise-corp/
 │           └── integration/                  # pruebas PostgreSQL (organización propuesta)
 ├── frontend/                                # React; inicialización y tests pendientes [Aprobado]
 ├── supabase/migrations/                     # migraciones SQL versionadas              [Aprobado]
-├── .github/workflows/                       # workflows CI/CD de GitHub Actions        [Aprobado; por crear]
+├── .github/workflows/                       # workflows CI de GitHub Actions           [Aprobado; por crear]
 │   ├── backend-ci.yml                       # CI backend y build de Docker (propuesto)
 │   ├── frontend-ci.yml                      # CI frontend (propuesto)
-│   ├── integration-tests.yml                # pruebas de integración (propuesto)
-│   └── cd.yml                               # publicación/despliegue (propuesto)
+│   └── integration-tests.yml                # pruebas de integración (propuesto)
 ├── docker-compose.yml                       # ejecución local de servicios del proyecto [Aprobado; por crear]
 ├── docs/def_MVP/MVP_Arise_Corp.md           # definición del MVP
 ├── .kiro/steering/                          # reglas permanentes (estos archivos)
@@ -97,7 +96,7 @@ frontend/
 - `backend/Dockerfile`: construcción multi-stage y ejecución de Spring Boot en un contenedor.
 - `backend/.dockerignore`: excluye `.env`, `.env.*`, `target/`, archivos del IDE y otros elementos que no deben incorporarse a la imagen.
 - `docker-compose.yml`: orquestación local del backend; Supabase PostgreSQL sigue siendo externo y administrado.
-- `.github/workflows/`: workflows de GitHub Actions para CI de backend/frontend, pruebas de integración, construcción de imagen y CD cuando se apruebe el destino.
+- `.github/workflows/`: workflows de GitHub Actions para CI de backend/frontend, pruebas de integración y comprobación de la construcción de imagen. El proyecto se ejecuta en local; no hay CD.
 - No incluir archivos `.env` ni secretos dentro de la imagen Docker, del contexto de construcción ni en archivos YAML versionados.
 
 ## Pruebas
@@ -120,7 +119,7 @@ frontend/
 | Prueba unitaria/de integración frontend | `frontend/src/` o `frontend/tests/` (DP-EST-04) |
 | Dockerfile y exclusiones | `backend/Dockerfile`, `backend/.dockerignore` |
 | Orquestación local de contenedores | `docker-compose.yml` |
-| Automatización CI/CD | `.github/workflows/` |
+| Automatización CI | `.github/workflows/` |
 | Documentación funcional | `docs/` |
 
 ## Decisiones pendientes de aprobación

@@ -50,7 +50,7 @@ Estos acuerdos complementan el alcance funcional del MVP y deberán reflejarse e
 - **ENG-01 — Contenedorización:** el backend Spring Boot debe poder construirse y ejecutarse como imagen Docker, recibiendo la configuración sensible en tiempo de ejecución.
 - **ENG-02 — Pruebas unitarias:** el backend y el frontend deben contar con pruebas unitarias automatizadas para la lógica y componentes relevantes.
 - **ENG-03 — Pruebas de integración:** deben verificarse las integraciones relevantes del backend con PostgreSQL y del frontend con sus servicios/API. Las pruebas no deben modificar la base compartida de desarrollo.
-- **ENG-04 — Automatización CI/CD:** GitHub Actions debe automatizar las validaciones, pruebas y builds. La publicación de imágenes y el despliegue automático requieren aprobar el registro y los entornos de destino.
+- **ENG-04 — Automatización CI:** GitHub Actions debe automatizar las validaciones, pruebas y builds. El proyecto se ejecuta en local (`localhost`): no hay despliegue continuo (CD) ni publicación de imágenes a un registro externo.
 
 ### Criterios globales de aceptación (resumen)
 - **CA-01** Ejecutable con instrucciones documentadas y variables de entorno.

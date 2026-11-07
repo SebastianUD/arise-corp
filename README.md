@@ -62,8 +62,8 @@ flowchart TB
 | Spring Boot | API REST, lógica de negocio, validaciones, autorización y transacciones. |
 | Spring Security | Validación de los JWT y protección de endpoints. |
 | Supabase PostgreSQL | Persistencia e integridad de los datos de negocio. |
-| Docker | Empaquetar y ejecutar el backend de forma reproducible. |
-| GitHub Actions | Automatizar pruebas, compilación y tareas de entrega. |
+| Docker | Empaquetar y ejecutar el backend de forma reproducible en local. |
+| GitHub Actions | CI: automatizar pruebas, compilación y comprobación del build de la imagen. |
 
 React utilizará Supabase para autenticación, pero las operaciones sobre las tablas de negocio se realizarán a través de la API de Spring Boot. El frontend no debe conectarse directamente a PostgreSQL para sustituir la lógica del backend.
 
@@ -92,8 +92,7 @@ El claim técnico `role` de Supabase (por ejemplo, `authenticated`) no represent
 | Autenticación | Supabase Auth | Identidad y emisión de JWT. |
 | Construcción backend | Maven Wrapper | Compilación, pruebas y ejecución. |
 | Contenedores | Docker y Docker Compose | Empaquetado y ejecución local del backend. |
-| Automatización | GitHub Actions | CI y tareas automatizadas de entrega. |
-| Registro de imágenes | GitHub Container Registry (GHCR) | Publicación de imágenes Docker, sujeto a la configuración final del pipeline. |
+| Automatización | GitHub Actions | CI: validación, pruebas y build de la imagen. |
 | Metodología | Spec-Driven Development (SDD) con Kiro | Requisitos, diseño, tareas e implementación. |
 | Control de versiones | Git y GitHub | Versionamiento y colaboración. |
 
@@ -119,8 +118,9 @@ Las versiones y dependencias adicionales que aún no estén aprobadas se definir
 - Pruebas unitarias ampliadas de backend y frontend.
 - Pruebas de integración con PostgreSQL aislado.
 - Dockerfile, `.dockerignore` y Docker Compose del backend.
-- Workflows de GitHub Actions para CI y construcción de imagen.
-- Publicación de imágenes Docker y despliegue automático, sujetos a las decisiones de infraestructura.
+- Workflows de GitHub Actions para CI y comprobación de la construcción de imagen.
+
+> El proyecto se ejecuta en local (`localhost`): no incluye despliegue continuo (CD), publicación de imágenes a un registro externo ni entornos de destino.
 
 > Los elementos de la estructura y del roadmap marcados como planificados no deben interpretarse como funcionalidades ya disponibles.
 
@@ -134,8 +134,7 @@ arise-corp/
 │   └── workflows/
 │       ├── backend-ci.yml              # Planificado
 │       ├── frontend-ci.yml             # Planificado
-│       ├── integration-tests.yml       # Planificado
-│       └── cd.yml                      # Planificado
+│       └── integration-tests.yml       # Planificado
 │
 ├── .kiro/
 │   ├── steering/
@@ -219,8 +218,8 @@ El equipo está compuesto por tres integrantes. Las responsabilidades principale
 - Pruebas unitarias de servicios y reglas de negocio de los módulos asignados.
 - **Configuración y mantenimiento de GitHub Actions**.
 - Automatización de pruebas, compilación y construcción del backend y frontend.
-- Automatización de la construcción y publicación de imágenes Docker.
-- Preparación de los workflows de CI/CD y coordinación de su integración.
+- Comprobación automatizada de la construcción de la imagen Docker del backend.
+- Preparación de los workflows de CI y coordinación de su integración.
 
 ### Paula Isabella Martínez Escalante — Frontend
 
@@ -244,7 +243,7 @@ El equipo está compuesto por tres integrantes. Las responsabilidades principale
 | Modelo de datos y migraciones | Davidson | Sebastián |
 | Docker del backend | Sebastián | Davidson |
 | Pruebas de integración PostgreSQL | Sebastián | Davidson |
-| GitHub Actions y CI/CD | Davidson | Sebastián y Paula |
+| GitHub Actions (CI) | Davidson | Sebastián y Paula |
 | Pruebas unitarias frontend | Paula | — |
 | Pruebas de extremo a extremo | Los tres | Los tres |
 | Integración funcional y validación del MVP | Los tres | Los tres |
@@ -287,15 +286,14 @@ Actividades:
 **Davidson:**
 - Configurar GitHub Actions para backend y frontend.
 - Automatizar instalación, compilación y ejecución de pruebas.
-- Automatizar la construcción de la imagen Docker.
-- Preparar publicación de imágenes en GHCR, una vez aprobada su configuración.
+- Comprobar en CI que la imagen Docker del backend se construye correctamente.
 
 **Paula:**
 - Configurar las herramientas de pruebas unitarias del frontend.
 - Crear pruebas de componentes, formularios y servicios.
 - Preparar los comandos de test y build que utilizará GitHub Actions.
 
-**Entregable:** backend ejecutable en Docker y pipeline de CI que valida el backend y frontend. El despliegue automático queda sujeto a la selección del ambiente de hosting.
+**Entregable:** backend ejecutable en Docker en local y pipeline de CI que valida el backend y frontend. El proyecto se ejecuta en `localhost`; no hay despliegue automático.
 
 ### Etapa 3 — Base de datos y autorización
 
@@ -365,7 +363,7 @@ Actividades:
 
 **Entregable:** módulo ERP funcional con registros administrativos y financieros básicos.
 
-### Etapa 7 — Integración final, validación y despliegue
+### Etapa 7 — Integración final y validación
 
 **Objetivo:** comprobar que el MVP funciona como una solución integrada y preparar su entrega.
 
@@ -374,9 +372,8 @@ Actividades:
 - Completar el flujo cliente → contrato → paquete → cambio de estado → trazabilidad.
 - Ejecutar pruebas unitarias, de integración y de extremo a extremo.
 - Validar roles, permisos y respuestas HTTP.
-- Ejecutar todos los workflows de GitHub Actions.
-- Construir y versionar la imagen Docker final.
-- Configurar el despliegue automático cuando el hosting esté definido.
+- Ejecutar todos los workflows de GitHub Actions (CI).
+- Construir la imagen Docker del backend y ejecutarlo en local con Docker Compose.
 - Actualizar README, especificaciones y documentación de instalación.
 - Preparar la demostración académica del MVP.
 
@@ -426,7 +423,7 @@ docker-compose.yml
 
 Estos archivos se incorporarán durante la etapa 2.
 
-## 10. Integración continua y entrega (GitHub Actions)
+## 10. Integración continua (GitHub Actions)
 
 Davidson será responsable de configurar y mantener los workflows de GitHub Actions.
 
@@ -437,8 +434,7 @@ Estructura prevista:
 └── workflows/
     ├── backend-ci.yml
     ├── frontend-ci.yml
-    ├── integration-tests.yml
-    └── cd.yml
+    └── integration-tests.yml
 ```
 
 Los workflows deberán cubrir progresivamente:
@@ -448,13 +444,11 @@ Los workflows deberán cubrir progresivamente:
 3. Ejecución de pruebas unitarias.
 4. Ejecución de pruebas de integración.
 5. Pruebas y build del frontend.
-6. Construcción de la imagen Docker.
-7. Publicación de imagen en GHCR, si se aprueba.
-8. Despliegue automático al ambiente configurado.
+6. Comprobación de que la imagen Docker del backend se construye correctamente.
 
-**CI** se implementará durante la etapa 2. El **CD hacia un hosting** se completará cuando el equipo seleccione y configure el proveedor y los ambientes de despliegue.
+**CI** se implementará durante la etapa 2. El proyecto se ejecuta en local (`localhost`): no hay despliegue continuo (CD), publicación de imágenes a un registro externo ni entornos de destino.
 
-Los secretos de GitHub Actions se gestionarán mediante GitHub Secrets o variables de configuración apropiadas. Nunca se escribirán credenciales en workflows, logs, imágenes Docker o repositorio.
+Los secretos de GitHub Actions, si algún workflow los necesitara, se gestionarán mediante GitHub Secrets. Nunca se escribirán credenciales en workflows, logs, imágenes Docker o repositorio.
 
 ## 11. Configuración local del backend
 
@@ -612,9 +606,7 @@ Las siguientes decisiones deben resolverse en las especificaciones SDD antes de 
 - Herramienta y procedimiento para crear y aplicar migraciones SQL.
 - Almacenamiento de roles empresariales y mecanismo de autorización.
 - Estrategia para bloquear el acceso directo a las tablas de negocio mediante Supabase Data API.
-- Registro de imágenes Docker y configuración de GHCR.
-- Proveedor de hosting, ambientes y despliegue automático.
-- Estrategia definitiva de cobertura y criterios de calidad del pipeline.
+- Estrategia definitiva de cobertura y criterios de calidad del pipeline de CI.
 
 Las decisiones pendientes no deben implementarse como definitivas sin aprobación del equipo.
 

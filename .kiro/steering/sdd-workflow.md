@@ -10,12 +10,12 @@ Responsabilidades acordadas por el equipo.
 | Integrante | Área principal | Responsabilidades |
 |---|---|---|
 | Sebastián Pardo Tirado | Backend / seguridad / CRM / Docker | Estructura Spring Boot, JWT y Spring Security, convenciones de API, manejo global de errores, CRM, facturación básica del ERP, Dockerfile y Compose del backend, pruebas de integración con PostgreSQL |
-| Davidson Sánchez Gordillo | Backend / datos / ERP y SGA / CI-CD | Modelo de datos y migraciones, entidades y repositorios, ERP (empleados y proveedores), SGA, pruebas unitarias de sus servicios y configuración/mantenimiento de GitHub Actions para CI/CD |
+| Davidson Sánchez Gordillo | Backend / datos / ERP y SGA / CI | Modelo de datos y migraciones, entidades y repositorios, ERP (empleados y proveedores), SGA, pruebas unitarias de sus servicios y configuración/mantenimiento de GitHub Actions para CI |
 | Paula Isabella Martínez Escalante | Frontend | React, Vite y Tailwind CSS, rutas, componentes compartidos, Supabase Auth, cliente HTTP, interfaces de los módulos, pruebas unitarias y de integración del frontend |
 
 ### Responsabilidades transversales de calidad y entrega [Aprobado]
 - **Sebastián:** responsable principal de dockerizar el backend y de diseñar/ejecutar las pruebas de integración contra PostgreSQL. Estas pruebas deben utilizar una instancia aislada o efímera; no deben modificar la base compartida `arise-corp-dev`.
-- **Davidson:** responsable principal de los workflows de GitHub Actions: CI del backend y frontend, ejecución automatizada de pruebas, construcción de artefactos e imagen Docker y preparación del proceso CD. Coordina la publicación de imágenes cuando se apruebe el registro de contenedores.
+- **Davidson:** responsable principal de los workflows de GitHub Actions: CI del backend y frontend, ejecución automatizada de pruebas y comprobación de la construcción de la imagen Docker del backend. El proyecto se ejecuta en local; no hay proceso de CD ni publicación de imágenes a un registro externo.
 - **Paula:** responsable de las pruebas unitarias y de integración del frontend y de asegurar que sus comandos de validación se ejecuten en GitHub Actions.
 - **Los tres:** acuerdan criterios de aceptación, contratos de API y escenarios de extremo a extremo; cada responsable entrega comandos reproducibles y documentación para que Davidson los incorpore al pipeline.
 
@@ -23,8 +23,9 @@ Responsabilidades acordadas por el equipo.
 - No se programa una funcionalidad sin una especificación con requisitos, diseño y tareas revisados y aprobados.
 - Las especificaciones aprobadas son la referencia común para frontend y backend.
 - Un cambio de alcance o de comportamiento actualiza primero la especificación y después el código.
-- La especificación y el código se mantienen sincronizados: un Pull Request que cambia comportamiento actualiza su especificación en el mismo Pull Request.
-- Los steering files son las reglas permanentes del proyecto. Su modificación requiere aprobación explícita del equipo. La actualización inicial de estos documentos se integrará directamente en `main` por acuerdo del equipo; las modificaciones posteriores seguirán el proceso habitual de revisión mediante Pull Request.
+- Las especificaciones (`requirements.md`, `design.md`, `tasks.md`) y los steering files se integran directamente en `main`, sin rama ni Pull Request. La implementación de código que deriva de una especificación sí se integra mediante Pull Request (ver "Git y GitHub").
+- La especificación y el código se mantienen sincronizados: cuando un Pull Request de implementación cambia el comportamiento, actualiza su especificación en el mismo Pull Request; cuando una especificación cambia de forma independiente, se integra directamente en `main`.
+- Los steering files son las reglas permanentes del proyecto. Su modificación requiere aprobación explícita del equipo y se integra directamente en `main`.
 
 ## Ciclo de cada funcionalidad [Aprobado, README §8]
 | Paso | Actividad | Resultado |
@@ -37,7 +38,7 @@ Responsabilidades acordadas por el equipo.
 | 6. Validación | Ejecutar las pruebas y comprobar cada criterio de aceptación | Pruebas en verde y criterios verificados |
 | 7. Actualización | Ajustar la especificación si cambiaron los requisitos o el diseño durante el desarrollo | Especificación coherente con el código |
 
-Cada fase (requisitos, diseño, tareas) se revisa y aprueba antes de pasar a la siguiente. El mecanismo de aprobación está pendiente (DP-SDD-02).
+Cada fase (requisitos, diseño, tareas) se revisa y aprueba antes de pasar a la siguiente. Las tres fases se integran directamente en `main`; la revisión por el equipo se hace sobre la especificación ya versionada, antes de empezar la implementación, que sí pasa por Pull Request.
 
 ## Especificaciones en Kiro
 - Cada especificación vive en `.kiro/specs/<nombre>/` con `requirements.md`, `design.md` y `tasks.md`, redactados en español.
@@ -70,12 +71,11 @@ Cada fase (requisitos, diseño, tareas) se revisa y aprueba antes de pasar a la 
 [Aprobado, README §9]
 - Repositorio: `https://github.com/SebastianUD/arise-corp`.
 - `main` es la rama estable e integrada.
-- Una rama por tarea o especificación, creada desde `main`, con los prefijos `feat/` y `fix/`. Ejemplos del README: `feat/auth-foundation`, `feat/crm-clientes`, `fix/db-config`.
-- Los cambios funcionales se integran en `main` mediante Pull Requests con la revisión de al menos otro integrante.
-- Excepción de bootstrap: la actualización inicial de Steering aprobada por el equipo puede incorporarse directamente en `main`, sin rama ni Pull Request, según el acuerdo de esta etapa.
-- Las modificaciones posteriores de Steering requieren aprobación del equipo y Pull Request.
+- **Especificaciones y steering files:** se integran directamente en `main`, sin rama ni Pull Request. La revisión del equipo se hace sobre el documento ya versionado, antes de implementar.
+- **Implementación de código:** una rama por tarea o especificación, creada desde `main`, con los prefijos `feat/` y `fix/`. Ejemplos del README: `feat/auth-foundation`, `feat/crm-clientes`, `fix/db-config`.
+- Los cambios de código funcionales se integran en `main` mediante Pull Requests con la revisión de al menos otro integrante.
 - No incluir `.env` ni credenciales en los commits.
-- Mantener sincronizadas las especificaciones SDD y el código que implementan.
+- Mantener sincronizadas las especificaciones SDD y el código que implementan: si durante la implementación cambia el comportamiento, el Pull Request de código actualiza también la especificación.
 
 Pendiente: prefijos adicionales de rama (DP-SDD-03), formato de los commits (DP-SDD-04), estrategia de merge y protección de `main` (DP-SDD-05).
 
@@ -112,24 +112,22 @@ Una tarea o funcionalidad está terminada cuando:
 5. La construcción Docker del backend sigue funcionando cuando el cambio afecta al backend o a su configuración.
 6. Los workflows CI aplicables de GitHub Actions terminan correctamente.
 7. El flujo funciona de extremo a extremo cuando corresponda, la documentación y la configuración están actualizadas, y no hay secretos en el repositorio.
-8. El despliegue automatizado (CD) se considera terminado solo cuando exista un entorno de destino aprobado y una ejecución de despliegue verificada.
 
-## Pruebas automatizadas y CI/CD [Aprobado]
+## Pruebas automatizadas y CI [Aprobado]
 - Toda nueva funcionalidad backend incorpora pruebas unitarias de servicios/reglas y pruebas de controlador/seguridad cuando aplique.
 - Toda nueva funcionalidad frontend incorpora pruebas unitarias de componentes, hooks o servicios según aplique, además de pruebas de integración entre interfaz, estado y cliente HTTP cuando corresponda.
 - Las pruebas de integración con PostgreSQL son responsabilidad principal de Sebastián. Deben usar una instancia aislada o efímera y validar repositorios, relaciones, restricciones y transacciones; nunca escribir en `arise-corp-dev` desde CI.
 - Davidson mantiene los workflows de GitHub Actions y conecta en ellos los comandos de backend, frontend, pruebas de integración y construcción Docker.
 - Paula mantiene los comandos de pruebas frontend y colabora con Davidson para integrarlos al pipeline.
 - Sebastián mantiene la construcción local Docker del backend y facilita a Davidson los comandos y requisitos para automatizarla.
-- CI se ejecuta en los eventos de GitHub que el equipo configure y debe validar antes de considerar integrado un cambio. CD/publicación/despliegue requiere definir previamente el registro de imágenes y el entorno de destino (ver `tech.md`).
+- CI se ejecuta en los eventos de GitHub que el equipo configure y debe validar antes de considerar integrado un cambio. El proyecto se ejecuta en local (`localhost`); no hay despliegue continuo (CD) ni publicación de imágenes a un registro externo.
 
 ## Gestión de decisiones pendientes
 - Cada steering file lista al final sus decisiones `DP-*`.
-- Para resolver una: proponerla en el `design.md` de la especificación que la necesita (o en un Pull Request que modifique el steering file), obtener la aprobación del equipo y actualizar el steering file. La decisión pasa a la sección de reglas con la etiqueta [Aprobado] y sale de la lista de pendientes.
+- Para resolver una: proponerla en el `design.md` de la especificación que la necesita, obtener la aprobación del equipo y actualizar el steering file directamente en `main`. La decisión pasa a la sección de reglas con la etiqueta [Aprobado] y sale de la lista de pendientes.
 - Mientras una decisión esté pendiente, ni los integrantes ni Kiro la implementan como definitiva.
 
 ## Decisiones pendientes de aprobación
-- **DP-SDD-02** Mecanismo de aprobación de especificaciones. Propuesta: la especificación se aprueba en un Pull Request propio (o como primer commit de la rama, antes del código) con la aprobación de los otros dos integrantes, porque afecta a frontend y backend.
 - **DP-SDD-03** Convenciones de nombres: patrón de carpetas de especificaciones (propuesta: `NNN-nombre-en-kebab-case`, siguiendo `001-foundation`) y prefijos de rama adicionales (`docs/`, `chore/`, `refactor/`, `test/`).
 - **DP-SDD-04** Formato de commits. El historial mezcla formatos e idiomas (`feat(auth): update ...`, `chore: actualizar ...`, `add frontend folder`). Propuesta: Conventional Commits `tipo(alcance): descripción`, con tipos `feat`, `fix`, `docs`, `chore`, `refactor` y `test`, alcance por módulo (`auth`, `crm`, `erp`, `sga`, `db`, `frontend`) y descripción en español, en imperativo.
 - **DP-SDD-05** Estrategia de merge (squash o merge commit), reglas de protección de `main` en GitHub (Pull Request obligatorio, revisión mínima) y plantilla de Pull Request con la lista anterior.

@@ -100,10 +100,10 @@ Reglas:
 - No registrar en logs tokens, el encabezado `Authorization`, contraseñas ni valores del `.env`.
 - Si un secreto se expone (commit, captura, mensaje), se rota de inmediato en Supabase. Borrar el commit no es suficiente.
 - **Docker:** `.env` y `.env.*` deben estar excluidos en `backend/.dockerignore`; nunca copiar secretos a la imagen ni pasarlos como `ARG` de construcción. La configuración sensible se inyecta al contenedor en tiempo de ejecución.
-- **GitHub Actions:** secretos de despliegue, si llegan a ser necesarios, se guardan en GitHub Actions Secrets o Environments; nunca en archivos YAML, variables de repositorio sin protección, logs o artefactos. Conceder al `GITHUB_TOKEN` solo los permisos mínimos necesarios.
+- **GitHub Actions:** si algún workflow de CI necesitara un secreto, se guarda en GitHub Actions Secrets; nunca en archivos YAML, variables de repositorio sin protección, logs o artefactos. Conceder al `GITHUB_TOKEN` solo los permisos mínimos necesarios. El proyecto se ejecuta en local: no hay despliegue continuo (CD) y, por tanto, no se gestionan secretos de despliegue.
 - Los workflows de pruebas no deben necesitar la contraseña de la base compartida `arise-corp-dev`; las pruebas PostgreSQL usarán una instancia aislada/efímera.
-- No exponer secretos a workflows que se ejecuten sobre código no confiable de contribuciones externas. La estrategia exacta de permisos y ambientes se define en `tech.md` y en la configuración de GitHub.
-- La imagen Docker publicada no debe contener `.env`, tokens, claves Supabase ni archivos de configuración local.
+- No exponer secretos a workflows que se ejecuten sobre código no confiable de contribuciones externas. La estrategia exacta de permisos se define en `tech.md` y en la configuración de GitHub.
+- La imagen Docker del backend no debe contener `.env`, tokens, claves Supabase ni archivos de configuración local.
 
 ## Base de datos
 - [Implementado] Spring Boot se conecta con las credenciales del Session pooler y `sslmode=require`.
@@ -135,7 +135,7 @@ Referencia: [Securing your API, documentación de Supabase](https://supabase.com
   - (c) `app_metadata` de Supabase Auth. Modificarlo exige la clave `service_role` en el backend.
   - Recomendación: (a).
 - **DP-SEG-02** Mecanismo de autorización: reglas por prefijo de ruta en `SecurityFilterChain` (por ejemplo, `/api/crm/**`), seguridad por método (`@EnableMethodSecurity` y `@PreAuthorize`) o ambas. Recomendación: reglas por módulo en la cadena de filtros y `@PreAuthorize` para las operaciones con permisos más finos. Depende de DP-API-01.
-- **DP-SEG-04** Orígenes CORS de producción y paso de la lista de orígenes a una propiedad o variable de entorno. Depende de DP-ARQ-03.
+- **DP-SEG-04** Paso de la lista de orígenes CORS, hoy escrita en el código de `SecurityConfig`, a una propiedad o variable de entorno para poder ajustarla sin recompilar. El proyecto se ejecuta en local, por lo que el único origen requerido es el del frontend de desarrollo (`http://localhost:5173`).
 - **DP-SEG-05** Bloqueo del acceso directo a las tablas de negocio:
   - (a) Habilitar RLS sin políticas para `anon` y `authenticated` en cada tabla de negocio, dentro de su migración, y revocar los grants que use la Data API.
   - (b) Usar un esquema no expuesto (DP-ARQ-02).
