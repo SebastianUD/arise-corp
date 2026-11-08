@@ -11,9 +11,8 @@ Etiquetas de estado: ver `product.md`. Los códigos HTTP y el formato de errores
 - El frontend no accede a las tablas de negocio; todos los datos pasan por la API de Spring Boot.
 
 ## Autenticación y autorización
-- **Autenticación**: comprobar quién es el usuario. Supabase Auth inicia la sesión y emite el JWT; Spring Security verifica ese JWT en cada petición. Estado: [Implementado] en el backend; inicio de sesión en React [Aprobado], pendiente.
-- **Autorización**: decidir qué puede hacer un usuario ya autenticado según su rol empresarial (Administrador, Comercial, Finanzas / RR. HH., Operaciones). La aplica Spring Boot. Estado: pendiente (AUTH-04, DP-SEG-01, DP-SEG-02).
-- Situación actual: cualquier usuario con un JWT válido del proyecto puede llamar a cualquier endpoint protegido, porque todavía no existe autorización por rol.
+- **Autenticación**: comprobar quién es el usuario. Supabase Auth inicia la sesión y emite el JWT; Spring Security verifica ese JWT en cada petición. Estado: [Implementado] en backend y frontend; pendiente validación manual con una cuenta real de Supabase.
+- **Autorización**: decidir qué puede hacer un usuario ya autenticado según el rol empresarial activo de su perfil. La aplica Spring Boot conforme a la matriz en `product.md`. En el código actual aún falta implementarla.
 
 ## Flujo de autenticación
 1. React inicia sesión contra Supabase Auth con `@supabase/supabase-js` (AUTH-01).
@@ -46,8 +45,8 @@ Reglas:
 Referencia: [JWT Claims Reference de Supabase](https://supabase.com/docs/guides/auth/jwt-fields).
 
 ## Roles y permisos empresariales
-- Roles propuestos y su alcance por módulo: `product.md` (DP-PRO-01).
-- Almacenamiento de roles: DP-SEG-01. Mecanismo de autorización en Spring: DP-SEG-02.
+- Roles y su alcance por módulo: `product.md`.
+- Almacenamiento y mecanismo: decisiones DP-SEG-01 y DP-SEG-02 al final de este documento.
 - Reglas para cualquier opción:
   - Denegar por defecto: un usuario sin perfil, sin rol o con el perfil desactivado recibe 403, aunque su JWT sea válido.
   - El rol se obtiene de una fuente que el usuario no puede modificar.
@@ -87,9 +86,9 @@ Reglas:
 - Nunca usar `*` como origen ni `allowedOriginPatterns("*")`.
 - Mantener `allowCredentials(false)`: el token viaja en un encabezado, no en cookies.
 - Agregar encabezados o métodos solo si una especificación los necesita.
-- Los orígenes están escritos en el código de `SecurityConfig`. Orígenes de producción y su paso a configuración: DP-SEG-04.
+- El origen local se configura por `CORS_ALLOWED_ORIGINS`, con valor por defecto `http://localhost:5173`. No hay origen de producción dentro del alcance del proyecto.
 
-## Variables de entorno y secretos [Aprobado, README §7]
+## Variables de entorno y secretos [Aprobado, README §12]
 - `backend/.env` es local y personal de cada integrante. Nunca se versiona; `.gitignore` excluye `.env` y `.env.*`, salvo `.env.example`.
 - `.env.example` contiene solo marcadores o valores ficticios.
 - No escribir credenciales en `application.properties`, código Java, pruebas, scripts, migraciones, documentación, especificaciones, issues, Pull Requests, capturas de pantalla ni mensajes a Kiro.
@@ -107,9 +106,8 @@ Reglas:
 
 ## Base de datos
 - [Implementado] Spring Boot se conecta con las credenciales del Session pooler y `sslmode=require`.
-- Riesgo: una tabla en un esquema expuesto por la Data API de Supabase (por defecto, `public`) puede ser accesible con la clave publishable si tiene grants para `anon` o `authenticated` y no tiene RLS. Eso permitiría saltarse Spring Boot y contradice la arquitectura aprobada.
-- Supabase está cambiando el comportamiento por defecto para que la exposición de tablas nuevas sea opcional. Comprobar la configuración del proyecto ("Automatically expose new tables" en los ajustes de la Data API) en lugar de suponerla.
-- Medidas concretas: DP-SEG-05.
+- Las tablas de negocio se alojan en el esquema privado `app`, que no se expone en la Data API. Las migraciones habilitan RLS y no conceden acceso a `anon` ni `authenticated`; el rol de conexión del backend conserva los privilegios necesarios.
+- Verificar la lista de esquemas expuestos en la configuración Supabase y los grants efectivos al aplicar cada migración. La clave publishable nunca otorga acceso directo al negocio.
 
 Referencia: [Securing your API, documentación de Supabase](https://supabase.com/docs/guides/database/data-api).
 
@@ -128,17 +126,9 @@ Referencia: [Securing your API, documentación de Supabase](https://supabase.com
 - No renderizar HTML no confiable (`dangerouslySetInnerHTML`).
 - Mostrar mensajes claros para credenciales incorrectas, sesión expirada (401, volver al inicio de sesión) y falta de permisos (403) (AUTH-05).
 
-## Decisiones pendientes de aprobación
-- **DP-SEG-01** Dónde se almacena el rol empresarial:
-  - (a) Tabla de perfiles en PostgreSQL vinculada al `sub`, con rol y estado activo. Spring la consulta en cada petición (o con caché). Los cambios de rol se aplican de inmediato y el Administrador los gestiona desde la API. Es la opción más directa para AUTH-04 ("consultar el perfil/rol").
-  - (b) Claim propio agregado por un Custom Access Token Hook de Supabase y leído con un `JwtAuthenticationConverter`. Evita una consulta por petición, pero el cambio de rol solo se aplica al renovar el token, y la función del hook se mantiene en Supabase.
-  - (c) `app_metadata` de Supabase Auth. Modificarlo exige la clave `service_role` en el backend.
-  - Recomendación: (a).
-- **DP-SEG-02** Mecanismo de autorización: reglas por prefijo de ruta en `SecurityFilterChain` (por ejemplo, `/api/crm/**`), seguridad por método (`@EnableMethodSecurity` y `@PreAuthorize`) o ambas. Recomendación: reglas por módulo en la cadena de filtros y `@PreAuthorize` para las operaciones con permisos más finos. Depende de DP-API-01.
-- **DP-SEG-04** Paso de la lista de orígenes CORS, hoy escrita en el código de `SecurityConfig`, a una propiedad o variable de entorno para poder ajustarla sin recompilar. El proyecto se ejecuta en local, por lo que el único origen requerido es el del frontend de desarrollo (`http://localhost:5173`).
-- **DP-SEG-05** Bloqueo del acceso directo a las tablas de negocio:
-  - (a) Habilitar RLS sin políticas para `anon` y `authenticated` en cada tabla de negocio, dentro de su migración, y revocar los grants que use la Data API.
-  - (b) Usar un esquema no expuesto (DP-ARQ-02).
-  - (c) Deshabilitar la Data API, ya que el frontend solo usa Auth.
-  - En cualquier caso, verificar que el rol con el que se conecta Spring Boot (propietario de las tablas) no queda bloqueado por RLS.
-- **DP-SEG-06** Auditoría: guardar el `sub` del usuario y la fecha en los cambios críticos (estados de paquetes y contratos, movimientos de inventario, registros financieros). El historial de SGA-04 es el primer candidato.
+## Decisiones adoptadas
+- **DP-SEG-01:** el rol se almacena en `app.perfiles_usuario`, con `usuario_id` igual al `sub` UUID de Supabase, un único rol y estado activo. El backend consulta el perfil en cada petición protegida para aplicar inmediatamente cambios y denegar perfiles inexistentes o inactivos. Un endpoint limitado al Administrador gestiona asignaciones y cambios de rol. No se usa `user_metadata`, `app_metadata` ni una clave `service_role`.
+- **DP-SEG-02:** se usan reglas de autorización por módulo en `SecurityFilterChain` y controles de método/servicio para operaciones y lecturas cruzadas que requieren permisos finos. Las rutas son `/api/{modulo}/...` sin versión durante el MVP.
+- **DP-SEG-04:** CORS recibe `CORS_ALLOWED_ORIGINS` como propiedad configurable; el valor local por defecto es `http://localhost:5173`. Se enumeran orígenes, sin comodines.
+- **DP-SEG-05:** se usan conjuntamente el esquema privado `app` y RLS habilitado sin políticas para roles de cliente, además de revocar grants de `anon`/`authenticated`. La Data API permanece disponible para Auth; no se expone `app`. Se verifica que el backend tenga los privilegios necesarios.
+- **DP-SEG-06:** los cambios de estados de paquetes/contratos, inventario y registros financieros guardan `actor_sub` (UUID del JWT validado) y marca temporal en la misma transacción que la operación. El historial de paquetes registra cada transición. No se construye un sistema de auditoría distribuido.

@@ -2,14 +2,14 @@
 
 ## Overview
 
-Este plan convierte el diseño aprobado de `001-foundation` (integración vertical de autenticación) en tareas de código pequeñas e incrementales. El backend ya tiene implementados `SecurityConfig`, `AuthController` (`GET /api/me`), la configuración JWT de `application.properties` y `backend/.env.example`; por eso se verifican con pruebas; solo se corrige el mapeo de claims opcionales de `/api/me` para cumplir 5.5. El frontend React incluye el flujo de autenticación y perfil.
+Este plan convierte el diseño aprobado de `001-foundation` (integración vertical de autenticación) en tareas de código pequeñas e incrementales. El backend ya tiene implementados `SecurityConfig`, `AuthController` (`GET /api/me`), la configuración JWT de `application.properties` y `backend/.env.example`; por eso se verifican con pruebas; solo se corrige el mapeo de claims opcionales de `/api/me` para cumplir 5.5. El frontend React incluye el flujo de autenticación y perfil. La autorización por rol, el formato uniforme de errores y la validación manual real se añaden como trabajo abierto tras consolidar las decisiones.
 
-Cada tarea indica su **área** (backend / frontend / base de datos / documentación), un **responsable sugerido** (según `sdd-workflow.md`) y los **requisitos** que cubre. Las tareas que dependen de aprobar una decisión pendiente lo señalan explícitamente.
+Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiertas reflejan trabajo necesario tras las decisiones ya adoptadas.
 
 ### Notas de alcance (del diseño aprobado)
 
 - **No se aplican pruebas basadas en propiedades (PBT).** El diseño justifica que la validación de JWT está delegada a Spring Security, el mapeo de claims a JSON es simple y el resto es comportamiento de UI; se usan pruebas por ejemplo (unitarias) e integración.
-- **Rol empresarial y 403 por rol quedan diferidos** a DP-SEG-01/DP-SEG-02. No hay tareas para la matriz de roles ni para el criterio 9.6 (JWT válido sin rol → 403).
+- **Perfil empresarial y autorización por rol son Must** (AUTH-04); las tareas 15–21 completan el perfil, permisos, errores y validación pendiente.
 - **No se añaden dependencias de backend nuevas**: lo necesario ya está en `backend/pom.xml` (scope `test`: `spring-boot-starter-webmvc-test`, `spring-boot-starter-security-test`, `spring-boot-starter-security-oauth2-resource-server-test`, `h2`).
 - **DP-TEC-01 aprobada por Paula el 2026-11-07.** Se confirma la propuesta de JavaScript, Vite, React, Tailwind CSS, React Router, Supabase JS, fetch nativo y Vitest + React Testing Library. Versiones concretas en D5 de `design.md` y `frontend/package-lock.json`.
 
@@ -49,7 +49,7 @@ Cada tarea indica su **área** (backend / frontend / base de datos / documentaci
     - _Requisitos: 9.4, NF-07_
 
 - [x] 3. Checkpoint del backend
-  - Ejecutar `.\mvnw.cmd test` desde `backend/` y asegurar que todas las pruebas pasan; ask the user if questions arise.
+  - Ejecutar `.\mvnw.cmd test` desde `backend/` y asegurar que todas las pruebas pasan.
 
 - [x] 4. Inicializar el proyecto frontend (DP-TEC-01 aprobada)
   - Área: frontend · Responsable: Paula · **DP-TEC-01 aprobada**
@@ -139,15 +139,60 @@ Cada tarea indica su **área** (backend / frontend / base de datos / documentaci
   - Asegurar que `frontend/.env.example` y `backend/.env.example` listan todas las variables requeridas con valores ficticios
   - _Requisitos: 8.4, 8.5, 10.4, CA-01_
 
-- [x] 14. Checkpoint final
-  - Ejecutar `.\mvnw.cmd test` (backend) y la suite de Vitest (frontend); asegurar que todas las pruebas pasan; ask the user if questions arise.
+- [x] 14. Checkpoint automatizado de la integración base
+  - Ejecutar `.\mvnw.cmd test` (backend) y la suite de Vitest (frontend); asegurar que todas las pruebas pasan.
+
+- [ ] 15. Crear el esquema privado y el perfil empresarial (DP-ARQ-02, DP-SEG-01, DP-SEG-05, DP-TEC-03)
+  - Área: base de datos · Responsable: Davidson; revisión de Sebastián
+  - Crear migración Supabase CLI en `supabase/migrations/` para esquema `app` y tabla `perfiles_usuario` (`usuario_id` UUID con FK a `auth.users`, `rol` con CHECK y valores `ADMINISTRADOR`, `COMERCIAL`, `FINANZAS_RRHH`, `OPERACIONES`, `activo`, marcas temporales y `actualizado_por`). Habilitar RLS y revocar acceso a `anon`/`authenticated`; conceder al rol de backend los permisos necesarios.
+  - Configurar Hibernate para `app` y `ddl-auto=validate`. No insertar perfiles de usuario ni UUID personales en la migración.
+  - Documentar que el primer Administrador se aprovisiona manualmente por un integrante autorizado después de crear su cuenta Auth; no guardar secretos en el repo.
+  - _Requisitos: AUTH-04, NF-01, NF-03, NF-05_
+
+- [ ] 16. Implementar el perfil en backend y completar `GET /api/me` (DP-EST-01, DP-EST-03)
+  - Área: backend · Responsable: Sebastián
+  - Mover `AuthController` a `login.controller`; crear entidad, repositorio, servicio y DTO `MeResponse` record bajo `login`. Añadir `.editorconfig` según DP-EST-03.
+  - Obtener el perfil por `sub`; responder el rol empresarial, nunca el claim técnico Supabase. Perfil inexistente/inactivo → 403. Hacer configurable CORS por `CORS_ALLOWED_ORIGINS`, valor local `http://localhost:5173` (DP-SEG-04).
+  - Actualizar pruebas de `/api/me` para identidad y rol real simulado.
+  - _Requisitos: AUTH-04, CA-02_
+
+- [ ] 17. Aplicar autorización y administración de perfiles (DP-PRO-01, DP-SEG-02)
+  - Área: backend · Responsable: Sebastián
+  - Aplicar denegación por defecto y matriz definida en `.kiro/steering/product.md` en `SecurityFilterChain` y servicios; Admin crea/actualiza perfiles mediante `PUT /api/admin/usuarios/{id}/perfil` (201/200) y activa/desactiva mediante `PATCH /api/admin/usuarios/{id}/estado`.
+  - Permitir solo las lecturas cruzadas mínimas de ERP-05 y SGA-05. Un rol distinto del requerido recibe 403 sin ejecutar la operación.
+  - Añadir pruebas de 401, 403 (sin perfil, inactivo y rol incorrecto) y acceso permitido; incluir perfiles simulados y nunca tokens Supabase reales.
+  - _Requisitos: AUTH-04, NF-02, NF-07, CA-03_
+
+- [ ] 18. Uniformar errores de API y seguridad (DP-API-02)
+  - Área: backend · Responsable: Sebastián
+  - Implementar `@RestControllerAdvice`, `AuthenticationEntryPoint` y `AccessDeniedHandler` con RFC 9457 Problem Details; conservar `WWW-Authenticate` en 401 y extensión `errors` para validaciones por campo.
+  - Actualizar pruebas backend y manejo de `apiClient`/pruebas frontend para formato acordado, conservando el tratamiento actual de 401 y 403.
+  - _Requisitos: AUTH-05, CA-06_
+
+- [ ] 19. Mostrar y verificar el rol en el perfil frontend
+  - Área: frontend · Responsable: Paula
+  - Mostrar el rol empresarial devuelto por `/api/me`; manejar el 403 por perfil no asignado con mensaje y salida segura, sin bucle de redirección.
+  - Añadir pruebas de rol y perfil sin permiso.
+  - _Requisitos: AUTH-04, AUTH-05, NF-06, NF-07_
+
+- [ ] 20. Validar integración con Supabase real y aprovisionamiento inicial
+  - Área: integración/documentación · Responsable: Sebastián; apoyo de Paula
+  - Aplicar la migración revisada de forma controlada en `arise-corp-dev`, aprovisionar una cuenta Administrador por procedimiento documentado, y verificar login, `GET /api/me`, rol y un caso 403.
+  - Registrar solo resultado, fecha y entorno (sin UUID, token, correo ni credenciales); no usar esta cuenta en CI.
+  - _Requisitos: AUTH-01 a AUTH-05, CA-02, CA-03_
+
+- [ ] 21. Checkpoint final de `001-foundation`
+  - Área: backend/frontend/documentación · Responsables: los tres
+  - Ejecutar suites backend y frontend, build frontend, comprobación de secretos, validación de migración y pruebas de integración PostgreSQL aislada; revisar trazabilidad requisito–tarea y README.
+  - Cerrar solo cuando tareas 15–20 estén completadas y CA-01 a CA-03 y CA-06 se hayan verificado.
+  - _Requisitos: NF-01, NF-03, NF-05, NF-07, CA-01, CA-02, CA-03, CA-06_
 
 ## Notes
 
-- Las tareas marcadas con `*` son opcionales (pruebas unitarias/integración y verificaciones) y pueden omitirse para un MVP más rápido, aunque NF-07/CA-03 las exigen para la Definition of Done.
-- Las tareas 4–12 cuentan con DP-TEC-01 aprobada; se ejecutan según sus dependencias. Las tareas de esta especificación están implementadas y verificadas automáticamente.
-- El backend (tareas 1–3) puede avanzar en paralelo al frontend una vez aprobado DP-TEC-01.
-- No se incluyen tareas de PBT (el diseño justifica que no aplica), ni de rol empresarial/403 por rol (diferido a DP-SEG-01/DP-SEG-02).
+- Las tareas marcadas con `*` identifican pruebas/verificaciones de detalle; no se omiten cuando cubren NF-07, CA-03 o el Definition of Done.
+- Las tareas 1–14 están implementadas; las tareas 15–21 son el trabajo restante para cerrar la primera fase tras adoptar las decisiones.
+- Las tareas de perfil/migración/autorización (15–18) preceden a la validación real; frontend (19) puede prepararse contra contratos simulados.
+- No se incluyen pruebas basadas en propiedades (PBT): la validación JWT se delega a Spring Security y el mapeo/reglas se cubren con pruebas por ejemplo.
 - La validación extremo a extremo con un usuario real contra Supabase se realiza de forma manual y controlada (fuera de estas tareas de código y de CI, para no depender de `arise-corp-dev`), según el diseño y el Requirement 10.
 - Cada tarea referencia los requisitos de `requirements.md` para trazabilidad.
 
@@ -162,7 +207,13 @@ Cada tarea indica su **área** (backend / frontend / base de datos / documentaci
     { "id": 3, "tasks": ["6.2", "7.1", "8.2", "9.2"] },
     { "id": 4, "tasks": ["7.2", "10.1"] },
     { "id": 5, "tasks": ["10.2", "11.1"] },
-    { "id": 6, "tasks": ["12", "13"] }
+    { "id": 6, "tasks": ["12", "13"] },
+    { "id": 7, "tasks": ["15"] },
+    { "id": 8, "tasks": ["16"] },
+    { "id": 9, "tasks": ["17", "18"] },
+    { "id": 10, "tasks": ["19"] },
+    { "id": 11, "tasks": ["20"] },
+    { "id": 12, "tasks": ["21"] }
   ]
 }
 ```
@@ -174,7 +225,7 @@ Cada tarea indica su **área** (backend / frontend / base de datos / documentaci
 - `npm run build` — compilación de producción correcta con valores públicos ficticios.
 - `npm run check:secrets` — sin patrones de credenciales privadas en fuente, plantilla y bundle; no abre archivos de secretos locales.
 - `git diff --check` — sin errores de espacios en los cambios.
-- Validación manual con una cuenta real de Supabase: no ejecutada; está fuera de las tareas automáticas de este plan y se describe en README §10.7. Revisión por otro integrante, CI e integración en Git siguen el proceso del repositorio.
+- Validación manual con una cuenta real de Supabase: no ejecutada; está fuera de las tareas automáticas de este plan y se completa en la tarea 20. Revisión por otro integrante, CI e integración en Git siguen el proceso del repositorio.
 
 ### Ajuste visual según Figma — acceso claro
 

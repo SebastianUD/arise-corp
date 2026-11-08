@@ -2,7 +2,7 @@
 
 Plataforma web de gestión empresarial para centralizar los procesos comerciales, administrativos y operativos de Arise Corp., empresa colombiana orientada al transporte y entrega de paquetes mediante drones.
 
-> **Estado del proyecto:** infraestructura inicial del backend configurada; conexión de Spring Boot con Supabase PostgreSQL verificada; validación de JWT de Supabase Auth configurada en Spring Security y endpoint protegido `GET /api/me` implementado. La integración completa con React, los módulos funcionales, Docker, las pruebas automatizadas ampliadas y GitHub Actions están planificados para las siguientes etapas.
+> **Estado del proyecto:** consulte `.kiro/steering/product.md`; el trabajo abierto de la primera fase está en `.kiro/specs/001-foundation/tasks.md`.
 
 ## 1. Objetivo del proyecto
 
@@ -75,7 +75,7 @@ React utilizará Supabase para autenticación, pero las operaciones sobre las ta
 4. Spring Security valida firma, emisor, audiencia y vigencia del JWT mediante las claves públicas JWKS de Supabase.
 5. Spring Boot aplica la autorización correspondiente, ejecuta la lógica de negocio y consulta PostgreSQL.
 
-El claim técnico `role` de Supabase (por ejemplo, `authenticated`) no representa los roles empresariales de Arise Corp. Estos se definirán y aplicarán en el backend.
+El claim técnico `role` de Supabase (por ejemplo, `authenticated`) no representa los roles empresariales de Arise Corp. Se almacenan en perfiles de negocio y se aplican en el backend conforme a la matriz de `.kiro/steering/product.md`.
 
 ## 3. Tecnologías
 
@@ -100,29 +100,9 @@ Las versiones y dependencias adicionales que aún no estén aprobadas se definir
 
 ## 4. Estado actual del desarrollo
 
-### Implementado o configurado
-- Backend Spring Boot 4.1.2 con Java 21 y Maven Wrapper.
-- Conexión de Spring Boot con Supabase PostgreSQL mediante Session Pooler.
-- Configuración local mediante `backend/.env`, plantilla `backend/.env.example` y exclusión de secretos en Git.
-- Proveedor Email de Supabase Auth habilitado; registro público desactivado y confirmación de correo habilitada.
-- Spring Security como OAuth2 Resource Server, configurado para validar JWT ES256 mediante JWKS, emisor y audiencia.
-- Endpoint protegido de prueba `GET /api/me`.
-- CORS configurado para el frontend local en `http://localhost:5173`.
-- Steering Files de Kiro para producto, tecnología, estructura, arquitectura, API, seguridad y flujo SDD.
+El estado implementado y las tareas abiertas se mantienen en `.kiro/steering/product.md`; la primera fase pendiente de cierre está desglosada en `.kiro/specs/001-foundation/tasks.md`. Este README concentra instalación y uso; el resumen del estado se mantiene en la fuente de avance enlazada.
 
-### Pendiente de implementación o validación
-- Prueba completa de autenticación desde React hasta Spring Boot con un usuario real.
-- Frontend React inicializado con login, estado de sesión, rutas protegidas y consumo de `/api/me`; pendiente validación manual con una cuenta autorizada de Supabase.
-- Modelo de perfiles, roles empresariales y autorización por módulo.
-- Migraciones iniciales y tablas de negocio.
-- Pruebas unitarias ampliadas de backend y frontend.
-- Pruebas de integración con PostgreSQL aislado.
-- Dockerfile, `.dockerignore` y Docker Compose del backend.
-- Workflows de GitHub Actions para CI y comprobación de la construcción de imagen.
-
-> El proyecto se ejecuta en local (`localhost`): no incluye despliegue continuo (CD), publicación de imágenes a un registro externo ni entornos de destino.
-
-> Los elementos de la estructura y del roadmap marcados como planificados no deben interpretarse como funcionalidades ya disponibles.
+El proyecto se ejecuta localmente (`localhost`); no incluye CD, publicación de imágenes ni entornos remotos.
 
 ## 5. Estructura del repositorio
 
@@ -174,7 +154,8 @@ arise-corp/
 │               └── AriseBackendApplicationTests.java
 │
 ├── frontend/
-│   └── .gitkeep                       # React por inicializar
+│   ├── package.json                   # React/Vite y herramientas de prueba
+│   └── src/                            # login, perfil, sesión, rutas y cliente API
 │
 ├── supabase/
 │   └── migrations/
@@ -191,214 +172,23 @@ arise-corp/
 
 Los archivos marcados como **Planificado** representan la estructura objetivo, no componentes que ya estén implementados. Los Steering Files de `.kiro/steering/` contienen las reglas permanentes del proyecto; las especificaciones funcionales se desarrollan en `.kiro/specs/`.
 
-## 6. Equipo y división de responsabilidades
+## 6. Equipo y responsabilidades
 
-El equipo está compuesto por tres integrantes. Las responsabilidades principales son:
+La asignación vigente de responsabilidades está en `.kiro/steering/sdd-workflow.md`. Cada spec registra responsable, área y requisitos en `tasks.md`.
 
-### Sebastián Pardo Tirado — Backend, seguridad, CRM y Docker
+## 7. Roadmap
 
-- Estructura y desarrollo del backend Spring Boot.
-- Integración Supabase Auth, Spring Security y validación JWT.
-- Perfiles, roles, permisos y convenciones de API.
-- Manejo global de errores y seguridad de endpoints.
-- Desarrollo del backend CRM: clientes, cuentas corporativas y contratos.
-- Desarrollo de facturación básica del ERP.
-- Dockerización del backend: `Dockerfile`, `.dockerignore` y `docker-compose.yml`.
-- Pruebas unitarias del backend relacionadas con seguridad, CRM y lógica asignada.
-- **Diseño e implementación de las pruebas de integración con PostgreSQL**, incluyendo persistencia, relaciones, restricciones y transacciones.
-- Coordinación técnica de la integración backend–frontend.
+El roadmap y el avance detallado viven en `.kiro/steering/architecture.md` y `.kiro/steering/product.md`. El orden acordado es:
 
-### Davidson Sánchez Gordillo — Backend, datos, ERP, SGA y GitHub Actions
-
-- Diseño del modelo entidad-relación.
-- Diseño y mantenimiento de migraciones SQL versionadas.
-- Entidades, repositorios y servicios de acceso a datos.
-- Desarrollo de empleados y proveedores del ERP.
-- Desarrollo de drones, paquetes, inventario y trazabilidad del SGA.
-- Pruebas unitarias de servicios y reglas de negocio de los módulos asignados.
-- **Configuración y mantenimiento de GitHub Actions**.
-- Automatización de pruebas, compilación y construcción del backend y frontend.
-- Comprobación automatizada de la construcción de la imagen Docker del backend.
-- Preparación de los workflows de CI y coordinación de su integración.
-
-### Paula Isabella Martínez Escalante — Frontend
-
-- Inicialización y configuración de React, Vite y Tailwind CSS.
-- Configuración de React Router y estructura de carpetas del frontend.
-- Configuración de `@supabase/supabase-js`.
-- Implementación de Login, Logout, AuthContext y persistencia de sesión.
-- Implementación de rutas protegidas y control de acceso visual.
-- Desarrollo de Navbar, Sidebar y Dashboard.
-- Interfaces de CRM, ERP y SGA.
-- Integración del frontend con la API REST de Spring Boot.
-- Pruebas unitarias de componentes, formularios, hooks y servicios HTTP.
-- Pruebas de integración del frontend.
-- Colaboración con Davidson para incorporar las pruebas frontend en GitHub Actions.
-
-### Responsabilidades compartidas
-
-| Actividad | Responsable principal | Colaboradores |
-|---|---|---|
-| Especificaciones y contratos de API | Sebastián | Paula y Davidson |
-| Modelo de datos y migraciones | Davidson | Sebastián |
-| Docker del backend | Sebastián | Davidson |
-| Pruebas de integración PostgreSQL | Sebastián | Davidson |
-| GitHub Actions (CI) | Davidson | Sebastián y Paula |
-| Pruebas unitarias frontend | Paula | — |
-| Pruebas de extremo a extremo | Los tres | Los tres |
-| Integración funcional y validación del MVP | Los tres | Los tres |
-
-La asignación concreta de tareas debe quedar registrada en `tasks.md` de cada especificación, con responsable, área y requisitos relacionados.
-
-## 7. Plan de desarrollo por etapas
-
-El desarrollo se realizará de forma incremental. Las pruebas se incorporarán desde el inicio de cada funcionalidad y no se dejarán exclusivamente para el cierre del proyecto.
-
-### Etapa 1 — Foundation y autenticación
-
-**Objetivo:** completar la integración vertical entre React, Supabase Auth y Spring Boot.
-
-Actividades:
-- Crear y aprobar la especificación `001-foundation`.
-- Inicializar React, Vite y Tailwind CSS.
-- Configurar Supabase JS en el frontend.
-- Implementar Login, Logout y gestión de sesión.
-- Validar JWT en Spring Security.
-- Verificar el endpoint protegido `GET /api/me`.
-- Definir el modelo inicial de perfiles y roles.
-- Definir los contratos de integración entre frontend y backend.
-
-**Responsables:** los tres integrantes.
-
-**Entregable:** un usuario autorizado puede iniciar sesión en React, obtener un JWT y consumir `/api/me` en Spring Boot.
-
-### Etapa 2 — Infraestructura, Docker y automatización de calidad
-
-**Objetivo:** conseguir un entorno reproducible y automatizar las validaciones del proyecto.
-
-**Sebastián:**
-- Crear el `Dockerfile` multi-stage del backend.
-- Crear `.dockerignore`.
-- Configurar Docker Compose para ejecutar Spring Boot.
-- Inyectar las variables de entorno en tiempo de ejecución, sin copiar `.env` a la imagen.
-- Preparar pruebas de integración con PostgreSQL.
-
-**Davidson:**
-- Configurar GitHub Actions para backend y frontend.
-- Automatizar instalación, compilación y ejecución de pruebas.
-- Comprobar en CI que la imagen Docker del backend se construye correctamente.
-
-**Paula:**
-- Configurar las herramientas de pruebas unitarias del frontend.
-- Crear pruebas de componentes, formularios y servicios.
-- Preparar los comandos de test y build que utilizará GitHub Actions.
-
-**Entregable:** backend ejecutable en Docker en local y pipeline de CI que valida el backend y frontend. El proyecto se ejecuta en `localhost`; no hay despliegue automático.
-
-### Etapa 3 — Base de datos y autorización
-
-**Objetivo:** establecer la estructura persistente y el control de acceso empresarial.
-
-Actividades:
-- Aprobar el modelo entidad-relación.
-- Definir y crear las migraciones iniciales.
-- Implementar perfiles y roles.
-- Definir la matriz de permisos por módulo y operación.
-- Implementar autorización en Spring Security.
-- Definir restricciones e integridad referencial en PostgreSQL.
-- Incorporar manejo global de errores.
-- Preparar pruebas unitarias y de integración de persistencia y seguridad.
-
-**Responsable principal:** Davidson para datos y migraciones; Sebastián para autorización, pruebas PostgreSQL y seguridad; Paula para la representación de permisos en la interfaz.
-
-**Entregable:** base de datos inicial versionada y usuarios con perfiles y permisos aplicados desde el backend.
-
-### Etapa 4 — Desarrollo del CRM
-
-**Objetivo:** implementar el primer módulo funcional y utilizarlo como patrón para los demás.
-
-Actividades:
-- Gestión de clientes: crear, listar, consultar, editar y desactivar.
-- Gestión de cuentas corporativas, según alcance aprobado.
-- Gestión de contratos y estados.
-- Validaciones de campos y duplicados.
-- Interfaces de listado, formularios y detalle.
-- Pruebas unitarias, de integración y de autorización.
-
-**Responsables:** Sebastián (backend), Paula (frontend) y Davidson (modelo de datos y migraciones).
-
-**Entregable:** módulo CRM funcional con información persistida en PostgreSQL.
-
-### Etapa 5 — Desarrollo del SGA
-
-**Objetivo:** implementar las operaciones de inventario y trazabilidad.
-
-Actividades:
-- Gestión de drones.
-- Gestión de paquetes.
-- Gestión de inventario y movimientos controlados.
-- Asociación de paquetes con clientes, contratos y drones.
-- Registro y consulta del historial de estados.
-- Validación de transiciones y restricciones.
-- Interfaces de operaciones e inventario.
-- Pruebas unitarias, de integración y de autorización.
-
-**Responsables:** Davidson (backend y datos), Paula (frontend) y Sebastián (seguridad e integración).
-
-**Entregable:** módulo SGA funcional, con paquetes, inventario y trazabilidad persistidos.
-
-### Etapa 6 — Desarrollo del ERP
-
-**Objetivo:** implementar la gestión administrativa y financiera básica.
-
-Actividades:
-- Gestión de empleados.
-- Gestión de proveedores.
-- Facturas o movimientos financieros básicos.
-- Relaciones con clientes y proveedores, según alcance aprobado.
-- Interfaces administrativas y financieras.
-- Pruebas unitarias, de integración y de autorización.
-
-**Responsables:** Davidson (empleados y proveedores), Sebastián (facturación), Paula (frontend).
-
-**Entregable:** módulo ERP funcional con registros administrativos y financieros básicos.
-
-### Etapa 7 — Integración final y validación
-
-**Objetivo:** comprobar que el MVP funciona como una solución integrada y preparar su entrega.
-
-Actividades:
-- Integrar Login, CRM, ERP y SGA.
-- Completar el flujo cliente → contrato → paquete → cambio de estado → trazabilidad.
-- Ejecutar pruebas unitarias, de integración y de extremo a extremo.
-- Validar roles, permisos y respuestas HTTP.
-- Ejecutar todos los workflows de GitHub Actions (CI).
-- Construir la imagen Docker del backend y ejecutarlo en local con Docker Compose.
-- Actualizar README, especificaciones y documentación de instalación.
-- Preparar la demostración académica del MVP.
-
-**Responsables:** los tres integrantes.
-
-**Entregable:** MVP integrado, probado, documentado y listo para demostración.
+1. Completar `001-foundation`: autenticación, perfil, roles, errores y validación con Supabase real.
+2. Definir e implementar la base de datos y API transversal.
+3. Construir CRM como primer módulo.
+4. Completar ERP y SGA conforme a Must/Should del MVP.
+5. Validar el flujo cliente → contrato → paquete → trazabilidad y preparar la entrega local.
 
 ## 8. Estrategia de pruebas
 
-Se adoptarán tres niveles de pruebas:
-
-| Nivel | Backend | Frontend |
-|---|---|---|
-| Unitarias | Servicios, reglas de negocio, validaciones y componentes de seguridad aislados | Componentes, hooks, formularios y funciones de servicios |
-| Integración | Controladores, servicios, repositorios, Spring Security y PostgreSQL | Componentes, contexto de autenticación, servicios HTTP y respuestas de API |
-| Extremo a extremo (E2E) | Participa exponiendo la API y persistencia | Recorrido completo desde la interfaz |
-
-### Criterios generales
-
-- Las pruebas unitarias deben ejecutarse sin depender de la instancia compartida de Supabase.
-- Las pruebas de seguridad pueden simular JWT y authorities; no necesitan tokens reales.
-- Las pruebas de integración con PostgreSQL deben utilizar una base de pruebas aislada y no modificar la base compartida de desarrollo.
-- Las pruebas E2E validarán flujos completos y se incorporarán progresivamente.
-- Las pruebas deben cubrir casos exitosos, validaciones, errores y permisos.
-- Las herramientas concretas se aprobarán en las especificaciones correspondientes. Testcontainers es una alternativa propuesta para PostgreSQL; su incorporación requiere aprobación como dependencia.
+Los comandos locales están en §11.6; decisiones y responsabilidades por tipo de prueba están en `.kiro/steering/tech.md`. Las suites unitarias/contexto no dependen de Supabase; las pruebas PostgreSQL usan Testcontainers efímero y nunca escriben en `arise-corp-dev`. La validación manual de Supabase se realiza por separado y no utiliza credenciales en CI.
 
 ## 9. Docker y ejecución del backend
 
@@ -421,7 +211,7 @@ backend/
 docker-compose.yml
 ```
 
-Estos archivos se incorporarán durante la etapa 2.
+Estos archivos se incorporarán durante la etapa de integración y entrega local.
 
 ## 10. Integración continua (GitHub Actions)
 
@@ -446,13 +236,13 @@ Los workflows deberán cubrir progresivamente:
 5. Pruebas y build del frontend.
 6. Comprobación de que la imagen Docker del backend se construye correctamente.
 
-**CI** se implementará durante la etapa 2. El proyecto se ejecuta en local (`localhost`): no hay despliegue continuo (CD), publicación de imágenes a un registro externo ni entornos de destino.
+**CI** está aprobado y pendiente de implementación. El proyecto se ejecuta en local (`localhost`): no hay despliegue continuo (CD), publicación de imágenes a un registro externo ni entornos de destino.
 
 Los secretos de GitHub Actions, si algún workflow los necesitara, se gestionarán mediante GitHub Secrets. Nunca se escribirán credenciales en workflows, logs, imágenes Docker o repositorio.
 
 ## 11. Configuración local del backend
 
-### 10.1 Requisitos previos
+### 11.1 Requisitos previos
 
 - Git.
 - JDK 21.
@@ -460,14 +250,14 @@ Los secretos de GitHub Actions, si algún workflow los necesitara, se gestionar�
 - Acceso autorizado al proyecto Supabase `arise-corp-dev`.
 - PowerShell en Windows (los comandos pueden adaptarse a macOS/Linux).
 
-### 10.2 Clonar el repositorio
+### 11.2 Clonar el repositorio
 
 ```bash
 git clone https://github.com/SebastianUD/arise-corp.git
 cd arise-corp
 ```
 
-### 10.3 Crear el archivo `.env`
+### 11.3 Crear el archivo `.env`
 
 Desde la raíz del repositorio, en PowerShell:
 
@@ -490,7 +280,7 @@ Usar los valores exactos de Supabase Dashboard → Connect → Session pooler. L
 
 Cada integrante debe crear su propio archivo `.env`. No compartirlo mediante GitHub ni incluirlo en commits.
 
-### 10.4 Configuración de Spring
+### 11.4 Configuración de Spring
 
 `backend/src/main/resources/application.properties` importa el archivo local `.env` mediante Spring Boot:
 
@@ -518,7 +308,7 @@ spring.security.oauth2.resourceserver.jwt.audiences[0]=authenticated
 
 El archivo `.env` se resuelve respecto al directorio de trabajo. Por eso los comandos Maven deben ejecutarse desde `backend/`.
 
-### 10.5 Ejecutar pruebas e iniciar Spring Boot
+### 11.5 Ejecutar pruebas e iniciar Spring Boot
 
 En PowerShell:
 
@@ -538,7 +328,7 @@ Para detener el servidor, utilizar `Ctrl + C`.
 
 El comando `spring-boot:run` mantiene el proceso activo porque inicia el servidor web.
 
-### 10.6 Instalar e iniciar el frontend
+### 11.6 Instalar e iniciar el frontend
 
 DP-TEC-01 aprobada. Usar Node.js 24 LTS (>=24.14.0 y <25; referencia en `frontend/.nvmrc`) y npm 11 (referencia 11.9.0).
 
@@ -575,7 +365,7 @@ npm run preview      # vista previa local del bundle
 
 Dependencias fijadas en `package.json` y `package-lock.json`; usar `npm ci` para reproducir la instalación. Tailwind CSS usa `@tailwindcss/vite`; las pruebas usan React Testing Library + jsdom.
 
-### 10.7 Validar la integración de autenticación
+### 11.7 Validar la integración de autenticación
 
 Las pruebas automáticas se ejecutan sin servicios externos: el backend usa H2 y JWT simulados, y el frontend simula Supabase y la API. La configuración en `backend/src/test/resources/application.properties` reemplaza la principal y no importa el archivo `.env`. Los tokens inválidos/vencidos se prueban simulando el rechazo del decoder de Spring Security.
 
@@ -626,7 +416,7 @@ La primera especificación será `001-foundation`, centrada en completar la inte
 
 - `main` es la rama estable e integrada.
 - Para el desarrollo habitual se crea una rama por tarea o especificación, por ejemplo `feat/auth-foundation`, `feat/crm-clientes` o `fix/db-config`.
-- Los cambios funcionales se integran mediante Pull Requests y revisión de al menos otro integrante.
+- Todo cambio, incluidas especificaciones y steering, se integra mediante Pull Request y revisión de al menos otro integrante; se usa squash merge.
 - El autor no aprueba su propio Pull Request.
 - No incluir `.env` ni credenciales en commits.
 - Las especificaciones SDD y el código deben mantenerse sincronizados.
@@ -644,18 +434,9 @@ Una funcionalidad se considera terminada cuando:
 - El cambio fue revisado e integrado en Git.
 - No contiene secretos ni credenciales.
 
-## 15. Decisiones técnicas pendientes
+## 15. Estado de las decisiones
 
-Las siguientes decisiones deben resolverse en las especificaciones SDD antes de implementarlas como definitivas:
-
-- DP-TEC-01 resuelta: herramientas y versiones del frontend en `frontend/package.json`; instalación y ejecución en §10.6.
-- Herramienta para pruebas de integración PostgreSQL (Testcontainers es una propuesta).
-- Herramienta y procedimiento para crear y aplicar migraciones SQL.
-- Almacenamiento de roles empresariales y mecanismo de autorización.
-- Estrategia para bloquear el acceso directo a las tablas de negocio mediante Supabase Data API.
-- Estrategia definitiva de cobertura y criterios de calidad del pipeline de CI.
-
-Las decisiones pendientes no deben implementarse como definitivas sin aprobación del equipo.
+Las decisiones de producto, arquitectura, seguridad, API, stack y flujo de trabajo se consolidaron en `.kiro/steering/` el 2026-11-08; ya no hay decisiones pendientes de aprobación. Las implementaciones aún abiertas están registradas como tareas, no como decisiones. Consulte `.kiro/steering/product.md` para el estado resumido y cada steering temático para las reglas adoptadas.
 
 ---
 
@@ -665,4 +446,4 @@ Repositorio: https://github.com/SebastianUD/arise-corp
 
 ### Referencia visual del acceso
 
-La pantalla `/login` implementa el diseño [01 · Acceso · Claro de Figma](https://www.figma.com/design/1Cj9qZtJ9HeBpdTWhrX2sC/Sin-t%C3%ADtulo?node-id=9-2), con logo y tipografías locales en `frontend/public/assets/`, y disposición adaptable a escritorio, tablet y móvil. La autenticación conserva su configuración de Supabase descrita en §10.6.
+La pantalla `/login` implementa el diseño [01 · Acceso · Claro de Figma](https://www.figma.com/design/1Cj9qZtJ9HeBpdTWhrX2sC/Sin-t%C3%ADtulo?node-id=9-2), con logo y tipografías locales en `frontend/public/assets/`, y disposición adaptable a escritorio, tablet y móvil. La autenticación conserva su configuración de Supabase descrita en §11.6.

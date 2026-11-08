@@ -39,7 +39,7 @@ Construir una primera versión web funcional que permita a los usuarios autoriza
 
 - Priorizar funcionalidades demostrables de gestión; no automatizar procesos que todavía no se han especificado.
 
-- Usar una única instancia de PostgreSQL en Supabase, con separación lógica por tablas y relaciones. La separación en esquemas puede evaluarse después si aporta valor real.
+- Usar una única instancia de PostgreSQL en Supabase; las tablas de negocio y perfiles se alojan en el esquema privado `app`, no expuesto por la Data API, con relaciones e integridad referencial.
 
 - Mantener React separado de Spring Boot. React consume una API REST; Spring Boot concentra las reglas de negocio y accede a los datos.
 
@@ -49,14 +49,16 @@ Construir una primera versión web funcional que permita a los usuarios autoriza
 
 # 5. Usuarios y permisos iniciales
 
-Se propone iniciar con roles sencillos para demostrar autorización por módulo. Estos roles y su matriz de permisos son una decisión inicial de diseño que el equipo debe validar antes de implementarla.
+Se adoptan roles sencillos para la autorización por módulo del MVP. La matriz concreta y sus lecturas cruzadas se documentan en `.kiro/steering/product.md`.
 
-| **Rol propuesto**  | **Acceso inicial**                                                            | **Modulo Asociado** |
+| **Rol**            | **Acceso inicial**                                                            | **Modulo Asociado** |
 |--------------------|-------------------------------------------------------------------------------|---------------------|
 | Administrador      | Acceso administrativo a los módulos y gestión de perfiles/roles autorizados.  | Acceso Total        |
 | Comercial          | Consulta y gestión de clientes, cuentas y contratos.                          | CRM                 |
 | Finanzas / RR. HH. | Consulta y gestión de empleados, proveedores y registros financieros básicos. | ERP                 |
 | Operaciones        | Consulta y gestión de drones, paquetes, inventario y trazabilidad.            | SGA                 |
+
+Cada usuario tiene un solo rol activo. El Administrador gestiona los perfiles. Comercial gestiona CRM; Finanzas / RR. HH. gestiona ERP y solo consulta clientes/proveedores del CRM para ERP-05; Operaciones gestiona SGA y solo consulta clientes/contratos necesarios para SGA-05. Las lecturas cruzadas no permiten modificar los datos de otro módulo. Spring Boot aplica la matriz; un perfil ausente o inactivo se deniega.
 
 # 6. Alcance funcional del MVP
 
@@ -203,13 +205,13 @@ Para evitar que la primera versión crezca de forma incontrolada, las siguientes
 | Should have       | Aporta valor y se realiza si no compromete autenticación, flujo integrado ni funcionalidades imprescindibles. |
 | Could / posterior | Mejoras o automatizaciones que pueden incorporarse después de validar el MVP.                                 |
 
-La prioridad indicada en las tablas funcionales es inicial. El equipo debe confirmarla en la primera sesión de definición del MVP antes de convertirla en tareas de desarrollo.
+Las prioridades Must/Should de las tablas funcionales constituyen el alcance acordado del MVP y se conservan en sus especificaciones.
 
 # 13. Plan de trabajo con SDD y Kiro
 
 | **Etapa**                  | **Actividad y entregable**                                                                                                                      |
 |----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1\. Constitución           | Aprobar alcance del MVP, stack, arquitectura, convenciones y reglas del equipo; consolidar docs/constitution.md y archivos de contexto de Kiro. |
+| 1\. Constitución           | Consolidar alcance, stack, arquitectura, convenciones y reglas en los steering files de Kiro, que cumplen la función de constitución del proyecto. |
 | 2\. Especificación inicial | Crear una Feature Spec para autenticación e integración técnica; definir requisitos, diseño, riesgos y criterios de aceptación.                 |
 | 3\. Integración vertical   | Validar inicio de sesión en React, JWT validado en Spring Boot y respuesta de un endpoint protegido.                                            |
 | 4\. Datos y API            | Acordar entidades, migraciones, contrato REST, códigos de respuesta y validaciones compartidas.                                                 |
@@ -217,13 +219,9 @@ La prioridad indicada en las tablas funcionales es inicial. El equipo debe confi
 | 6\. Flujo integrado        | Relacionar cliente, contrato y paquete; verificar estados, trazabilidad, permisos y persistencia.                                               |
 | 7\. Validación final       | Ejecutar pruebas, corregir fallos, revisar criterios de aceptación y actualizar documentación.                                                  |
 
-# 14. División inicial de responsabilidades
+# 14. Responsabilidades
 
-| **Responsable** | **Área principal**          | **Responsabilidades propuestas**                                                                                |
-|-----------------|-----------------------------|-----------------------------------------------------------------------------------------------------------------|
-| Persona 1       | Backend / seguridad / CRM   | Estructura Spring Boot, integración de JWT y Spring Security, convenciones API, manejo global de errores y CRM. |
-| Persona 2       | Backend / datos / ERP y SGA | Modelo de datos y migraciones, entidades y repositorios, ERP, inventario, drones, paquetes y trazabilidad.      |
-| Persona 3       | Frontend                    | React/Vite/Tailwind, rutas, componentes compartidos, Supabase Auth, cliente HTTP e interfaces de módulos.       |
+La asignación vigente por integrante se mantiene en `.kiro/steering/sdd-workflow.md`; las tareas específicas registran responsable y requisitos en `tasks.md` para evitar mantener copias divergentes aquí.
 
 # 15. Definition of Done (DoD)
 
@@ -238,3 +236,13 @@ Una tarea o funcionalidad se considera terminada cuando se cumple lo siguiente:
 - Flujo de extremo a extremo funcional con API y datos reales; documentación y configuración actualizadas, sin secretos en el repositorio.
 
 **Criterio de cierre:** El MVP debe demostrar autenticación, permisos básicos, operaciones esenciales de CRM, ERP y SGA, y el flujo cliente → paquete con trazabilidad. El control autónomo de vuelo, la analítica avanzada y la contabilidad integral quedan para fases posteriores.
+
+# 16. Decisiones técnicas consolidadas
+
+Las decisiones detalladas se mantienen en `.kiro/steering/`, que cumple la función de constitución técnica mencionada en §13. Al 2026-11-08 no quedan decisiones pendientes de aprobación. Los acuerdos principales son:
+
+- Roles empresariales en perfiles PostgreSQL; autorización backend con denegación por defecto y permisos mínimos según §5.
+- Datos de negocio en esquema privado `app`, protegido por RLS y sin acceso directo desde la Data API.
+- Migraciones versionadas con Supabase CLI; Hibernate solo valida el esquema; pruebas PostgreSQL automatizadas con Testcontainers.
+- API sin versión durante el MVP, errores RFC 9457 Problem Details y contratos definidos en cada `design.md`.
+- Las prioridades de alcance son las tablas Must/Should de §6. El avance y tareas abiertas se mantienen en README y en la spec activa.

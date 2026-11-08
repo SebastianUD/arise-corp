@@ -5,18 +5,18 @@ Arise Corp. es una empresa colombiana que desarrolla drones autónomos para el t
 
 Este repositorio contiene el MVP académico (curso "Construcción de Software", equipo de tres integrantes) de una plataforma web que integra esos procesos en una sola aplicación.
 
-Fuentes de verdad, en este orden:
-1. `docs/def_MVP/MVP_Arise_Corp.md`: alcance del MVP (versión 1.0, documento de trabajo sujeto a validación del equipo).
-2. `README.md`: visión general, configuración local y estado del proyecto.
-3. `.kiro/steering/`: reglas permanentes de desarrollo (estos archivos).
-4. `.kiro/specs/`: especificaciones aprobadas de cada funcionalidad.
+Fuentes de verdad:
+1. `docs/def_MVP/MVP_Arise_Corp.md`: alcance funcional y prioridades.
+2. `.kiro/steering/`: acuerdos y reglas permanentes.
+3. `.kiro/specs/`: requisitos, diseño y tareas de cada funcionalidad.
+4. `README.md`: orientación, ejecución y resumen del estado; enlaza a las fuentes detalladas.
 
 ## Etiquetas de estado (se usan en todos los steering files)
 - **[Implementado]**: existe en el código del repositorio.
-- **[Aprobado]**: decisión del equipo (README, documento del MVP o stack aprobado) que todavía no está implementada.
-- **[Pendiente de aprobación]**: propuesta o vacío sin decidir. No implementarla como definitiva: plantearla al equipo y resolverla según `sdd-workflow.md`.
+- **[Aprobado]**: decisión adoptada para el proyecto que todavía no está implementada; la fuente puede ser el MVP, README o una instrucción explícita del responsable del proyecto.
+- **[Pendiente de aprobación]**: propuesta o vacío sin decidir. En este estado no se implementa como definitiva; al resolverla, se registra en el steering del tema.
 
-Las decisiones pendientes tienen un código `DP-<ÁREA>-NN` y se listan al final del archivo de su tema. Las reglas que se derivan directamente de una decisión aprobada o de la configuración actual se escriben como reglas, acompañadas de su justificación.
+Las decisiones adoptadas se documentan al final del archivo de su tema con su código `DP-*` y se convierten en reglas. Las propuestas anteriores ya resueltas no se mantienen como pendientes.
 
 ## Objetivo y resultado esperado del MVP
 Demostrar un flujo administrativo completo, con acceso controlado y datos persistidos en PostgreSQL:
@@ -33,7 +33,7 @@ Los identificadores provienen del documento del MVP y deben citarse en las espec
 | ERP | Empleados, proveedores, facturas o movimientos financieros básicos (fecha, concepto, valor, estado) | ERP-01, ERP-02, ERP-03 | ERP-04 (panel financiero), ERP-05 (relación con clientes/proveedores) |
 | SGA | Drones, paquetes, inventario con operaciones controladas, historial de estados del paquete, asociación paquete–cliente/contrato–dron | SGA-01 a SGA-05 | SGA-06 (indicadores) |
 
-Must: imprescindible; el MVP no está listo si falta. Should: se hace si no compromete la autenticación, el flujo integrado ni los Must. Las prioridades son iniciales (DP-PRO-02).
+Las prioridades Must/Should son las definidas en `docs/def_MVP/MVP_Arise_Corp.md` §6. Must es requisito de aceptación del MVP; Should se incluye solo si no compromete los Must ni el flujo integrado.
 
 ### Requisitos no funcionales (resumen)
 - **NF-01** Secretos y claves de servicio fuera del frontend y del repositorio.
@@ -61,13 +61,15 @@ Estos acuerdos complementan el alcance funcional del MVP y deberán reflejarse e
 - **CA-06** Códigos HTTP coherentes y errores comprensibles sin información sensible.
 - **CA-07** Especificación, diseño, tareas, pruebas y documentación revisados por el equipo.
 
-## Roles iniciales [Pendiente de aprobación, DP-PRO-01]
+## Roles y permisos [Decisión adoptada para el MVP académico, DP-PRO-01]
 | Rol propuesto | Acceso inicial | Módulo |
 |---|---|---|
 | Administrador | Acceso administrativo y gestión de perfiles/roles autorizados | Todos |
 | Comercial | Clientes, cuentas y contratos | CRM |
 | Finanzas / RR. HH. | Empleados, proveedores y registros financieros básicos | ERP |
 | Operaciones | Drones, paquetes, inventario y trazabilidad | SGA |
+
+Cada usuario tiene un solo rol empresarial activo. Administrador puede leer y gestionar todos los módulos y perfiles. Comercial gestiona CRM. Finanzas / RR. HH. gestiona ERP y solo consulta clientes/proveedores del CRM cuando una relación de ERP-05 lo requiere. Operaciones gestiona SGA y solo consulta clientes y contratos necesarios para SGA-05. Las lecturas cruzadas no habilitan crear, editar ni desactivar datos de otro módulo. Sin perfil, con perfil inactivo o sin permiso, se deniega el acceso (403). Los permisos se verifican en backend.
 
 Cómo se almacenan y aplican los roles: ver `security.md`.
 
@@ -93,23 +95,21 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - Conexión a Supabase PostgreSQL mediante Session pooler (verificada según el README).
 - `.env` local, plantilla `backend/.env.example` y reglas de `.gitignore`.
 - Spring Security como OAuth2 Resource Server que valida JWT de Supabase Auth (ES256, JWKS, issuer y audiencia).
+- Frontend React con login, sesión, rutas protegidas, cliente HTTP y perfil; cobertura automática de 25 pruebas frontend y 6 backend documentada en `001-foundation/tasks.md`.
 - Endpoint protegido de prueba `GET /api/me`.
 - CORS para el frontend de desarrollo en `http://localhost:5173`.
 - Validación JWT configurada en Spring Security.
 
 [Aprobado, pendiente de implementar]
-- Especificación `001-foundation` (autenticación e integración técnica).
-- Prueba de autenticación extremo a extremo con un usuario real.
-- Migraciones iniciales del esquema en `supabase/migrations/`.
-- Inicialización del frontend React y su conexión con Supabase Auth y la API.
-- Perfil y rol del usuario, y autorización por rol (AUTH-04).
-- Manejo global de errores de la API.
-- Módulos CRM, ERP y SGA, y vistas de resumen.
+- Completar `001-foundation`: esquema privado, perfil empresarial, autorización por rol, Problem Details y verificación manual con Supabase real (tareas 15–21).
+- Migraciones de negocio para CRM, ERP y SGA.
+- Módulos CRM, ERP y SGA y sus interfaces.
+- Dockerfile, Docker Compose y automatización CI.
 
 ## Idioma
 - Documentación, especificaciones y steering files: español (práctica de todo el repositorio).
-- Identificadores de código, base de datos, rutas, JSON y textos de la interfaz: ver DP-EST-02 en `structure.md`.
+- Nombres de dominio, base de datos, rutas, JSON y textos de la interfaz: ver DP-EST-02 en `structure.md`.
 
-## Decisiones pendientes de aprobación
-- **DP-PRO-01** Validar los roles propuestos y definir la matriz de permisos por módulo y operación (MVP §5). La matriz debe resolver las lecturas entre módulos; por ejemplo, Operaciones necesita consultar clientes y contratos para asociarlos a un paquete (SGA-05), y Finanzas puede necesitar clientes para ERP-05. Definir también si un usuario puede tener más de un rol.
-- **DP-PRO-02** Confirmar las prioridades Must/Should en la primera sesión de definición del MVP (MVP §12).
+## Decisiones adoptadas
+- **DP-PRO-01:** se adoptan los cuatro roles y el alcance funcional descritos en §5 del MVP. Cada perfil tiene un único rol; el Administrador puede gestionar perfiles. Se permiten únicamente lecturas cruzadas mínimas: Finanzas consulta clientes/proveedores para ERP-05 y Operaciones consulta clientes/contratos para SGA-05. Las operaciones de escritura permanecen en el módulo dueño.
+- **DP-PRO-02:** rigen las prioridades publicadas en las tablas de `docs/def_MVP/MVP_Arise_Corp.md` §6, sin reclasificaciones. Los requisitos AUTH-01–05, CRM-01/03/04, ERP-01/02/03 y SGA-01–05 son Must; CRM-02/05, ERP-04/05 y SGA-06 son Should.

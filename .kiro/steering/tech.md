@@ -13,7 +13,7 @@ Etiquetas de estado: ver `product.md`. Las reglas de seguridad están en `securi
 | Seguridad | Spring Security + OAuth2 Resource Server | gestionada por Spring Boot | [Implementado] |
 | Validación | Bean Validation (`spring-boot-starter-validation`) | gestionada por Spring Boot | Dependencia [Implementado]; aún sin uso |
 | Base de datos | Supabase PostgreSQL vía JDBC y Session pooler | proyecto Supabase `arise-corp-dev` | [Implementado] |
-| Autenticación | Supabase Auth (JWT firmados con ES256) | — | [Implementado] en el backend |
+| Autenticación | Supabase Auth (JWT firmados con ES256) | — | [Implementado] en backend y frontend |
 | Frontend | React, Vite, Tailwind CSS, React Router, `@supabase/supabase-js` | versiones fijadas en `frontend/package.json` y `package-lock.json` (DP-TEC-01) | [Implementado: autenticación y perfil] |
 | Contenedores | Docker y Docker Compose para empaquetar/ejecutar el backend | versiones por fijar en el proyecto | [Aprobado; implementación pendiente] |
 | CI | GitHub Actions | workflows por crear | [Aprobado; implementación pendiente] |
@@ -34,7 +34,7 @@ Pruebas (scope `test`): `spring-boot-starter-webmvc-test`, `spring-boot-starter-
 Plugin de build: `spring-boot-maven-plugin`.
 
 ### Reglas sobre dependencias
-- Usar solo las dependencias declaradas. Toda dependencia nueva (backend o frontend) se propone en el `design.md` de una especificación y se agrega solo después de que el equipo la apruebe. Esto incluye librerías como Lombok, MapStruct, springdoc-openapi, Flyway, Liquibase o Testcontainers. Testcontainers es una propuesta para las pruebas de integración PostgreSQL, no una dependencia aprobada todavía.
+- Usar solo las dependencias declaradas. Toda dependencia nueva se justifica en el `design.md` de una especificación. Testcontainers está adoptado en DP-TEC-04 para las pruebas PostgreSQL; las demás dependencias no incluidas en el stack requieren decisión documentada antes de agregarse.
 - No fijar versiones de dependencias que ya gestiona el parent de Spring Boot.
 
 ### Spring Boot 4.x
@@ -49,7 +49,7 @@ Spring Boot 4 trae Spring Framework 7, Spring Security 7, Hibernate 7 y Jackson 
 - `spring.config.import=optional:file:./.env[.properties]`: carga `backend/.env` relativo al directorio de trabajo. Por eso Maven se ejecuta desde `backend/`.
 - `spring.application.name=arise-backend`.
 - Datasource: `jdbc:postgresql://${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}?sslmode=require` con `org.postgresql.Driver`.
-- `spring.jpa.hibernate.ddl-auto=none`: Hibernate nunca crea ni modifica el esquema.
+- `spring.jpa.hibernate.ddl-auto=none` en el estado actual; al crear el esquema, se cambia a `validate` como se decidió en DP-TEC-03. Hibernate nunca crea ni modifica el esquema.
 - `spring.jpa.open-in-view=false`: la sesión de Hibernate no sigue abierta durante la serialización de la respuesta. Las relaciones perezosas se cargan dentro del servicio, en la transacción.
 - JWT: issuer, JWKS, algoritmo ES256 y audiencia `authenticated` (detalle en `security.md`).
 - Puerto: no configurado; Spring Boot usa 8080.
@@ -65,16 +65,17 @@ Plantilla versionada: `backend/.env.example`. Formato `CLAVE=valor`, sin comilla
 | `SUPABASE_DB_USERNAME` | Usuario del Session pooler |
 | `SUPABASE_DB_PASSWORD` | Contraseña de la base de datos (no la de la cuenta Supabase) |
 | `SUPABASE_URL` | URL base del proyecto; se usa para el issuer y el JWKS |
+| `CORS_ALLOWED_ORIGINS` | Orígenes frontend permitidos, separados por coma; valor local por defecto `http://localhost:5173` (DP-SEG-04) |
 
-Toda variable nueva se agrega a `.env.example` con un valor ficticio y se documenta en el README. Frontend (DP-TEC-01 aprobada): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` y `VITE_API_BASE_URL`, con valores ficticios en `frontend/.env.example` y documentación en README §10.6.
+Toda variable nueva se agrega a `.env.example` con un valor ficticio/default y se documenta en el README. Frontend (DP-TEC-01 aprobada): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` y `VITE_API_BASE_URL`, con valores ficticios en `frontend/.env.example` y documentación en README §11.6.
 
 ## Base de datos
-- Una única instancia de Supabase PostgreSQL, con separación lógica por tablas y relaciones [Aprobado].
-- El esquema cambia solo mediante migraciones SQL versionadas en `supabase/migrations/` [Aprobado]. La carpeta está vacía; todavía no hay tablas de negocio.
+- Una única instancia de Supabase PostgreSQL; datos de negocio y perfiles en el esquema privado `app` (DP-ARQ-02).
+- El esquema cambia solo mediante migraciones SQL versionadas con Supabase CLI en `supabase/migrations/` (DP-TEC-03). Aún no hay tablas de negocio; el perfil se incorpora en `001-foundation`.
 - Las restricciones (PK, FK, UNIQUE, NOT NULL, CHECK) se definen en PostgreSQL y las validaciones se repiten en el backend (NF-03).
-- Herramienta y nomenclatura de migraciones: DP-TEC-03.
+- Migraciones versionadas con Supabase CLI, `<timestamp>_<nombre>.sql`; cada cambio se revisa, se aplica primero de forma controlada a `arise-corp-dev` y se conserva como historial. `spring.jpa.hibernate.ddl-auto=validate` detecta discrepancias, nunca modifica el esquema (DP-TEC-03).
 
-## Pruebas [Aprobado como requisito; herramientas específicas parcialmente pendientes]
+## Pruebas [Aprobado]
 
 ### Backend
 - Deben existir pruebas unitarias para servicios, reglas de negocio, validaciones y componentes aislables.
@@ -82,7 +83,7 @@ Toda variable nueva se agrega a `.env.example` con un valor ficticio y se docume
 - Sebastián es responsable principal de las pruebas de integración con PostgreSQL: deben comprobar persistencia JPA, relaciones, restricciones, migraciones y transacciones con una instancia PostgreSQL aislada o efímera.
 - No ejecutar pruebas destructivas sobre la base compartida `arise-corp-dev`, ni utilizar sus credenciales en CI.
 - La estrategia aprobada DP-TEC-02 mantiene un perfil de pruebas aislado con H2 para pruebas de contexto/rápidas. H2 no reemplaza las pruebas de integración contra PostgreSQL real.
-- Testcontainers con PostgreSQL es la opción recomendada para las pruebas de integración automatizadas, pero su incorporación requiere resolver DP-TEC-04 y aprobar la dependencia.
+- Las pruebas de integración automatizadas usan PostgreSQL efímero con Testcontainers; H2 se mantiene para pruebas rápidas/contexto y no sustituye PostgreSQL (DP-TEC-04).
 
 ### Frontend
 - Deben existir pruebas unitarias de componentes, hooks, validaciones y servicios según corresponda.
@@ -133,17 +134,15 @@ docker compose build backend
 docker compose up backend
 ```
 
-Frontend, desde `frontend/` (Node.js 24 LTS >=24.14.0 y <25, npm 11): `npm ci`, `npm run dev` (puerto 5173 estricto), `npm test`, `npm run build`, `npm run check:secrets` y `npm run preview`. Detalle y variables públicas en README §10.6.
+Frontend, desde `frontend/` (Node.js 24 LTS >=24.14.0 y <25, npm 11): `npm ci`, `npm run dev` (puerto 5173 estricto), `npm test`, `npm run build`, `npm run check:secrets` y `npm run preview`. Detalle y variables públicas en README §11.6.
 
 ## Requisitos del entorno de desarrollo
-Git, JDK 21, Docker Engine o Docker Desktop con Docker Compose, acceso al repositorio de GitHub y al proyecto Supabase `arise-corp-dev`, y PowerShell en Windows (README §5). Para el frontend, Node.js en una versión LTS compatible con Vite.
-
-## Decisiones pendientes de aprobación
-- **DP-TEC-03** Migraciones: (a) Supabase CLI (`supabase migration new <nombre>`, archivos `<timestamp>_<nombre>.sql`; el `.gitignore` ya excluye `supabase/.temp/`, que genera la CLI); (b) archivos SQL aplicados manualmente con una nomenclatura acordada. Definir también quién aplica las migraciones en `arise-corp-dev` y si `spring.jpa.hibernate.ddl-auto` pasa de `none` a `validate` para detectar al arrancar diferencias entre las entidades y el esquema.
+Git, JDK 21, Docker Engine o Docker Desktop con Docker Compose, acceso al repositorio de GitHub y al proyecto Supabase `arise-corp-dev`, y PowerShell en Windows (README §11.1). Para el frontend, Node.js en una versión LTS compatible con Vite.
 
 ## Decisiones aprobadas
-- **DP-TEC-01** Inicialización del frontend aprobada por Paula el 2026-11-07: JavaScript, npm 11, Node.js 24 LTS, React/Vite/Tailwind CSS, React Router DOM, Supabase JS, `fetch` nativo y Vitest/React Testing Library. Versiones en `frontend/package.json` y `package-lock.json`, configuración pública en `frontend/.env.example`; decisión concreta en `001-foundation/design.md`, D5. La tarea 4 implementa la base y las tareas 5–11 completan autenticación y perfil; la comprobación con una cuenta real es manual.
+- **DP-TEC-01** Inicialización del frontend aprobada por Paula el 2026-11-07: JavaScript, npm 11, Node.js 24 LTS, React/Vite/Tailwind CSS, React Router DOM, Supabase JS, `fetch` nativo y Vitest/React Testing Library. Versiones en `frontend/package.json` y `package-lock.json`, configuración pública en `frontend/.env.example`; decisión concreta en `001-foundation/design.md`, D5. Las tareas 4–14 de `001-foundation` ya implementaron y verificaron la base, login y perfil; la comprobación con una cuenta real sigue como tarea manual abierta.
 - **DP-TEC-02** Estrategia de pruebas unitarias/contexto del backend: perfil de pruebas en `src/test/resources` con H2 (ya declarado) y valores ficticios para las propiedades de JWT, más pruebas de controladores con JWT simulado. Esta decisión no sustituye las pruebas de integración PostgreSQL.
 
-## Decisiones pendientes de aprobación
-- **DP-TEC-04** Tecnología para pruebas de integración PostgreSQL: propuesta principal Testcontainers con PostgreSQL efímero para que las pruebas sean reproducibles en local y GitHub Actions. Alternativa: una base PostgreSQL aislada y dedicada a pruebas. No utilizar `arise-corp-dev` compartida para pruebas automáticas.
+## Decisiones adoptadas
+- **DP-TEC-03:** Supabase CLI crea migraciones SQL con nombre `<timestamp>_<nombre>.sql`. Davidson las prepara y aplica de forma controlada en `arise-corp-dev` tras el merge; otro integrante las revisa antes de su aplicación. Nunca se editan migraciones aplicadas. `ddl-auto=validate`; no se usa `update` ni `create`.
+- **DP-TEC-04:** Testcontainers con PostgreSQL para la suite de integración automatizada en local y CI. H2 queda para contexto/pruebas rápidas. No conectar las pruebas a `arise-corp-dev` ni usar sus credenciales.

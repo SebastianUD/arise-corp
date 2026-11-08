@@ -26,9 +26,9 @@ arise-corp/
 │       │   └── templates/                       # vacío; no se usa
 │       └── test/java/com/arise/corp/
 │           ├── AriseBackendApplicationTests.java
-│           ├── unit/                         # pruebas unitarias (organización propuesta)
-│           └── integration/                  # pruebas PostgreSQL (organización propuesta)
-├── frontend/                                # React; inicialización y tests pendientes [Aprobado]
+│           ├── unit/                         # pruebas unitarias
+│           └── integration/                  # pruebas PostgreSQL
+├── frontend/                                # React + Vite; login/perfil y pruebas implementados
 ├── supabase/migrations/                     # migraciones SQL versionadas              [Aprobado]
 ├── .github/workflows/                       # workflows CI de GitHub Actions           [Aprobado; por crear]
 │   ├── backend-ci.yml                       # CI backend y build de Docker (propuesto)
@@ -37,7 +37,7 @@ arise-corp/
 ├── docker-compose.yml                       # ejecución local de servicios del proyecto [Aprobado; por crear]
 ├── docs/def_MVP/MVP_Arise_Corp.md           # definición del MVP
 ├── .kiro/steering/                          # reglas permanentes (estos archivos)
-├── .kiro/specs/                             # especificaciones SDD; aún no existe       [Aprobado]
+├── .kiro/specs/                             # especificaciones SDD versionadas
 ├── .gitignore
 └── README.md
 ```
@@ -49,7 +49,7 @@ arise-corp/
 ### Organización de paquetes
 - Actual [Implementado]: paquetes por capa técnica en la raíz: `com.arise.corp.config` y `com.arise.corp.controller`.
 - Objetivo [Aprobado, MVP §9 y NF-04]: monolito modular con los módulos `login`, `crm`, `erp` y `sga`, y separación Controller → Service → Repository dentro de cada módulo.
-- Distribución concreta de paquetes: DP-EST-01. Propuesta:
+- Distribución adoptada (DP-EST-01):
 
 ```text
 com.arise.corp
@@ -67,19 +67,19 @@ com.arise.corp
 └── sga/              # misma estructura que crm
 ```
 
-- No mover `SecurityConfig` ni `AuthController` sin aprobación. La especificación que cree el primer módulo debe resolver DP-EST-01 en su `design.md`.
+- La decisión DP-EST-01 sitúa `AuthController` en `login.controller`; `SecurityConfig` permanece en `config`. La reubicación del controlador queda como tarea de implementación de `001-foundation`.
 
 ### Nombres de clases y archivos
 - Observado [Implementado]: PascalCase con sufijo de rol (`AuthController`, `SecurityConfig`). Las pruebas usan el sufijo `Tests` (`AriseBackendApplicationTests`) y están en el mismo paquete que la clase probada.
-- Sufijos para servicios, repositorios y DTO: DP-EST-01. Idioma de los nombres de dominio: DP-EST-02.
+- Sufijos: `*Controller`, `*Service`, `*Repository`, `*Request`, `*Response`; entidades sin sufijo. Los nombres de dominio y de API usan español (DP-EST-01/02).
 
 ### Estilo de código observado
-- Indentación inconsistente: `AriseBackendApplication.java` y `AriseBackendApplicationTests.java` usan tabulaciones (generadas por Spring Initializr); `SecurityConfig.java` y `AuthController.java` usan 4 espacios. No hay `.editorconfig` ni formateador configurado (DP-EST-03).
+- El código nuevo usa 4 espacios, inyección por constructor y DTO `record` cuando corresponda. Se añade `.editorconfig`; código existente se normaliza al tocarlo, sin refactor ajeno al alcance (DP-EST-03).
 - `@Bean` en clases `@Configuration` y DSL de lambdas para `HttpSecurity`.
 - Comentarios y encabezados de sección de `application.properties` en español.
 
 ## Frontend [Aprobado, MVP §9]
-React organizará el código en páginas, componentes compartidos, rutas y servicios HTTP dentro de `frontend/src/` (README §4). Las vistas previstas son Login, Dashboard, CRM, ERP y SGA. Distribución concreta de carpetas: DP-EST-04. Propuesta:
+React organizará el código en páginas, componentes compartidos, rutas y servicios HTTP dentro de `frontend/src/` (README §5). Las vistas previstas son Login, Dashboard, CRM, ERP y SGA. Distribución adoptada y ya inicializada:
 
 ```text
 frontend/
@@ -100,8 +100,8 @@ frontend/
 - No incluir archivos `.env` ni secretos dentro de la imagen Docker, del contexto de construcción ni en archivos YAML versionados.
 
 ## Pruebas
-- Backend: pruebas unitarias en `backend/src/test/java/`; pruebas de integración con PostgreSQL aislado/efímero. La estructura exacta de paquetes se define en DP-EST-05.
-- Frontend: pruebas unitarias y de integración junto a los componentes o bajo una carpeta `tests/`, según se apruebe al inicializar el frontend (DP-EST-04).
+- Backend: pruebas unitarias en `backend/src/test/java/`; pruebas de integración con PostgreSQL aislado/efímero. Las pruebas unitarias usan el paquete `unit` y sufijo `Tests`; las pruebas PostgreSQL usan `integration`, sufijo `IT` y Maven Failsafe (DP-EST-05).
+- Frontend: pruebas unitarias y de integración junto a los componentes o bajo una carpeta `tests/`, junto a los módulos bajo `frontend/src/`.
 - Los workflows de GitHub Actions ejecutan los comandos de prueba documentados por cada proyecto.
 
 ## Dónde va cada cosa
@@ -115,16 +115,16 @@ frontend/
 | Seguridad, CORS u otra configuración transversal | `com.arise.corp.config` |
 | Nueva variable de entorno | `backend/.env.example` con valor ficticio y documentación en el README |
 | Prueba unitaria del backend | `backend/src/test/java/com/arise/corp/...` |
-| Prueba de integración PostgreSQL | `backend/src/test/java/com/arise/corp/...` (paquetes por definir en DP-EST-05) |
-| Prueba unitaria/de integración frontend | `frontend/src/` o `frontend/tests/` (DP-EST-04) |
+| Prueba de integración PostgreSQL | `backend/src/test/java/com/arise/corp/...` (`integration/*IT`) |
+| Prueba unitaria/de integración frontend | `frontend/src/` o `frontend/tests/` |
 | Dockerfile y exclusiones | `backend/Dockerfile`, `backend/.dockerignore` |
 | Orquestación local de contenedores | `docker-compose.yml` |
 | Automatización CI | `.github/workflows/` |
 | Documentación funcional | `docs/` |
 
-## Decisiones pendientes de aprobación
-- **DP-EST-01** Organización de paquetes del backend: confirmar la propuesta por módulo, la ubicación del código transversal (`config/`, `shared/`), si `AuthController` pasa al módulo `login`, y los sufijos de clases (propuesta: `*Controller`, `*Service`, `*Repository`; DTO `*Request` y `*Response`; entidades sin sufijo).
-- **DP-EST-02** Idioma de los nombres: clases de dominio, tablas y columnas, rutas REST, campos JSON, valores de enumeraciones y textos de la interfaz. El código actual usa inglés para lo técnico (`AuthController`, `/api/me`), y los ejemplos de ramas del README usan español (`feat/crm-clientes`). Recomendación: sufijos técnicos en inglés (convención de Spring) y nombres de dominio en español, iguales al vocabulario del MVP (`Cliente`, `Contrato`, `Paquete`, `Dron`; `ClienteService`; `/api/crm/clientes`). Textos de la interfaz y mensajes de error dirigidos al usuario en español.
-- **DP-EST-03** Estándar de estilo de código: indentación (recomendación: 4 espacios en Java, unificando los archivos con tabulaciones), archivo `.editorconfig`, inyección de dependencias por constructor (sin `@Autowired` en campos) y DTO como `record` de Java.
-- **DP-EST-04** Estructura de carpetas del frontend: confirmar la propuesta anterior al inicializar `frontend/`, incluida la ubicación de pruebas unitarias y de integración.
-- **DP-EST-05** Organización de pruebas backend: confirmar si se separan paquetes `unit/` e `integration/`, convenciones de nombres (`*Test`/`*IT`) y uso de perfiles de prueba. Propuesta: pruebas unitarias separadas de pruebas PostgreSQL de integración para permitir que CI ejecute cada suite de forma independiente.
+## Decisiones adoptadas
+- **DP-EST-01:** paquetes por módulo (`login`, `crm`, `erp`, `sga`), cada uno con capas `controller`, `service`, `repository`, `entity`, `dto`; `config` para seguridad transversal y `shared` para errores/utilidades comunes. `AuthController` pasa a `login.controller`; `SecurityConfig` sigue en `config`. Sufijos: `*Controller`, `*Service`, `*Repository`, `*Request`, `*Response`; entidades sin sufijo.
+- **DP-EST-02:** documentación y textos de interfaz en español. Nombres de dominio, tablas, columnas, rutas, JSON y enums en español y con términos del MVP; nombres técnicos de framework/clases utilitarias en inglés según convención (`SecurityConfig`, `Controller`). JSON camelCase; tablas/columnas snake_case.
+- **DP-EST-03:** 4 espacios, `.editorconfig`, inyección por constructor y DTO `record` en Java 21 cuando sean DTO de datos; no reformatear archivos completos salvo que sea parte de la tarea.
+- **DP-EST-04:** frontend organizado en `src/pages`, `components`, `routes`, `services`, `context`, `lib` y `test`; pruebas junto al módulo o archivo bajo `src/` con Vitest y Testing Library, siguiendo la estructura existente.
+- **DP-EST-05:** pruebas backend bajo `src/test/java/com/arise/corp/unit` y `integration`; unitarias/contexto con sufijo `Tests` se ejecutan en Surefire, integración PostgreSQL con sufijo `IT` se ejecuta en Failsafe y perfil aislado, con Testcontainers según DP-TEC-04.
