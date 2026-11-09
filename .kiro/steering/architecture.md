@@ -16,8 +16,8 @@ Etiquetas de estado: ver `product.md`. El diagrama general de componentes está 
 |---|---|---|---|
 | SPA React (Vite, Tailwind CSS, React Router) | Login, perfil, navegación y rutas protegidas, sesión, formularios y llamadas autenticadas a la API | Leer o escribir tablas de negocio en Supabase; decidir permisos por sí sola; contener reglas de negocio | [Implementado] para login/perfil; módulos funcionales pendientes |
 | Supabase Auth | Inicio y cierre de sesión, emisión y renovación de JWT (ES256), publicación de las claves públicas (JWKS) | Almacenar datos de negocio | [Implementado] e integrado en el frontend; falta validación manual real |
-| API Spring Boot | Validar JWT, autorizar por rol, validar entradas, reglas de negocio, transacciones y persistencia | Renderizar vistas; delegar permisos al frontend | JWT y `/api/me` implementados; perfiles y autorización empresarial pendientes |
-| Supabase PostgreSQL | Persistencia e integridad relacional | Ser modificado por Hibernate; exponer tablas de negocio al frontend | [Implementada] la conexión; tablas de negocio y perfil pendientes |
+| API Spring Boot | Validar JWT, autorizar por rol, validar entradas, reglas de negocio, transacciones y persistencia | Renderizar vistas; delegar permisos al frontend | JWT, `/api/me`, perfil, autorización por rol, administración de perfiles y Problem Details implementados (tareas 15–18) |
+| Supabase PostgreSQL | Persistencia e integridad relacional | Ser modificado por Hibernate; exponer tablas de negocio al frontend | [Implementada] la conexión y `app.perfiles_usuario`; tablas de negocio pendientes |
 
 ## Flujo de una petición autenticada
 ```mermaid
@@ -41,7 +41,7 @@ sequenceDiagram
     API-->>FE: Respuesta JSON y código HTTP
 ```
 
-- Estado: [Implementado] el login/perfil frontend y validación JWT hasta `GET /api/me`. Perfil/rol empresarial y autorización por rol están decididos y son tareas abiertas de `001-foundation`; datos de negocio se construyen en specs posteriores.
+- Estado: [Implementado] el login/perfil frontend, la validación JWT hasta `GET /api/me`, el perfil empresarial, la autorización por rol, la administración de perfiles y Problem Details. Mostrar el rol en el perfil y la verificación manual con Supabase real siguen abiertos en `001-foundation` (tareas 19–20); datos de negocio se construyen en specs posteriores.
 - El backend no guarda sesión (`SessionCreationPolicy.STATELESS`): cada petición se autentica solo con su JWT.
 
 ## Capas del backend [Aprobado, MVP §9]

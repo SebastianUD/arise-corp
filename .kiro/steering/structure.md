@@ -18,18 +18,30 @@ arise-corp/
 │   └── src/
 │       ├── main/java/com/arise/corp/
 │       │   ├── AriseBackendApplication.java     # clase principal (@SpringBootApplication)
-│       │   ├── config/SecurityConfig.java       # cadena de filtros, validación JWT y CORS
-│       │   └── controller/AuthController.java   # GET /api/me
+│       │   ├── config/
+│       │   │   ├── SecurityConfig.java          # cadena de filtros, matriz de roles y CORS
+│       │   │   └── PerfilJwtAuthenticationConverter.java # JWT → ROLE_<ROL> del perfil activo
+│       │   └── login/                           # perfil y rol del usuario autenticado
+│       │       ├── controller/
+│       │       │   ├── AuthController.java      # GET /api/me
+│       │       │   └── AdminPerfilController.java # PUT/PATCH /api/admin/usuarios/{id}
+│       │       ├── entity/                      # PerfilUsuario y RolUsuario
+│       │       ├── repository/                  # PerfilUsuarioRepository y UsuarioAuthRepository
+│       │       ├── service/                     # PerfilUsuarioService y ResultadoPerfil
+│       │       └── dto/                         # MeResponse, PerfilRequest, EstadoPerfilRequest, PerfilUsuarioResponse
+│       └── shared/error/                        # Problem Details y handlers comunes
 │       ├── main/resources/
 │       │   ├── application.properties
 │       │   ├── static/                          # vacío; no se usa
 │       │   └── templates/                       # vacío; no se usa
 │       └── test/java/com/arise/corp/
 │           ├── AriseBackendApplicationTests.java
+│           ├── config/                       # pruebas del converter de autorización
+│           ├── login/                        # pruebas de /api/me, admin y matriz de módulos
 │           ├── unit/                         # pruebas unitarias
 │           └── integration/                  # pruebas PostgreSQL
 ├── frontend/                                # React + Vite; login/perfil y pruebas implementados
-├── supabase/migrations/                     # migraciones SQL versionadas              [Aprobado]
+├── supabase/migrations/                     # migración app.perfiles_usuario           [Implementado]
 ├── .github/workflows/                       # workflows CI de GitHub Actions           [Aprobado; por crear]
 │   ├── backend-ci.yml                       # CI backend y build de Docker (propuesto)
 │   ├── frontend-ci.yml                      # CI frontend (propuesto)
@@ -47,7 +59,7 @@ arise-corp/
 
 ## Backend
 ### Organización de paquetes
-- Actual [Implementado]: paquetes por capa técnica en la raíz: `com.arise.corp.config` y `com.arise.corp.controller`.
+- Actual [Implementado]: `com.arise.corp.config` para seguridad transversal y el módulo `com.arise.corp.login` con capas `controller`, `entity`, `repository`, `service` y `dto`.
 - Objetivo [Aprobado, MVP §9 y NF-04]: monolito modular con los módulos `login`, `crm`, `erp` y `sga`, y separación Controller → Service → Repository dentro de cada módulo.
 - Distribución adoptada (DP-EST-01):
 
@@ -67,7 +79,7 @@ com.arise.corp
 └── sga/              # misma estructura que crm
 ```
 
-- La decisión DP-EST-01 sitúa `AuthController` en `login.controller`; `SecurityConfig` permanece en `config`. La reubicación del controlador queda como tarea de implementación de `001-foundation`.
+- La decisión DP-EST-01 sitúa `AuthController` y `AdminPerfilController` en `login.controller`; `SecurityConfig` y `PerfilJwtAuthenticationConverter` permanecen en `config`. El perfil empresarial, la autorización por rol y la administración de perfiles ya están implementados (tareas 16–17 de `001-foundation`). `UsuarioAuthRepository` consulta `auth.users` para validar que la identidad exista antes de crear un perfil.
 
 ### Nombres de clases y archivos
 - Observado [Implementado]: PascalCase con sufijo de rol (`AuthController`, `SecurityConfig`). Las pruebas usan el sufijo `Tests` (`AriseBackendApplicationTests`) y están en el mismo paquete que la clase probada.

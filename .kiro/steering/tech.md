@@ -9,7 +9,7 @@ Etiquetas de estado: ver `product.md`. Las reglas de seguridad están en `securi
 | Framework backend | Spring Boot | 4.1.2 (`spring-boot-starter-parent`) | [Implementado] |
 | Build | Maven Wrapper | wrapper 3.3.4, Maven 3.10.0 (`backend/.mvn/wrapper/maven-wrapper.properties`) | [Implementado] |
 | API | Spring Web MVC | gestionada por Spring Boot | [Implementado] |
-| Persistencia | Spring Data JPA / Hibernate | gestionada por Spring Boot | Dependencia [Implementado]; aún sin entidades |
+| Persistencia | Spring Data JPA / Hibernate | gestionada por Spring Boot | Dependencia [Implementado: entidad de perfil empresarial] |
 | Seguridad | Spring Security + OAuth2 Resource Server | gestionada por Spring Boot | [Implementado] |
 | Validación | Bean Validation (`spring-boot-starter-validation`) | gestionada por Spring Boot | Dependencia [Implementado]; aún sin uso |
 | Base de datos | Supabase PostgreSQL vía JDBC y Session pooler | proyecto Supabase `arise-corp-dev` | [Implementado] |
@@ -49,7 +49,7 @@ Spring Boot 4 trae Spring Framework 7, Spring Security 7, Hibernate 7 y Jackson 
 - `spring.config.import=optional:file:./.env[.properties]`: carga `backend/.env` relativo al directorio de trabajo. Por eso Maven se ejecuta desde `backend/`.
 - `spring.application.name=arise-backend`.
 - Datasource: `jdbc:postgresql://${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}?sslmode=require` con `org.postgresql.Driver`.
-- `spring.jpa.hibernate.ddl-auto=none` en el estado actual; al crear el esquema, se cambia a `validate` como se decidió en DP-TEC-03. Hibernate nunca crea ni modifica el esquema.
+- `spring.jpa.hibernate.ddl-auto=validate`: Hibernate valida la entidad contra las migraciones y nunca crea ni modifica el esquema (DP-TEC-03). `spring.jpa.properties.hibernate.default_schema=app` sitúa las entidades en el esquema privado (DP-ARQ-02).
 - `spring.jpa.open-in-view=false`: la sesión de Hibernate no sigue abierta durante la serialización de la respuesta. Las relaciones perezosas se cargan dentro del servicio, en la transacción.
 - JWT: issuer, JWKS, algoritmo ES256 y audiencia `authenticated` (detalle en `security.md`).
 - Puerto: no configurado; Spring Boot usa 8080.
@@ -71,7 +71,7 @@ Toda variable nueva se agrega a `.env.example` con un valor ficticio/default y s
 
 ## Base de datos
 - Una única instancia de Supabase PostgreSQL; datos de negocio y perfiles en el esquema privado `app` (DP-ARQ-02).
-- El esquema cambia solo mediante migraciones SQL versionadas con Supabase CLI en `supabase/migrations/` (DP-TEC-03). Aún no hay tablas de negocio; el perfil se incorpora en `001-foundation`.
+- El esquema cambia solo mediante migraciones SQL versionadas con Supabase CLI en `supabase/migrations/` (DP-TEC-03). El perfil empresarial (`app.perfiles_usuario`) se creó en `001-foundation`; las tablas de CRM, ERP y SGA llegan en sus propias specs.
 - Las restricciones (PK, FK, UNIQUE, NOT NULL, CHECK) se definen en PostgreSQL y las validaciones se repiten en el backend (NF-03).
 - Migraciones versionadas con Supabase CLI, `<timestamp>_<nombre>.sql`; cada cambio se revisa, se aplica primero de forma controlada a `arise-corp-dev` y se conserva como historial. `spring.jpa.hibernate.ddl-auto=validate` detecta discrepancias, nunca modifica el esquema (DP-TEC-03).
 

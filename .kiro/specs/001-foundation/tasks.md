@@ -2,14 +2,14 @@
 
 ## Overview
 
-Este plan convierte el diseño aprobado de `001-foundation` (integración vertical de autenticación) en tareas de código pequeñas e incrementales. El backend ya tiene implementados `SecurityConfig`, `AuthController` (`GET /api/me`), la configuración JWT de `application.properties` y `backend/.env.example`; por eso se verifican con pruebas; solo se corrige el mapeo de claims opcionales de `/api/me` para cumplir 5.5. El frontend React incluye el flujo de autenticación y perfil. La autorización por rol, el formato uniforme de errores y la validación manual real se añaden como trabajo abierto tras consolidar las decisiones.
+Este plan convierte el diseño aprobado de `001-foundation` (integración vertical de autenticación) en tareas de código pequeñas e incrementales. Las tareas 1–18 implementan el flujo frontend, la autenticación JWT, el perfil empresarial y su administración, la autorización por rol y los errores RFC 9457. La validación con una cuenta real de Supabase y el cierre de fase siguen pendientes (tareas 19–21).
 
 Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiertas reflejan trabajo necesario tras las decisiones ya adoptadas.
 
 ### Notas de alcance (del diseño aprobado)
 
 - **No se aplican pruebas basadas en propiedades (PBT).** El diseño justifica que la validación de JWT está delegada a Spring Security, el mapeo de claims a JSON es simple y el resto es comportamiento de UI; se usan pruebas por ejemplo (unitarias) e integración.
-- **Perfil empresarial y autorización por rol son Must** (AUTH-04); las tareas 15–21 completan el perfil, permisos, errores y validación pendiente.
+- **Perfil empresarial y autorización por rol son Must** (AUTH-04); se implementaron en las tareas 15–17. La tarea 18 uniforma errores. Las tareas 19–21 completan la presentación del rol, la validación manual y el checkpoint final.
 - **No se añaden dependencias de backend nuevas**: lo necesario ya está en `backend/pom.xml` (scope `test`: `spring-boot-starter-webmvc-test`, `spring-boot-starter-security-test`, `spring-boot-starter-security-oauth2-resource-server-test`, `h2`).
 - **DP-TEC-01 aprobada por Paula el 2026-11-07.** Se confirma la propuesta de JavaScript, Vite, React, Tailwind CSS, React Router, Supabase JS, fetch nativo y Vitest + React Testing Library. Versiones concretas en D5 de `design.md` y `frontend/package-lock.json`.
 
@@ -149,21 +149,21 @@ Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiert
   - Documentar que el primer Administrador se aprovisiona manualmente por un integrante autorizado después de crear su cuenta Auth; no guardar secretos en el repo.
   - _Requisitos: AUTH-04, NF-01, NF-03, NF-05_
 
-- [ ] 16. Implementar el perfil en backend y completar `GET /api/me` (DP-EST-01, DP-EST-03)
+- [x] 16. Implementar el perfil en backend y completar `GET /api/me` (DP-EST-01, DP-EST-03)
   - Área: backend · Responsable: Sebastián
   - Mover `AuthController` a `login.controller`; crear entidad, repositorio, servicio y DTO `MeResponse` record bajo `login`. Añadir `.editorconfig` según DP-EST-03.
   - Obtener el perfil por `sub`; responder el rol empresarial, nunca el claim técnico Supabase. Perfil inexistente/inactivo → 403. Hacer configurable CORS por `CORS_ALLOWED_ORIGINS`, valor local `http://localhost:5173` (DP-SEG-04).
   - Actualizar pruebas de `/api/me` para identidad y rol real simulado.
   - _Requisitos: AUTH-04, CA-02_
 
-- [ ] 17. Aplicar autorización y administración de perfiles (DP-PRO-01, DP-SEG-02)
+- [x] 17. Aplicar autorización y administración de perfiles (DP-PRO-01, DP-SEG-02)
   - Área: backend · Responsable: Sebastián
   - Aplicar denegación por defecto y matriz definida en `.kiro/steering/product.md` en `SecurityFilterChain` y servicios; Admin crea/actualiza perfiles mediante `PUT /api/admin/usuarios/{id}/perfil` (201/200) y activa/desactiva mediante `PATCH /api/admin/usuarios/{id}/estado`.
   - Permitir solo las lecturas cruzadas mínimas de ERP-05 y SGA-05. Un rol distinto del requerido recibe 403 sin ejecutar la operación.
   - Añadir pruebas de 401, 403 (sin perfil, inactivo y rol incorrecto) y acceso permitido; incluir perfiles simulados y nunca tokens Supabase reales.
   - _Requisitos: AUTH-04, NF-02, NF-07, CA-03_
 
-- [ ] 18. Uniformar errores de API y seguridad (DP-API-02)
+- [x] 18. Uniformar errores de API y seguridad (DP-API-02)
   - Área: backend · Responsable: Sebastián
   - Implementar `@RestControllerAdvice`, `AuthenticationEntryPoint` y `AccessDeniedHandler` con RFC 9457 Problem Details; conservar `WWW-Authenticate` en 401 y extensión `errors` para validaciones por campo.
   - Actualizar pruebas backend y manejo de `apiClient`/pruebas frontend para formato acordado, conservando el tratamiento actual de 401 y 403.
@@ -190,8 +190,8 @@ Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiert
 ## Notes
 
 - Las tareas marcadas con `*` identifican pruebas/verificaciones de detalle; no se omiten cuando cubren NF-07, CA-03 o el Definition of Done.
-- Las tareas 1–14 están implementadas; las tareas 15–21 son el trabajo restante para cerrar la primera fase tras adoptar las decisiones.
-- Las tareas de perfil/migración/autorización (15–18) preceden a la validación real; frontend (19) puede prepararse contra contratos simulados.
+- Las tareas 1–18 están implementadas; quedan 19–21 para mostrar y probar el rol en el frontend, validar Supabase real y cerrar la primera fase.
+- El esquema/perfil (15), backend `/api/me` (16), autorización/administración (17) y Problem Details (18) están implementados; el perfil frontend todavía no muestra el rol (19).
 - No se incluyen pruebas basadas en propiedades (PBT): la validación JWT se delega a Spring Security y el mapeo/reglas se cubren con pruebas por ejemplo.
 - La validación extremo a extremo con un usuario real contra Supabase se realiza de forma manual y controlada (fuera de estas tareas de código y de CI, para no depender de `arise-corp-dev`), según el diseño y el Requirement 10.
 - Cada tarea referencia los requisitos de `requirements.md` para trazabilidad.
@@ -233,6 +233,29 @@ Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiert
 - Logo original descargado a `frontend/public/assets/arise-logo.png`; fuentes Inter locales con licencia OFL. Sin dependencias nuevas.
 - Verificación en navegador: referencia 1440 × 960 (formulario x=818, y=226, 508 × 555), tablet 768 y móvil 390 sin desbordamiento horizontal. Logo cargado en su posición y proporción; validación de campos vacíos visible.
 - `npm test`: 25 pruebas aprobadas. `npm run build` y `npm run check:secrets`: correctos. Build y revisión visual con configuración pública ficticia; no se prueba una cuenta real ni se modifica el perfil para el que el nodo no proporciona diseño.
+
+### Verificación de la tarea 16 — 2026-11-08
+
+- `AuthController` se movió a `login.controller`; se añadieron `PerfilUsuario`, `RolUsuario`, `PerfilUsuarioRepository`, `PerfilUsuarioService` y el DTO `MeResponse` bajo `login`, con `.editorconfig` en la raíz.
+- `GET /api/me` resuelve el perfil por el `sub` del JWT y devuelve el rol empresarial del perfil activo; el claim técnico `role` se ignora. Perfil ausente o inactivo → 403.
+- CORS lee `CORS_ALLOWED_ORIGINS` (valor local por defecto `http://localhost:5173`) y se documentó en `.env.example` y README.
+- `.\mvnw.cmd test`: 21 pruebas aprobadas, incluidas identidad/rol simulado, 403 por perfil ausente/inactivo y CORS permitido/denegado, sin tokens reales ni la base compartida.
+
+### Verificación de la tarea 17 — 2026-11-08
+
+- `PerfilJwtAuthenticationConverter` deriva `ROLE_<ROL>` del perfil activo y nunca del claim técnico de Supabase; un JWT válido sin perfil activo queda sin authorities y recibe 403 en rutas con rol.
+- `SecurityConfig` aplica la matriz: Administrador en todos los módulos; Comercial en CRM; Finanzas/RRHH en ERP; Operaciones en SGA. Las lecturas cruzadas se limitan a clientes del CRM para Finanzas y Operaciones, y contratos del CRM para Operaciones (ERP-05, SGA-05).
+- `PUT /api/admin/usuarios/{id}/perfil` crea (201 + `Location`) o actualiza el rol (200); `PATCH /api/admin/usuarios/{id}/estado` activa/desactiva (200). Identidad inexistente en Auth → 404; solicitudes inválidas → 400; roles distintos de Administrador → 403.
+- `.\mvnw.cmd test`: 51 pruebas aprobadas, con 401, 403 por perfil ausente/inactivo/rol incorrecto y accesos permitidos para los cuatro roles, usando perfiles persistidos en H2 y JWT simulados.
+
+### Verificación de la tarea 18 — 2026-11-08
+
+- `shared/error` incorpora `GlobalExceptionHandler`, `ProblemDetailsWriter`, `RestAuthenticationEntryPoint`, `RestAccessDeniedHandler` y `RecursoNoEncontradoException`. Todos los errores de API y seguridad responden `application/problem+json` con `type`, `title`, `status`, `detail` e `instance`.
+- El 401 conserva `WWW-Authenticate` y se aplica tanto en la cadena de seguridad como en el `BearerTokenAuthenticationFilter` mediante `oauth2ResourceServer().authenticationEntryPoint(...)`; el 403 cubre denegaciones de ruta y de servicio. Las validaciones por campo añaden la extensión `errors` con `field` y `message`.
+- Los 400 por JSON inválido, 404 de recursos de negocio, 405 y 409 usan el mismo formato. Los 500 devuelven un mensaje genérico y no exponen trazas, SQL ni detalles internos.
+- `apiClient` expone `problem`, `title`, `detail` y `errors` de los 4xx, descarta detalles no confiables, mantiene el cierre de sesión en 401 y el mensaje fijo en 403, y nunca lee el cuerpo de un 5xx.
+- `.\mvnw.cmd test`: 58 pruebas aprobadas. `npm test` en `frontend/`: 30 pruebas aprobadas, sin tokens reales de Supabase ni acceso a la base compartida.
+
 
 ### Ajuste responsive del acceso
 

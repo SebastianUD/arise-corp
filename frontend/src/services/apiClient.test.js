@@ -60,7 +60,72 @@ it('limita también una lectura de sesión bloqueada y no envía el token despu�
   expect(fetch).not.toHaveBeenCalled()
 })
 
-it('no expone el cuerpo interno de errores del backend', async () => {
-  fetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({ trace: 'private details' }) })
+it('expone el detalle seguro de Problem Details en errores 4xx', async () => {
+  const problem = {
+    type: 'about:blank',
+    title: 'Solicitud inválida',
+    status: 400,
+    detail: 'La solicitud contiene campos inválidos.',
+    instance: '/api/admin/usuarios',
+    errors: [{ field: 'rol', message: 'no debe estar vacío' }],
+  }
+  fetch.mockResolvedValue({ ok: false, status: 400, json: async () => problem })
+
+  await expect(apiRequest('/api/me')).rejects.toMatchObject({
+    status: 400,
+    title: 'Solicitud inválida',
+    detail: 'La solicitud contiene campos inválidos.',
+    errors: [{ field: 'rol', message: 'no debe estar vacío' }],
+    problem,
+  })
+})
+
+it('ignora el detalle no confiable de un 4xx y usa el mensaje genérico', async () => {
+  fetch.mockResolvedValue({
+    ok: false,
+    status: 422,
+    json: async () => ({ detail: 'x'.repeat(301) }),
+  })
   await expect(apiRequest('/api/me')).rejects.toThrow('No pudimos cargar tu información')
+})
+
+it('usa un mensaje genérico si el 4xx no trae un cuerpo Problem Details legible', async () => {
+  fetch.mockResolvedValue({
+    ok: false,
+    status: 400,
+    json: async () => { throw new Error('cuerpo inválido') },
+  })
+  await expect(apiRequest('/api/me')).rejects.toThrow('No pudimos cargar tu información')
+})
+
+it('en un 401 cierra la sesión local sin leer el cuerpo del backend', async () => {
+  const json = vi.fn().mockResolvedValue({ detail: 'token rechazado' })
+  fetch.mockResolvedValue({ ok: false, status: 401, json })
+
+  await expect(apiRequest('/api/me')).rejects.toMatchObject({ status: 401 })
+  expect(json).not.toHaveBeenCalled()
+  expect(signOut).toHaveBeenCalledWith({ scope: 'local' })
+})
+
+it('en un 403 conserva el mensaje fijo y no lee el cuerpo', async () => {
+  const json = vi.fn().mockResolvedValue({ detail: 'detalle interno' })
+  fetch.mockResolvedValue({ ok: false, status: 403, json })
+
+  await expect(apiRequest('/api/me')).rejects.toMatchObject({
+    status: 403,
+    message: 'No tienes permisos para consultar esta información.',
+  })
+  expect(json).not.toHaveBeenCalled()
+  expect(signOut).not.toHaveBeenCalled()
+})
+
+it('nunca lee el cuerpo interno de errores 5xx', async () => {
+  const json = vi.fn().mockResolvedValue({ trace: 'private details' })
+  fetch.mockResolvedValue({ ok: false, status: 500, json })
+
+  await expect(apiRequest('/api/me')).rejects.toMatchObject({
+    status: 500,
+    detail: undefined,
+  })
+  expect(json).not.toHaveBeenCalled()
 })

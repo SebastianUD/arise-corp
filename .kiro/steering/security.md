@@ -12,13 +12,13 @@ Etiquetas de estado: ver `product.md`. Los códigos HTTP y el formato de errores
 
 ## Autenticación y autorización
 - **Autenticación**: comprobar quién es el usuario. Supabase Auth inicia la sesión y emite el JWT; Spring Security verifica ese JWT en cada petición. Estado: [Implementado] en backend y frontend; pendiente validación manual con una cuenta real de Supabase.
-- **Autorización**: decidir qué puede hacer un usuario ya autenticado según el rol empresarial activo de su perfil. La aplica Spring Boot conforme a la matriz en `product.md`. En el código actual aún falta implementarla.
+- **Autorización**: decidir qué puede hacer un usuario ya autenticado según el rol empresarial activo de su perfil. La aplica Spring Boot conforme a la matriz en `product.md`. Estado: [Implementado] en `SecurityConfig` con un converter que deriva `ROLE_<ROL>` del perfil activo (tarea 17).
 
 ## Flujo de autenticación
 1. React inicia sesión contra Supabase Auth con `@supabase/supabase-js` (AUTH-01).
 2. Supabase Auth devuelve un access token JWT firmado con ES256 y un refresh token. `supabase-js` mantiene y renueva la sesión (AUTH-02).
 3. React envía `Authorization: Bearer <access_token>` en cada llamada a la API (AUTH-03).
-4. Spring Security valida el token y, cuando exista, aplica la autorización por rol (AUTH-04).
+4. Spring Security valida el token, resuelve el perfil activo y aplica la autorización por rol (AUTH-04).
 5. Al cerrar sesión, React llama a `signOut`. El backend no guarda sesión ni revoca tokens: un access token ya emitido sigue siendo válido hasta su `exp` (en Supabase, una hora por defecto; es configurable).
 
 ## Validación de JWT [Implementado]
@@ -39,7 +39,7 @@ Reglas:
 - El identificador del usuario es `sub` (UUID de Supabase Auth). `email` es solo informativo.
 - El claim `role` de Supabase es el rol de PostgreSQL (`authenticated`, `anon`, `service_role`), no el rol empresarial. No usarlo para autorizar operaciones de negocio.
 - Nunca autorizar con `user_metadata`: el propio usuario puede modificarlo desde el cliente. `app_metadata` solo se puede modificar con privilegios de servidor.
-- La conversión por defecto de Spring toma las authorities de los claims `scope` o `scp`, que los tokens de Supabase no incluyen. Por eso hoy no hay roles empresariales en el contexto de seguridad.
+- La conversión por defecto de Spring toma las authorities de los claims `scope` o `scp`, que los tokens de Supabase no incluyen. Por eso el backend registra `PerfilJwtAuthenticationConverter` como converter del resource server: consulta `app.perfiles_usuario` y asigna `ROLE_<ROL>` desde el perfil activo. Un JWT válido sin perfil activo queda autenticado pero sin authorities, de modo que las rutas con rol responden 403 y `/api/me` rechaza en el servicio.
 - La rotación de claves de firma en Supabase no requiere cambios de código mientras la validación use el JWKS.
 
 Referencia: [JWT Claims Reference de Supabase](https://supabase.com/docs/guides/auth/jwt-fields).
@@ -47,19 +47,34 @@ Referencia: [JWT Claims Reference de Supabase](https://supabase.com/docs/guides/
 ## Roles y permisos empresariales
 - Roles y su alcance por módulo: `product.md`.
 - Almacenamiento y mecanismo: decisiones DP-SEG-01 y DP-SEG-02 al final de este documento.
+- Implementación [Implementado]:
+  - `PerfilJwtAuthenticationConverter` convierte el `Jwt` validado en `JwtAuthenticationToken` con una authority `ROLE_<ROL>` tomada del perfil activo. No usa el claim técnico `role` de Supabase.
+  - `SecurityConfig` aplica la matriz con `hasRole`/`hasAnyRole` por módulo y método; `anyRequest().authenticated()` mantiene la denegación por defecto para lo no declarado.
+  - Lecturas cruzadas mínimas (ERP-05, SGA-05): Finanzas/RRHH y Operaciones pueden `GET` clientes del CRM; Operaciones también `GET` contratos. Las escrituras de CRM siguen restringidas a Comercial y Administrador.
+  - Solo el Administrador accede a `/api/admin/**`, que expone la gestión de perfiles.
 - Reglas para cualquier opción:
   - Denegar por defecto: un usuario sin perfil, sin rol o con el perfil desactivado recibe 403, aunque su JWT sea válido.
   - El rol se obtiene de una fuente que el usuario no puede modificar.
   - Solo el Administrador asigna o cambia roles (MVP §5).
   - Cada endpoint declara en el `design.md` de su especificación qué roles pueden usarlo.
 
+## Administración de perfiles
+[Implementado] Rutas exclusivas del Administrador:
+- `PUT /api/admin/usuarios/{id}/perfil`: crea (201 con `Location`) o actualiza el rol (200) de un perfil. El cuerpo solo admite `rol`; `activo` y los campos de auditoría los controla el servidor. El `id` debe existir en `auth.users` para crear; si no existe, responde 404.
+- `PATCH /api/admin/usuarios/{id}/estado`: activa o desactiva un perfil existente (200). Perfil inexistente → 404.
+- Los cambios registran como `actualizadoPor` el `sub` del Administrador autenticado. Un rol distinto de Administrador, un perfil inactivo o un perfil ausente responden 403 sin ejecutar la operación.
+- La creación en `auth.users` y la lectura de esa tabla por el rol de base del backend se validarán contra Supabase real en la tarea 20.
+
 ## Protección de endpoints
 `SecurityConfig` [Implementado]:
 - CSRF deshabilitado.
 - CORS con el bean `corsConfigurationSource`.
 - Sesiones `STATELESS`.
-- `/api/public/**` con `permitAll()`; cualquier otra ruta requiere autenticación.
-- Resource server JWT con la configuración por defecto.
+- `/api/public/**` con `permitAll()`.
+- `/api/admin/**` solo Administrador.
+- Matriz por módulo: CRM (Administrador, Comercial), ERP (Administrador, Finanzas/RRHH), SGA (Administrador, Operaciones), con las lecturas cruzadas indicadas arriba.
+- `anyRequest().authenticated()` como denegación por defecto.
+- Resource server JWT con `PerfilJwtAuthenticationConverter`.
 
 Reglas:
 - Todo endpoint nuevo queda protegido por defecto. Solo se agrega una ruta bajo `/api/public/**` si su especificación lo aprueba, y nunca para devolver datos de negocio.
@@ -67,11 +82,11 @@ Reglas:
 - Deshabilitar CSRF es correcto solo porque la autenticación usa el encabezado `Authorization` y no cookies. Si alguna vez se usan cookies de sesión, hay que volver a evaluar CSRF.
 - No usar `HttpSession` ni guardar estado de sesión en el servidor.
 - La autorización se comprueba en el backend aunque el frontend oculte la opción.
-- Pruebas obligatorias por endpoint protegido (CA-03, NF-07), con MockMvc y `SecurityMockMvcRequestPostProcessors.jwt()` de `spring-security-test` para simular tokens con los claims o authorities necesarios:
+- Pruebas obligatorias por endpoint protegido (CA-03, NF-07). En backend se usa MockMvc; el JWT simulado se convierte con `PerfilJwtAuthenticationConverter` a partir de un perfil persistido en H2, de modo que se prueba el mismo camino de autorización que en producción:
   - sin token → 401;
-  - token válido sin el rol requerido → 403;
-  - token con el rol requerido → respuesta de éxito.
-  Estas pruebas no usan tokens reales de Supabase.
+  - token válido sin perfil activo, o con perfil inactivo, o con rol distinto del requerido → 403;
+  - token con perfil activo y rol requerido → respuesta de éxito.
+  Estas pruebas no usan tokens reales de Supabase. `SecurityMockMvcRequestPostProcessors.jwt()` sigue siendo válido para pruebas que solo necesiten claims técnicos, pero no reemplaza la prueba del rol empresarial.
 
 ## CORS [Implementado]
 | Parámetro | Valor actual |

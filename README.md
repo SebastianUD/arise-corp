@@ -142,11 +142,10 @@ arise-corp/
 │   └── src/
 │       ├── main/
 │       │   ├── java/com/arise/corp/
-│       │   │   ├── config/
-│       │   │   │   └── SecurityConfig.java
-│       │   │   ├── controller/
-│       │   │   │   └── AuthController.java
-│       │   │   └── AriseBackendApplication.java
+│       │   │   ├── AriseBackendApplication.java
+│       │   │   ├── config/                    # SecurityConfig y converter JWT de rol
+│       │   │   ├── login/                     # Controllers, entity, repository, service y DTO
+│       │   │   └── shared/error/              # Problem Details y handlers comunes
 │       │   └── resources/
 │       │       └── application.properties
 │       └── test/
@@ -159,7 +158,7 @@ arise-corp/
 │
 ├── supabase/
 │   └── migrations/
-│       └── .gitkeep                   # Migraciones por incorporar
+│       └── 20261108000000_app_perfiles_usuario.sql
 │
 ├── docs/
 │   └── def_MVP/
@@ -274,9 +273,10 @@ SUPABASE_DB_NAME=postgres
 SUPABASE_DB_USERNAME=YOUR_POOLER_USERNAME
 SUPABASE_DB_PASSWORD=YOUR_DATABASE_PASSWORD
 SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
-Usar los valores exactos de Supabase Dashboard → Connect → Session pooler. La contraseña es la de PostgreSQL, no la contraseña de la cuenta de Supabase.
+Usar los valores exactos de Supabase Dashboard → Connect → Session pooler. La contraseña es la de PostgreSQL, no la contraseña de la cuenta de Supabase. `CORS_ALLOWED_ORIGINS` enumera los orígenes del frontend separados por coma; en local se conserva `http://localhost:5173`.
 
 Cada integrante debe crear su propio archivo `.env`. No compartirlo mediante GitHub ni incluirlo en commits.
 
@@ -289,6 +289,9 @@ spring.config.import=optional:file:./.env[.properties]
 
 spring.application.name=arise-backend
 
+# CORS (DP-SEG-04)
+cors.allowed-origins=${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
 # Supabase PostgreSQL
 spring.datasource.url=jdbc:postgresql://${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}?sslmode=require
 spring.datasource.username=${SUPABASE_DB_USERNAME}
@@ -296,8 +299,9 @@ spring.datasource.password=${SUPABASE_DB_PASSWORD}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA / Hibernate
-spring.jpa.hibernate.ddl-auto=none
+spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.open-in-view=false
+spring.jpa.properties.hibernate.default_schema=app
 
 # Supabase Auth - JWT
 spring.security.oauth2.resourceserver.jwt.issuer-uri=${SUPABASE_URL}/auth/v1

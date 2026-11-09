@@ -3,14 +3,17 @@
 Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles están en `security.md`.
 
 ## Endpoints existentes [Implementado]
-| Método | Ruta | Autenticación | Respuesta 200 |
+| Método | Ruta | Autenticación | Respuesta de éxito |
 |---|---|---|---|
 | GET | `/api/me` | JWT obligatorio | `{ "id": "<sub>", "email": "<email>", "role": "<role>" }` |
+| PUT | `/api/admin/usuarios/{id}/perfil` | JWT de Administrador | 201 al crear (con `Location`) o 200 al actualizar el rol |
+| PATCH | `/api/admin/usuarios/{id}/estado` | JWT de Administrador | 200 al activar/desactivar un perfil existente |
 
-- Sin token, o con un token inválido o vencido, el backend responderá 401 Problem Details con el encabezado `WWW-Authenticate` (DP-API-02); la configuración actual aún está pendiente de alineación.
-- En el código actual el campo `role` refleja el claim técnico `role` de Supabase. La tarea 16 de `001-foundation` lo cambiará al rol empresarial del perfil activo; el claim técnico no autoriza operaciones.
+- Sin token, o con un token inválido o vencido, el backend responde 401 Problem Details con el encabezado `WWW-Authenticate` (DP-API-02).
+- El campo `role` de `/api/me` refleja el rol empresarial del perfil activo en `app.perfiles_usuario`; un perfil ausente o inactivo produce 403. El claim técnico `role` de Supabase no autoriza operaciones (tarea 16 de `001-foundation`).
+- `PUT` recibe `{ "rol": "<ROL>" }`; `PATCH` recibe `{ "activo": true|false }`. El identificador de ruta es el UUID de Supabase Auth y los campos de auditoría los asigna el servidor. Respuestas: 201/200 según corresponda, 400 por cuerpo inválido, 403 si el actor no es Administrador o no tiene perfil activo, 404 si el perfil o la identidad de Auth no existe.
 - No existen endpoints públicos. La ruta `/api/public/**` está reservada para ellos en `SecurityConfig`.
-- No existe manejo global de errores.
+- El manejo global de errores está implementado en `shared.error`: todos los 400/401/403/404/405/409/500 usan el mismo formato Problem Details (tarea 18 de `001-foundation`).
 
 ## Rutas
 - [Implementado] Todas las rutas cuelgan de `/api`. Las rutas sin autenticación van exclusivamente bajo `/api/public/**`.
@@ -69,9 +72,10 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 - Los mensajes de validación deben ser comprensibles para el usuario (AUTH-05, NF-06). Su idioma depende de DP-EST-02.
 
 ## Manejo uniforme de errores
-- [Aprobado] Todas las respuestas de error tienen el mismo formato, con un mensaje comprensible y sin información sensible (CA-06, AUTH-05). La traducción de excepciones a respuestas se centraliza en un único manejador global (`@RestControllerAdvice`), no en cada controlador.
-- Los 401 y 403 de Spring Security usan el mismo formato mediante un `AuthenticationEntryPoint` y un `AccessDeniedHandler` propios, que conservan el encabezado `WWW-Authenticate`.
-- Formato adoptado DP-API-02: RFC 9457 Problem Details (`application/problem+json`), soportado de forma nativa por Spring con `ProblemDetail`, `ErrorResponseException` y `ResponseEntityExceptionHandler`. Ejemplo:
+- [Implementado] Todas las respuestas de error tienen el mismo formato, con un mensaje comprensible y sin información sensible (CA-06, AUTH-05). La traducción de excepciones a respuestas se centraliza en `GlobalExceptionHandler` (`@RestControllerAdvice`), no en cada controlador.
+- Los 401 y 403 de Spring Security usan el mismo formato mediante `RestAuthenticationEntryPoint` y `RestAccessDeniedHandler`. El 401 conserva el encabezado `WWW-Authenticate`; el entry point se registra también en `oauth2ResourceServer()` para cubrir los rechazos del filtro Bearer.
+- Los 404 de recursos de negocio usan `RecursoNoEncontradoException`; los 409 de integridad y los 500 inesperados responden mensajes genéricos sin exponer SQL, trazas ni datos internos.
+- Formato adoptado DP-API-02: RFC 9457 Problem Details (`application/problem+json`), soportado de forma nativa por Spring con `ProblemDetail` y `ResponseEntityExceptionHandler`. La extensión `errors` se usa en validaciones por campo. Ejemplo:
 
 ```json
 {

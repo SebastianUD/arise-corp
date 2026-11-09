@@ -13,16 +13,16 @@ Parte del backend **ya está implementada** y este diseño la documenta sin re-i
 | Componente | Estado | Qué falta diseñar/implementar en esta spec |
 |---|---|---|
 | `SecurityConfig` (OAuth2 Resource Server, CORS, STATELESS) | [Implementado] | Nada estructural; se documenta y se verifica mediante pruebas |
-| `AuthController` → `GET /api/me` | [Implementado] | Mover al módulo `login` e integrar el perfil empresarial en el contrato |
+| `login.controller.AuthController` → `GET /api/me` | [Implementado] | Nada; el perfil activo y el rol empresarial se resuelven en el backend |
 | `application.properties` (datasource, JWT issuer/JWKS/ES256/aud) | [Implementado] | Nada; se documenta |
-| Pruebas de `/api/me` + configuración de pruebas con H2 | [Implementado] | Verificado con 6 pruebas (DP-TEC-02) |
-| Frontend React (login, rutas privadas, consumo de `/api/me`) | [Implementado] | 25 pruebas automáticas; validación manual con cuenta real pendiente |
-| Perfil empresarial, matriz de roles y gestión de permisos | [Pendiente de implementación] | Decisiones adoptadas en steering; tareas 15–18 |
+| Pruebas backend con H2 y JWT simulados | [Implementado] | 58 pruebas backend documentadas; sin tokens reales ni base compartida |
+| Frontend React (login, rutas privadas, consumo de `/api/me`) | [Implementado] | 30 pruebas frontend documentadas; el perfil aún no muestra el rol (tarea 19) y falta validación real (tarea 20) |
+| Perfil empresarial, matriz de roles y gestión de permisos | [Implementado] | Perfil, `/api/me`, matriz de autorización, administración (tareas 16–17) y Problem Details uniforme (tarea 18) |
 
 ### Decisiones adoptadas que afectan a esta spec
 
 - **DP-TEC-01/02:** stack del frontend y perfil H2/JWT simulado ya implementados y probados.
-- **DP-SEG-01/02 y DP-PRO-01:** perfil en PostgreSQL, un rol por usuario, matriz de permisos y autorización backend adoptados; se implementan en tareas 15–18.
+- **DP-SEG-01/02 y DP-PRO-01:** perfil en PostgreSQL, un rol por usuario, matriz de permisos y autorización backend implementados en las tareas 15–17; el formato uniforme de errores se implementó en la tarea 18.
 - **DP-EST-01/03:** `AuthController` pasa a `login.controller`; se conservan nombres/contratos españoles y estilo de 4 espacios. `SecurityConfig` permanece en `config`.
 - **DP-API-02:** los errores usan RFC 9457 Problem Details; el 401/403 ya no se documenta como respuesta vacía.
 - **DP-ARQ-02/DP-SEG-05/DP-TEC-03:** perfil y datos de negocio en esquema privado `app`, protegido por RLS/grants y creado por migraciones Supabase CLI; Hibernate usa `validate`.
@@ -109,27 +109,33 @@ sequenceDiagram
     FE->>FE: Redirige a Login e indica "sesión expirada/no válida" (AUTH-02, AUTH-05)
 ```
 
-Estado: el tramo desde la recepción de la petición hasta la validación del JWT en `GET /api/me` está [Implementado]. El login en React y el consumo del endpoint están implementados y verificados con servicios simulados; la validación con cuenta real es manual.
+Estado: el tramo desde la recepción de la petición hasta la validación del JWT y la autorización por rol está [Implementado]. El login en React y el consumo del endpoint están implementados y verificados con servicios simulados; la validación con cuenta real es manual.
 
 ## Components and Interfaces
 
 ### Backend
 
-#### SecurityConfig (`com.arise.corp.config`) — [Implementado; ampliación pendiente]
+#### SecurityConfig (`com.arise.corp.config`) — [Implementado]
 
-Cadena de filtros ya existente; se amplía en esta spec para resolver el perfil/rol empresarial conforme a las decisiones adoptadas. El diseño la documenta y la verifica mediante pruebas:
+Cadena de filtros que resuelve el perfil/rol empresarial conforme a las decisiones adoptadas. El diseño la documenta y la verifica mediante pruebas:
 
 - CSRF deshabilitado (correcto porque la autenticación usa el encabezado `Authorization`, no cookies).
 - CORS mediante el bean `corsConfigurationSource`: orígenes `http://localhost:5173`; métodos GET/POST/PUT/PATCH/DELETE/OPTIONS; encabezados `Authorization`, `Content-Type`; `allowCredentials=false`; rutas `/**`.
 - Sesiones `STATELESS` (`SessionCreationPolicy.STATELESS`): cada petición se autentica solo con su JWT.
-- Autorización de rutas: `/api/public/**` → `permitAll`; `anyRequest` → `authenticated`. Esto establece la autenticación base; la validación del perfil y rol empresarial se incorpora antes de ejecutar toda operación protegida (AUTH-04, NF-02, CA-03).
-- `oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))`: validación de JWT con la configuración de `application.properties`.
+- Autorización de rutas (AUTH-04, NF-02, CA-03):
+  - `/api/public/**` → `permitAll`.
+  - `/api/admin/**` → `hasRole("ADMINISTRADOR")`.
+  - `GET /api/crm/clientes` y `GET /api/crm/clientes/*` → Administrador, Comercial, Finanzas/RRHH y Operaciones (lectura cruzada ERP-05 y SGA-05).
+  - `GET /api/crm/contratos` y `GET /api/crm/contratos/*` → Administrador, Comercial y Operaciones (lectura cruzada SGA-05).
+  - `/api/crm/**` → Administrador y Comercial; `/api/erp/**` → Administrador y Finanzas/RRHH; `/api/sga/**` → Administrador y Operaciones.
+  - `anyRequest().authenticated()` como denegación por defecto.
+- `oauth2ResourceServer(...jwtAuthenticationConverter(PerfilJwtAuthenticationConverter))`: valida el JWT con la configuración de `application.properties` y deriva `ROLE_<ROL>` del perfil activo (DP-SEG-01). Un JWT válido sin perfil activo queda sin authorities y recibe 403 en rutas con rol.
 
-La validación de firma usa **solo** las claves públicas del JWKS (ES256); no se usa HS256 ni el JWT secret compartido (`security.md`).
+La validación de firma usa **solo** las claves públicas del JWKS (ES256); no se usa HS256 ni el JWT secret compartido (`security.md`). El claim técnico `role` de Supabase nunca se traduce en authorities de negocio.
 
-#### AuthController (destino `com.arise.corp.login.controller`) — [Implementado; reubicación y ampliación pendientes]
+#### AuthController (`com.arise.corp.login.controller`) — [Implementado]
 
-`@RestController` en el módulo `login`; el cambio de paquete forma parte de las tareas abiertas de esta spec (DP-EST-01).
+`@RestController` implementado en `com.arise.corp.login.controller`; la tarea 16 completó el cambio de paquete (DP-EST-01).
 
 Contrato del endpoint:
 
@@ -153,25 +159,40 @@ Reglas de derivación de identidad (AUTH-03, AUTH-04, `security.md`):
 - `role` = rol empresarial leído desde el perfil activo asociado al `sub`. El claim técnico `role` de Supabase no se devuelve como rol empresarial ni se usa para autorización.
 - La identidad se deriva del `Jwt` ya validado por Spring Security vía `@AuthenticationPrincipal`; no se decodifica el token a mano (Requirement 5.3).
 
-> La implementación existente usa `LinkedHashMap` para tolerar claims opcionales nulos; la tarea 16 la migra a `MeResponse` record conforme a DP-EST-03.
+> La implementación actual usa `MeResponse` y resuelve el rol desde el perfil activo en `app.perfiles_usuario` (tarea 16); el claim técnico `role` de Supabase se ignora.
 
-#### Administración de perfiles (AUTH-04)
+#### Administración de perfiles (AUTH-04) — [Implementado]
 
 | Método | Ruta | Permiso | Resultado |
 |---|---|---|---|
 | PUT | `/api/admin/usuarios/{id}/perfil` | Administrador | Crea o actualiza un perfil para un UUID existente de Auth; respuesta 201 al crear y 200 al actualizar |
 | PATCH | `/api/admin/usuarios/{id}/estado` | Administrador | Activa/desactiva un perfil; respuesta 200 |
 
-El `id` de usuario es el UUID de Supabase Auth. No se permite crear un perfil para una identidad inexistente (404). La solicitud incluye `rol`; el servidor controla `activo` y los campos de auditoría. Los DTO no admiten asignar el actor; el backend registra el `sub` del administrador y fecha en la operación. El primer perfil Administrador se aprovisiona mediante SQL controlado según la tarea 15.
+Contrato de `PUT /api/admin/usuarios/{id}/perfil`:
+- Solicitud: `{ "rol": "ADMINISTRADOR|COMERCIAL|FINANZAS_RRHH|OPERACIONES" }`. `rol` es obligatorio.
+- 201 Created: perfil creado, cuerpo `PerfilUsuarioResponse` y `Location: /api/admin/usuarios/{id}/perfil`.
+- 200 OK: perfil existente actualizado; conserva `activo` y `creadoEn`.
+- 400: cuerpo inválido o `rol` ausente.
+- 403: actor sin perfil activo o con rol distinto de Administrador.
+- 404: el UUID no existe en `auth.users` y no hay perfil previo.
+
+Contrato de `PATCH /api/admin/usuarios/{id}/estado`:
+- Solicitud: `{ "activo": true|false }`. `activo` es obligatorio.
+- 200 OK: perfil actualizado con el nuevo estado.
+- 400: cuerpo inválido o `activo` ausente.
+- 403: actor sin perfil activo o con rol distinto de Administrador.
+- 404: el perfil no existe.
+
+`PerfilUsuarioResponse` expone `usuarioId`, `rol`, `activo`, `creadoEn`, `actualizadoEn` y `actualizadoPor`. El `id` de usuario es el UUID de Supabase Auth. No se permite crear un perfil para una identidad inexistente (404). La solicitud incluye solo `rol`; el servidor controla `activo` y los campos de auditoría. Los DTO no admiten asignar el actor; el backend registra el `sub` del administrador y la fecha en la operación. El primer perfil Administrador se aprovisiona mediante SQL controlado según la tarea 15. La lectura de `auth.users` por el rol de base del backend se valida contra Supabase real en la tarea 20.
 
 #### Manejo de 401 / 403
 
-Esta spec normaliza los errores conforme a RFC 9457 Problem Details (DP-API-02):
+Esta spec normaliza los errores conforme a RFC 9457 Problem Details (DP-API-02), implementado en la tarea 18:
 
 - **401 Unauthorized**: peticiones sin token o con token inválido/vencido/mal formado o con iss/aud incorrectos. Respuesta Problem Details y el encabezado `WWW-Authenticate` (AUTH-03, CA-02, CA-06; Requirements 4.6–4.8, 5.6).
 - **403 Forbidden**: JWT válido sin perfil activo o sin permiso para la operación; respuesta Problem Details sin ejecutar ni modificar la operación.
 
-El formato uniforme se implementa como `@RestControllerAdvice` y handlers de Spring Security con Problem Details RFC 9457. El backend no expone trazas, SQL ni datos internos en cuerpos Problem Details (CA-06, Requirement 7.4).
+El formato uniforme se implementa en `shared.error` como `@RestControllerAdvice` (`GlobalExceptionHandler`) y handlers de Spring Security con Problem Details RFC 9457. Las validaciones por campo agregan la extensión `errors` y el backend no expone trazas, SQL ni datos internos en los cuerpos Problem Details (CA-06, Requirement 7.4).
 
 ### Frontend (DP-TEC-01 aprobada)
 
@@ -210,7 +231,17 @@ Interfaces principales:
 
 ## Data Models
 
-Esta spec no introduce tablas de negocio ni entidades JPA (`spring.jpa.hibernate.ddl-auto=none`; `supabase/migrations/` permanece vacío). Los únicos modelos relevantes son estructuras en memoria derivadas del JWT.
+Esta spec no introduce tablas de negocio de CRM, ERP ni SGA. Su único modelo persistente es el perfil empresarial en `app.perfiles_usuario`, creado por la migración Supabase CLI (tarea 15). `spring.jpa.hibernate.ddl-auto=validate` y el esquema por defecto `app` se configuran para esa entidad.
+
+### Perfil empresarial (`app.perfiles_usuario`)
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| `usuario_id` | `uuid` (PK) | `sub` UUID de Supabase Auth; FK a `auth.users` |
+| `rol` | `text` con `CHECK` | `ADMINISTRADOR`, `COMERCIAL`, `FINANZAS_RRHH` u `OPERACIONES` |
+| `activo` | `boolean` | Perfil inactivo o ausente → 403 (DP-SEG-01) |
+| `creado_en` / `actualizado_en` | `timestamptz` | Marcas temporales de auditoría |
+| `actualizado_por` | `uuid` | `sub` del administrador que realizó el último cambio (DP-SEG-06) |
 
 ### Identidad del usuario (derivada del JWT validado)
 
@@ -218,7 +249,7 @@ Esta spec no introduce tablas de negocio ni entidades JPA (`spring.jpa.hibernate
 |---|---|---|---|
 | `id` | claim `sub` | string (UUID) | Identificador autoritativo del usuario (AUTH-04) |
 | `email` | claim `email` | string \| null | Informativo; puede ser nulo (Requirement 5.5) |
-| `role` | claim `role` | string | Rol técnico de Supabase; **no** es el rol empresarial (AUTH-04) |
+| `role` | perfil activo en `app.perfiles_usuario` | string | Rol empresarial; el claim técnico Supabase no se usa (AUTH-04) |
 
 ### Claims del JWT verificados por Spring Security
 
@@ -235,16 +266,23 @@ Gestionada íntegramente por `supabase-js` (access token + refresh token). La SP
 
 ## Error Handling
 
-### Backend
+### Backend — [Implementado]
 
 | Situación | Código | Cuerpo | Requisitos |
 |---|---|---|---|
 | Token ausente | 401 | RFC 9457 Problem Details + `WWW-Authenticate` | 4.6, 5.6, CA-02, CA-06 |
-| Firma inválida / iss o aud incorrectos / mal formado | 401 | RFC 9457 Problem Details | 4.7, CA-02 |
-| Token expirado | 401 | RFC 9457 Problem Details | 4.8, CA-02 |
+| Firma inválida / iss o aud incorrectos / mal formado | 401 | RFC 9457 Problem Details + `WWW-Authenticate` | 4.7, CA-02 |
+| Token expirado | 401 | RFC 9457 Problem Details + `WWW-Authenticate` | 4.8, CA-02 |
+| Perfil ausente/inactivo o rol sin permiso | 403 | RFC 9457 Problem Details | AUTH-04, CA-03, CA-06 |
+| Validación por campo o parámetro | 400 | Problem Details + extensión `errors` | CA-06 |
+| JSON mal formado | 400 | Problem Details genérico | CA-06 |
+| Recurso de negocio inexistente | 404 | Problem Details | CA-06 |
+| Método no soportado | 405 | Problem Details | CA-06 |
+| Conflicto de integridad de datos | 409 | Problem Details sin mensaje de base | NF-03, CA-06 |
+| Error inesperado | 500 | Problem Details genérico, sin trazas ni SQL | AUTH-05, CA-06 |
 | Token válido y vigente | 200 | `{ id, email, role }` | 5.1 |
 
-El formato común se implementa con `@RestControllerAdvice`, `AuthenticationEntryPoint` y `AccessDeniedHandler` según DP-API-02.
+El formato común se implementa en `shared.error` con `@RestControllerAdvice` (`GlobalExceptionHandler`), `ProblemDetailsWriter`, `AuthenticationEntryPoint` y `AccessDeniedHandler` según DP-API-02. La extensión `errors` contiene objetos `{ field, message }`. El entry point se registra también en `oauth2ResourceServer()` para cubrir los rechazos del `BearerTokenAuthenticationFilter`.
 
 ### Frontend
 
@@ -254,8 +292,10 @@ El formato común se implementa con `@RestControllerAdvice`, `AuthenticationEntr
 | Correo con formato inválido | Mensaje junto al campo; no se llama a Supabase | 1.6, NF-06 |
 | Credenciales incorrectas | Mensaje comprensible (≤2 s), conserva el correo, sin revelar correo vs contraseña | 1.7, 7.1, AUTH-05 |
 | Error de red / timeout (30 s) en login | Mensaje comprensible, permite reintentar | 1.7, 7.5 |
-| Respuesta 401 del backend | Descarta sesión, redirige a login, indica "sesión expirada/no válida" | 3.5, 7.2, 10.2 |
-| Respuesta 403 del backend | Mensaje "sin permisos", mantiene la sesión y la vista | 7.3 |
+| Respuesta 401 del backend | Descarta sesión, redirige a login, indica "sesión expirada/no válida"; no lee el cuerpo | 3.5, 7.2, 10.2 |
+| Respuesta 403 del backend | Mensaje "sin permisos", mantiene la sesión y la vista; no lee el cuerpo | 7.3 |
+| 4xx con Problem Details | `ApiError` expone `problem`, `title`, `detail` y `errors`; solo muestra un `detail` seguro (≤300 caracteres) | CA-06 |
+| 5xx del backend | Mensaje genérico; nunca se lee ni muestra el cuerpo | AUTH-05, CA-06 |
 | Timeout / sin respuesta del backend (30 s) | Mensaje comprensible, permite reintentar | 7.5 |
 
 Ningún mensaje del frontend expone detalles técnicos, códigos internos, trazas ni el contenido del token (AUTH-05, CA-06, Requirements 1.7, 10.2).
@@ -284,22 +324,33 @@ Se prohíbe explícitamente incluir en `VITE_*` la contraseña de la base, las c
 
 ### Backend (DP-TEC-02, aprobada)
 
-Perfil de pruebas aislado en `src/test/resources` con **H2** y **valores ficticios** para las propiedades de JWT, de modo que el contexto arranque sin conectarse a Supabase ni a `arise-corp-dev`. Las pruebas de controlador usan **JWT simulado** con `SecurityMockMvcRequestPostProcessors.jwt()` de `spring-security-test` (Requirement 9.4); nunca tokens reales.
+Perfil de pruebas aislado en `src/test/resources` con **H2** y **valores ficticios** para las propiedades de JWT, de modo que el contexto arranque sin conectarse a Supabase ni a `arise-corp-dev`. Las pruebas de controlador usan **JWT simulado** y lo convierten con el mismo `PerfilJwtAuthenticationConverter` de producción a partir de perfiles persistidos en H2 (Requirement 9.4); nunca tokens reales. El `schema.sql` de pruebas crea una tabla mínima `auth.users` para validar la regla de creación de perfiles.
 
 Casos de prueba de `/api/me` (MockMvc), todos exigidos por NF-07/CA-03:
 
 | Prueba | Escenario | Resultado esperado | Requisitos |
 |---|---|---|---|
 | Sin token → 401 | petición sin `Authorization` | 401 Problem Details | 9.1, CA-02, CA-03 |
-| JWT válido → 200 | `.jwt()` con claim `sub` | 200 | 9.2, CA-02, CA-03 |
+| JWT válido → 200 | JWT simulado con `sub` y perfil activo en H2 | 200 | 9.2, CA-02, CA-03 |
 | Cuerpo 200 | JWT con `sub`, `email` y perfil empresarial simulado | JSON contiene `id`, `email`, `role` | 9.3 |
 | Token inválido/vencido → 401 | token manipulado o expirado | 401 | 9.5, CA-02 |
 
-Librerías: ya disponibles en el `pom.xml` (scope test): `spring-boot-starter-webmvc-test`, `spring-boot-starter-security-test`, `spring-boot-starter-security-oauth2-resource-server-test`, `h2`. No se añaden dependencias nuevas. En Spring Boot 4 se usa `@MockitoBean` si hiciera falta simular beans; las pruebas de `/api/me` no requieren mocks de servicio porque la identidad proviene del `Jwt`.
+Casos de autorización y administración (tarea 17):
+
+| Prueba | Escenario | Resultado esperado |
+|---|---|---|
+| Matriz de módulos | perfiles Administrador/Comercial/Finanzas/Operaciones y dobles de endpoints CRM/ERP/SGA | 200 solo en los módulos y lecturas cruzadas permitidas; 403 en el resto |
+| Sin perfil o perfil inactivo | JWT válido sin perfil activo | 403 en cualquier módulo |
+| Administración | `PUT`/`PATCH` con rol distinto de Administrador | 403 sin ejecutar la operación |
+| Contrato admin | `PUT` crea (201 + `Location`) o actualiza (200); `PATCH` cambia estado (200) | Cuerpo `PerfilUsuarioResponse` y auditoría con el `sub` del actor |
+| Identidad inexistente | `PUT` para UUID ausente de `auth.users` | 404 y sin perfil creado |
+| Validación | `PUT`/`PATCH` con campos obligatorios ausentes | 400 |
+
+Librerías: ya disponibles en el `pom.xml` (scope test): `spring-boot-starter-webmvc-test`, `spring-boot-starter-security-test`, `spring-boot-starter-security-oauth2-resource-server-test`, `h2`. No se añaden dependencias nuevas. En Spring Boot 4 se usa `@MockitoBean` si hiciera falta simular beans.
 
 Se conserva `AriseBackendApplicationTests.contextLoads()`, que al activarse el perfil de pruebas con H2 y propiedades JWT ficticias dejará de depender de credenciales reales.
 
-El criterio 9.6 se verifica junto con las pruebas de perfil y permisos de las tareas 16–18; un JWT válido sin perfil/rol requerido recibe 403.
+El criterio 9.6 se verifica con las pruebas de perfil y permisos de las tareas 16–17; un JWT válido sin perfil/rol requerido recibe 403.
 
 ### Frontend (DP-TEC-01 aprobada: Vitest + React Testing Library)
 
@@ -348,7 +399,7 @@ El flujo login → `/api/me` con un usuario real contra Supabase se valida manua
 | **R6** Perfil y rol empresarial (AUTH-04) | `login` profile service, `SecurityConfig`, matriz de roles, endpoint administrativo y pruebas de 403 (D1) |
 | **R7** Errores claros (AUTH-05, CA-06) | `Login`, `apiClient` (401/403), Problem Details del backend (D4) |
 | **R8** Secretos y configuración (NF-01, CA-01) | `frontend/.env.example`, `backend/.env.example`, README, verificación de secretos |
-| **R9** Pruebas de endpoints (NF-07, CA-03) | Estrategia de pruebas backend (perfil H2 + `jwt()`); pruebas de 401/403 con perfil/rol simulado |
+| **R9** Pruebas de endpoints (NF-07, CA-03) | Estrategia de pruebas backend (perfil H2 + converter de producción); pruebas de 401/403 con perfil/rol simulado |
 | **R10** Integración vertical E2E | Flujo Login→Perfil→`/api/me`; validación manual controlada. El flujo global CA-05 queda para CRM/SGA |
 
 ## Resultado de implementación de las tareas 1–14
