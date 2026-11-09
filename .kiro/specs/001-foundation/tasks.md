@@ -181,9 +181,10 @@ Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiert
   - Registrar solo resultado, fecha y entorno (sin UUID, token, correo ni credenciales); no usar esta cuenta en CI.
   - _Requisitos: AUTH-01 a AUTH-05, CA-02, CA-03_
 
-- [ ] 21. Checkpoint final de `001-foundation`
+- [x] 21. Checkpoint final de `001-foundation`
   - Área: backend/frontend/documentación · Responsables: los tres
-  - Ejecutar suites backend y frontend, build frontend, comprobación de secretos, validación de migración y pruebas de integración PostgreSQL aislada; revisar trazabilidad requisito–tarea y README.
+  - Ejecutar suites backend y frontend, build frontend, comprobación de secretos, validación de migración; revisar trazabilidad requisito–tarea y README.
+  - Las pruebas de integración PostgreSQL aislada (Testcontainers, DP-TEC-04/DP-EST-05) se **difieren a la spec de datos de negocio** por decisión del equipo (2026-11-09); no forman parte del cierre de `001-foundation`, cuya capa de negocio no participa (la identidad proviene del JWT). Se construyen cuando lleguen las tablas de CRM/ERP/SGA.
   - Cerrar solo cuando tareas 15–20 estén completadas y CA-01 a CA-03 y CA-06 se hayan verificado.
   - _Requisitos: NF-01, NF-03, NF-05, NF-07, CA-01, CA-02, CA-03, CA-06_
 
@@ -272,3 +273,22 @@ Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiert
 ### Verificación de la tarea 20 — 2026-11-09
 
 - El MCP confirmó que `app.perfiles_usuario` existe con la estructura esperada, RLS activo y sin privilegios de esquema/lectura para `anon` ni `authenticated`; el historial remoto contiene la migración `app_perfiles_usuario`. No se volvió a ejecutar una migración ya aplicada. Se aprovisionó el perfil Administrador y se verificó mediante login real que `/api/me` entrega identidad y rol empresarial. Una segunda cuenta Auth sin perfil recibió 403; la interfaz mostró el mensaje de permisos y la salida segura al inicio de sesión. No se registraron datos personales ni credenciales.
+
+## Checkpoint final (tarea 21) — 2026-11-09
+
+Ejecutado por Davidson. Resultado de las verificaciones observadas:
+
+- Backend `.\mvnw.cmd clean test` — 58 pruebas, 0 fallos, BUILD SUCCESS.
+- Frontend `npm test` — 35 pruebas, 0 fallos (4 archivos).
+- Frontend `npm run build` — 75 módulos transformados, sin errores.
+- Frontend `npm run check:secrets` — aprobado, sin patrones de credenciales en fuente, plantilla ni bundle.
+- Secretos en repo — ningún `.env` rastreado por Git; `backend/.env.example` y `frontend/.env.example` presentes.
+- Validación de migración — migración `app_perfiles_usuario` registrada en `arise-corp-dev` (esquema `app`, tabla `perfiles_usuario` con RLS habilitado y grants revocados a `anon`/`authenticated`). Aplicada vía MCP tras revisión aprobada (DP-TEC-03).
+- Trazabilidad requisito–tarea y README revisados.
+
+Observaciones importantes para el equipo:
+
+- **Falso fallo por build sucio:** correr `.\mvnw.cmd test` sin `clean` tras mover `AuthController` al paquete `login.controller` (tarea 16) producía 56 errores de `ConflictingBeanDefinitionException` por una clase `.class` obsoleta del paquete viejo en `target/`. El código fuente es correcto; `clean` lo resuelve. Recomendación: usar `clean test` tras mover o renombrar clases.
+- **Entorno Node fuera de rango:** la máquina tiene Node v25.9.0, fuera del rango declarado en `frontend/package.json` (`>=24.14.0 <25`) y del soportado por Vitest. `npm ci` y las pruebas funcionaron con advertencia `EBADENGINE`. Riesgo de entorno a vigilar; conviene alinear la versión de Node del equipo.
+- **Pruebas de integración PostgreSQL diferidas** a la spec de datos de negocio (ver tarea 21). No se ejecutan en el cierre de `001-foundation`.
+- La validación extremo a extremo con cuenta real de Supabase (tarea 20) es manual y controlada; no se ejecuta en CI.
