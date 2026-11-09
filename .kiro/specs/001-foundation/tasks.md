@@ -181,8 +181,6 @@ Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiert
   - Registrar solo resultado, fecha y entorno (sin UUID, token, correo ni credenciales); no usar esta cuenta en CI.
   - _Requisitos: AUTH-01 a AUTH-05, CA-02, CA-03_
 
-  - **Verificación — 2026-11-09, `arise-corp-dev`:** el MCP confirmó que `app.perfiles_usuario` existe con la estructura esperada, RLS activo y sin privilegios de esquema/lectura para `anon` ni `authenticated`; el historial remoto contiene la migración `app_perfiles_usuario`. No se volvió a ejecutar una migración ya aplicada. Se aprovisionó el perfil Administrador y se verificó mediante login real que `/api/me` entrega identidad y rol empresarial. Una segunda cuenta Auth sin perfil recibió 403; la interfaz mostró el mensaje de permisos y la salida segura al inicio de sesión. No se registraron datos personales ni credenciales.
-
 - [ ] 21. Checkpoint final de `001-foundation`
   - Área: backend/frontend/documentación · Responsables: los tres
   - Ejecutar suites backend y frontend, build frontend, comprobación de secretos, validación de migración y pruebas de integración PostgreSQL aislada; revisar trazabilidad requisito–tarea y README.
@@ -270,3 +268,7 @@ Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiert
 - Ante 403 se ocultan los datos del perfil y se indica que falta un perfil activo o permisos, con orientación a contactar al administrador. La sesión se conserva hasta que el usuario elige salir; el botón Volver al inicio de sesión limpia la sesión local aun si falla la red. No hay reintentos ni redirecciones automáticas en 403. Los errores de conexión mantienen Reintentar.
 - Pruebas: cuatro roles, rol visible en el flujo Login → Perfil, perfil sin permiso y salida sin bucle incluso ante fallo de signOut y eventos tardíos. `npm test`: 35 pruebas aprobadas. `npm run build` y `npm run check:secrets`: correctos.
 - Tareas 20 y 21 continúan pendientes. No se valida una cuenta real ni se aplican migraciones en este cambio.
+
+## Verificación de la tarea 20 — 2026-11-09
+
+- El MCP confirmó que `app.perfiles_usuario` existe con la estructura esperada, RLS activo y sin privilegios de esquema/lectura para `anon` ni `authenticated`; el historial remoto contiene la migración `app_perfiles_usuario`. No se volvió a ejecutar una migración ya aplicada. Se aprovisionó el perfil Administrador y se verificó mediante login real que `/api/me` entrega identidad y rol empresarial. Una segunda cuenta Auth sin perfil recibió 403; la interfaz mostró el mensaje de permisos y la salida segura al inicio de sesión. No se registraron datos personales ni credenciales.
