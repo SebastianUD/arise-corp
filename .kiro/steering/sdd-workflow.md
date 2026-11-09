@@ -23,9 +23,9 @@ Responsabilidades acordadas por el equipo.
 - No se programa una funcionalidad sin una especificación con requisitos, diseño y tareas revisados y aprobados.
 - Las especificaciones aprobadas son la referencia común para frontend y backend.
 - Un cambio de alcance o de comportamiento actualiza primero la especificación y después el código.
-- Las especificaciones (`requirements.md`, `design.md`, `tasks.md`), los steering files y el código se integran en `main` mediante Pull Request con revisión; las fases de especificación se aprueban antes de iniciar la implementación.
-- La especificación y el código se mantienen sincronizados: cuando un Pull Request de implementación cambia el comportamiento, actualiza su especificación en el mismo Pull Request; cuando una especificación cambia de forma independiente, el cambio también pasa por Pull Request.
-- Los steering files son las reglas permanentes del proyecto. Su modificación requiere aprobación explícita del equipo o una instrucción expresa del responsable del proyecto y se integra mediante Pull Request.
+- Se crea una rama por especificación. Los requisitos, diseño, tareas, steering relacionado y código se registran con commits en esa rama durante el trabajo. No se abre PR por tarea, commit o actualización intermedia; se abre un único PR cuando la spec está completa, para revisión e integración en `main`.
+- La especificación y el código se mantienen sincronizados en la misma rama: los cambios de comportamiento actualizan primero los documentos pertinentes y se incluyen en el PR final de la spec.
+- Los steering files son las reglas permanentes del proyecto. Cualquier integrante puede proponer y registrar los ajustes necesarios en la rama de la spec a la que afectan; no se abre un PR separado para cambios de steering. Se revisan e integran junto con la spec terminada.
 
 ## Ciclo de cada funcionalidad [Aprobado, README §13]
 | Paso | Actividad | Resultado |
@@ -38,14 +38,14 @@ Responsabilidades acordadas por el equipo.
 | 6. Validación | Ejecutar las pruebas y comprobar cada criterio de aceptación | Pruebas en verde y criterios verificados |
 | 7. Actualización | Ajustar la especificación si cambiaron los requisitos o el diseño durante el desarrollo | Especificación coherente con el código |
 
-Cada fase (requisitos, diseño, tareas) se revisa y aprueba antes de pasar a la siguiente. Los documentos de requisitos, diseño y tareas se revisan en Pull Request y reciben aprobación antes de iniciar la implementación.
+Cada fase (requisitos, diseño, tareas) se revisa y aprueba antes de pasar a la siguiente. Esa revisión puede ocurrir dentro de la rama; el PR se reserva para cuando la spec y sus tareas estén completas.
 
 ## Especificaciones en Kiro
 - Cada especificación vive en `.kiro/specs/<nombre>/` con `requirements.md`, `design.md` y `tasks.md`, redactados en español.
 - La primera especificación es `001-foundation` [Aprobado, README §13]: autenticación e integración técnica. Su objetivo es la integración vertical: inicio de sesión en React, JWT validado en Spring Boot y respuesta de un endpoint protegido (MVP §13).
 - Orden de las especificaciones siguientes: `architecture.md`, sección "Orden de construcción".
 - Las carpetas usan `NNN-nombre-en-kebab-case` (DP-SDD-03).
-- No crear ni modificar especificaciones fuera de este flujo.
+- No crear ni modificar especificaciones fuera de este flujo. Todo cambio de la spec y su implementación se confirma en su rama; el PR se abre una sola vez al completar el alcance de esa spec.
 
 ## División del trabajo entre frontend y backend
 - El `design.md` fija el contrato de la API antes de que cualquiera de los dos lados lo implemente. Así, frontend y backend pueden avanzar en paralelo sobre el mismo contrato.
@@ -54,7 +54,7 @@ Cada fase (requisitos, diseño, tareas) se revisa y aprueba antes de pasar a la 
 - Frontend: vistas, rutas, formularios, estados de carga y error, cliente HTTP, integración con Supabase Auth y pruebas unitarias/de integración de interfaz.
 - Infraestructura: Sebastián mantiene Dockerfile, `.dockerignore` y Compose del backend; Davidson mantiene GitHub Actions y la automatización CI.
 - Base de datos: los cambios de esquema llegan solo como migraciones versionadas, revisadas y aplicadas de forma controlada.
-- Un cambio de contrato durante la implementación se acuerda entre frontend y backend y se registra en el `design.md` antes de programarlo.
+- Un cambio de contrato durante la implementación se acuerda entre frontend y backend y se registra en el `design.md` antes de programarlo. Se confirma en la rama actual; no genera un PR aparte.
 
 ## Uso de Kiro
 - Kiro carga estos steering files en cada interacción. Si una regla cambia, se actualiza el archivo correspondiente.
@@ -71,15 +71,15 @@ Cada fase (requisitos, diseño, tareas) se revisa y aprueba antes de pasar a la 
 [Aprobado, README §14]
 - Repositorio: `https://github.com/SebastianUD/arise-corp`.
 - `main` es la rama estable e integrada.
-- **Especificaciones y steering files:** usan ramas `docs/` o `chore/` y Pull Request con una revisión aprobadora distinta del autor. La spec debe aprobarse antes de iniciar su implementación.
-- **Implementación de código:** una rama por tarea o especificación, creada desde `main`, con prefijos `feat/`, `fix/`, `docs/`, `chore/`, `refactor/` y `test/`. Ejemplos del README: `feat/auth-foundation`, `feat/crm-clientes`, `fix/db-config`.
+- **Especificaciones:** cada spec tiene una rama propia. Todos sus cambios se confirman ahí y el PR se abre únicamente al completar la spec. Los cambios de steering se confirman en la rama de la spec activa a la que afectan; no generan PR independiente.
+- **Implementación:** los commits de código, documentación, pruebas y migraciones de una funcionalidad van a la rama de su spec, creada desde `main`; no se crean ramas ni PR por tarea. Se usan prefijos `feat/`, `fix/`, `docs/`, `chore/`, `refactor/` o `test/` según el tipo de spec. Ejemplos del README: `feat/auth-foundation`, `feat/crm-clientes`, `fix/db-config`.
 - No incluir `.env` ni credenciales en los commits.
-- Mantener sincronizadas las especificaciones SDD y el código que implementan: si durante la implementación cambia el comportamiento, el Pull Request de código actualiza también la especificación.
+- Mantener sincronizadas las especificaciones SDD y el código en la rama de la spec; abrir el PR de integración solo al completar sus tareas.
 
 Las convenciones de ramas, commits, merge y protección de `main` están adoptadas en DP-SDD-03–05 al final de este documento.
 
 ## Pull Requests
-Todo Pull Request incluye:
+Cada spec genera un único Pull Request al completarse. Ese PR incluye:
 - Enlace a la especificación y a las tareas que implementa, con los identificadores de requisitos.
 - Descripción del cambio y de cómo probarlo.
 - Pruebas unitarias pertinentes aprobadas para el backend o frontend.
@@ -105,7 +105,7 @@ Todo Pull Request incluye:
 ## Definition of Done [Aprobado, MVP §15]
 Una tarea o funcionalidad está terminada cuando:
 1. Sus requisitos, criterios de aceptación y diseño están aprobados en la especificación, y los cambios de alcance se reflejaron primero en ella.
-2. El código cumple las convenciones acordadas, fue revisado por otro integrante y está integrado en Git.
+2. El código cumple las convenciones acordadas, fue revisado por otro integrante como parte del PR final de la spec y está integrado en Git.
 3. Las pruebas unitarias del área afectada pasan (backend o frontend).
 4. Las pruebas de integración definidas para la funcionalidad pasan; las que prueban PostgreSQL usan una base aislada/efímera y no la base compartida de desarrollo.
 5. La construcción Docker del backend sigue funcionando cuando el cambio afecta al backend o a su configuración.
@@ -129,6 +129,6 @@ Una tarea o funcionalidad está terminada cuando:
 ## Decisiones adoptadas
 - **DP-SDD-03:** las specs usan directorios `NNN-nombre-en-kebab-case`; las ramas de código usan `feat/`, `fix/`, `docs/`, `chore/`, `refactor/` o `test/`.
 - **DP-SDD-04:** commits Conventional Commits `tipo(alcance): descripción`, con los tipos `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, alcances `auth`, `crm`, `erp`, `sga`, `db`, `frontend`, `docs`, `ci` y descripción en español en imperativo.
-- **DP-SDD-05:** todo cambio se integra por PR con squash merge, una aprobación de otro integrante y CI verde. `main` queda protegido con esos requisitos. Los cambios de documentación y steering usan ramas `docs/` o `chore/`; la plantilla PR reproduce la lista de comprobación de este documento.
+- **DP-SDD-05:** se trabaja con una rama por spec y commits durante su desarrollo. Solo se abre un PR al completar toda la spec; se integra mediante squash merge, con una aprobación de otro integrante y CI verde. `main` queda protegido con esos requisitos. El PR final usa la lista de comprobación de este documento; steering y documentación de esa spec se incluyen en la misma rama y PR.
 - **DP-SDD-06:** estos steering files cumplen la función de constitución del MVP; no se crea `docs/constitution.md` duplicado.
 - **DP-SDD-07:** `tasks.md` es la fuente de verdad de tareas. No se exige duplicarlas en GitHub Issues/Projects; si se usa tablero auxiliar, enlaza a la spec.

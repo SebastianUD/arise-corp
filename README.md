@@ -415,11 +415,11 @@ La primera especificación será `001-foundation`, centrada en completar la inte
 ## 14. Git y colaboración
 
 - `main` es la rama estable e integrada.
-- Para el desarrollo habitual se crea una rama por tarea o especificación, por ejemplo `feat/auth-foundation`, `feat/crm-clientes` o `fix/db-config`.
-- Todo cambio, incluidas especificaciones y steering, se integra mediante Pull Request y revisión de al menos otro integrante; se usa squash merge.
+- Se crea una rama por especificación, por ejemplo `feat/auth-foundation`; los commits de tareas y actualizaciones documentales se hacen en esa rama.
+- Se abre un único Pull Request al completar la spec; se revisa por otro integrante y se integra con squash merge. No se crean PR intermedios por tarea o commit.
 - El autor no aprueba su propio Pull Request.
 - No incluir `.env` ni credenciales en commits.
-- Las especificaciones SDD y el código deben mantenerse sincronizados.
+- Las especificaciones SDD y el código se mantienen sincronizados mediante commits en la rama de la spec.
 - Los cambios de base de datos deben acompañarse de su migración versionada.
 
 ### Definition of Done

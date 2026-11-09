@@ -103,7 +103,7 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 ```
 
   Los nombres del ejemplo siguen el vocabulario español del MVP.
-- Si el código y el contrato difieren, se corrige uno de los dos en el mismo Pull Request (ver `sdd-workflow.md`).
+- Si el código y el contrato difieren, se corrige en la rama de la spec y queda actualizado antes de su PR final (ver `sdd-workflow.md`).
 - Los contratos mantenidos en los `design.md` son la documentación de API del MVP (DP-API-06).
 
 ## Decisiones adoptadas

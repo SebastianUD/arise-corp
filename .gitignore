@@ -75,3 +75,7 @@ replay_pid*
 # =================================
 
 supabase/.temp/
+
+# Metadatos locales generados por Kiro
+.kiro/**/.config.kiro
+.kiro/**/tasks.meta.json

@@ -16,7 +16,7 @@ Fuentes de verdad:
 - **[Aprobado]**: decisión adoptada para el proyecto que todavía no está implementada; la fuente puede ser el MVP, README o una instrucción explícita del responsable del proyecto.
 - **[Pendiente de aprobación]**: propuesta o vacío sin decidir. En este estado no se implementa como definitiva; al resolverla, se registra en el steering del tema.
 
-Las decisiones adoptadas se documentan al final del archivo de su tema con su código `DP-*` y se convierten en reglas. Las propuestas anteriores ya resueltas no se mantienen como pendientes.
+Las decisiones adoptadas se documentan al final del archivo de su tema con su código `DP-*` y se convierten en reglas. Cualquier integrante puede actualizar en steering las etiquetas `[Implementado]`, `[Aprobado]` y `[Pendiente de aprobación]` para reflejar evidencia o decisiones recientes; no hace falta permiso del responsable del área. Las propuestas ya resueltas no se mantienen como pendientes.
 
 ## Objetivo y resultado esperado del MVP
 Demostrar un flujo administrativo completo, con acceso controlado y datos persistidos en PostgreSQL:
