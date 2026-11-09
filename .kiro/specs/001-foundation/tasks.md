@@ -269,6 +269,6 @@ Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiert
 - Pruebas: cuatro roles, rol visible en el flujo Login → Perfil, perfil sin permiso y salida sin bucle incluso ante fallo de signOut y eventos tardíos. `npm test`: 35 pruebas aprobadas. `npm run build` y `npm run check:secrets`: correctos.
 - Tareas 20 y 21 continúan pendientes. No se valida una cuenta real ni se aplican migraciones en este cambio.
 
-## Verificación de la tarea 20 — 2026-11-09
+### Verificación de la tarea 20 — 2026-11-09
 
 - El MCP confirmó que `app.perfiles_usuario` existe con la estructura esperada, RLS activo y sin privilegios de esquema/lectura para `anon` ni `authenticated`; el historial remoto contiene la migración `app_perfiles_usuario`. No se volvió a ejecutar una migración ya aplicada. Se aprovisionó el perfil Administrador y se verificó mediante login real que `/api/me` entrega identidad y rol empresarial. Una segunda cuenta Auth sin perfil recibió 403; la interfaz mostró el mensaje de permisos y la salida segura al inicio de sesión. No se registraron datos personales ni credenciales.
