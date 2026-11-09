@@ -142,7 +142,7 @@ Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiert
 - [x] 14. Checkpoint automatizado de la integración base
   - Ejecutar `.\mvnw.cmd test` (backend) y la suite de Vitest (frontend); asegurar que todas las pruebas pasan.
 
-- [ ] 15. Crear el esquema privado y el perfil empresarial (DP-ARQ-02, DP-SEG-01, DP-SEG-05, DP-TEC-03)
+- [x] 15. Crear el esquema privado y el perfil empresarial (DP-ARQ-02, DP-SEG-01, DP-SEG-05, DP-TEC-03)
   - Área: base de datos · Responsable: Davidson; revisión de Sebastián
   - Crear migración Supabase CLI en `supabase/migrations/` para esquema `app` y tabla `perfiles_usuario` (`usuario_id` UUID con FK a `auth.users`, `rol` con CHECK y valores `ADMINISTRADOR`, `COMERCIAL`, `FINANZAS_RRHH`, `OPERACIONES`, `activo`, marcas temporales y `actualizado_por`). Habilitar RLS y revocar acceso a `anon`/`authenticated`; conceder al rol de backend los permisos necesarios.
   - Configurar Hibernate para `app` y `ddl-auto=validate`. No insertar perfiles de usuario ni UUID personales en la migración.
