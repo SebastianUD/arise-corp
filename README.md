@@ -373,9 +373,9 @@ Dependencias fijadas en `package.json` y `package-lock.json`; usar `npm ci` para
 
 Las pruebas automáticas se ejecutan sin servicios externos: el backend usa H2 y JWT simulados, y el frontend simula Supabase y la API. La configuración en `backend/src/test/resources/application.properties` reemplaza la principal y no importa el archivo `.env`. Los tokens inválidos/vencidos se prueban simulando el rechazo del decoder de Spring Security.
 
-Con ambos servidores iniciados, abrir `http://localhost:5173/login` y usar una cuenta autorizada existente en el proyecto Supabase. Verificar que el login lleva a `/perfil`, muestra ID/correo obtenidos de `GET /api/me` y que Cerrar sesión devuelve al login. Al visitar `/perfil` sin sesión, se redirige al login. La app no incluye registro de usuarios.
+Con ambos servidores iniciados, abrir `http://localhost:5173/login` y usar una cuenta autorizada existente en el proyecto Supabase. Verificar que el login lleva a `/perfil`, muestra ID/correo y rol empresarial obtenidos de `GET /api/me` y que Cerrar sesión devuelve al login. Al visitar `/perfil` sin sesión, se redirige al login. La app no incluye registro de usuarios.
 
-Ante una sesión rechazada por la API, se vuelve al login con un mensaje de expiración; ante falta de permisos se conserva la sesión. Los errores de conexión permiten reintentar. Login y API tienen un límite de 30 segundos. El cierre usa el alcance local para eliminar la sesión del dispositivo aun si falla la revocación remota; no cierra las sesiones de otros dispositivos.
+Ante una sesión rechazada por la API, se vuelve al login con un mensaje de expiración; ante falta de perfil activo o permisos se muestra un mensaje y se conserva la sesión hasta elegir Volver al inicio de sesión, que la cierra localmente. Los errores de conexión permiten reintentar. Login y API tienen un límite de 30 segundos. El cierre usa el alcance local para eliminar la sesión del dispositivo aun si falla la revocación remota; no cierra las sesiones de otros dispositivos.
 
 La validación con una cuenta real es manual y no forma parte de la suite automática. No compartir credenciales ni tokens en capturas o logs. El verificador de patrones no sustituye la revisión de cambios y nunca abre archivos `.env`.
 

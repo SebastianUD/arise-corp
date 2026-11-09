@@ -16,7 +16,7 @@ Parte del backend **ya está implementada** y este diseño la documenta sin re-i
 | `login.controller.AuthController` → `GET /api/me` | [Implementado] | Nada; el perfil activo y el rol empresarial se resuelven en el backend |
 | `application.properties` (datasource, JWT issuer/JWKS/ES256/aud) | [Implementado] | Nada; se documenta |
 | Pruebas backend con H2 y JWT simulados | [Implementado] | 58 pruebas backend documentadas; sin tokens reales ni base compartida |
-| Frontend React (login, rutas privadas, consumo de `/api/me`) | [Implementado] | 30 pruebas frontend documentadas; el perfil aún no muestra el rol (tarea 19) y falta validación real (tarea 20) |
+| Frontend React (login, rutas privadas, consumo de `/api/me`) | [Implementado] | 35 pruebas frontend aprobadas; rol empresarial y salida segura ante 403 implementados (tarea 19); falta validación real (tarea 20) |
 | Perfil empresarial, matriz de roles y gestión de permisos | [Implementado] | Perfil, `/api/me`, matriz de autorización, administración (tareas 16–17) y Problem Details uniforme (tarea 18) |
 
 ### Decisiones adoptadas que afectan a esta spec
@@ -408,7 +408,7 @@ El flujo login → `/api/me` con un usuario real contra Supabase se valida manua
 - `AuthProvider` restaura la sesión y se suscribe a cambios del SDK; ignora restauraciones obsoletas y eventos tardíos después del cierre. `signOut({ scope: 'local' })` elimina la sesión del dispositivo incluso cuando la revocación falla. No se mantiene una copia de tokens fuera del SDK.
 - Login valida campos antes de llamar a Supabase, bloquea envíos duplicados y limita la espera a 30 segundos. El cliente configura un fetch con aborto; un resultado tardío se descarta y se vuelve a limpiar la sesión. Sin variables de Supabase, se presenta un mensaje de indisponibilidad sin inicializar el SDK.
 - `apiRequest` obtiene el token vigente para cada petición y limita a 30 segundos la lectura de sesión, la petición y el cuerpo de respuesta. Un 401 limpia sesión y notifica al proveedor para redirigir con motivo de expiración; 403 conserva la sesión. Los fallos de red y de servidor permiten reintentar sin revelar sus cuerpos internos.
-- Rutas: `/login` pública y `/perfil` protegida. El perfil comparte una única promesa de petición durante los efectos de StrictMode, muestra ID/correo en el código actual; la tarea 19 añade el rol empresarial. Permite reintentar o cerrar sesión.
+- Rutas: `/login` pública y `/perfil` protegida. El perfil comparte una única promesa de petición durante los efectos de StrictMode, muestra ID/correo y el rol empresarial de `/api/me` con una etiqueta legible. Ante 403 explica la falta de perfil activo o permisos y ofrece volver al inicio de sesión mediante cierre local, sin redirección ni reintento automático. Los errores de conexión conservan Reintentar.
 - Pruebas frontend: formulario, proveedor, rutas y perfil integrados con Supabase/API simulados; cliente HTTP; configuración pública; y prueba del SDK real con almacenamiento local y transporte simulado para el cierre sin conexión.
 - Verificación reproducible de patrones de credenciales en fuente, plantilla y bundle: `npm run check:secrets`. El prefijo literal de validación del SDK no es una clave: se detectan claves completas con sufijo. El build de verificación usa únicamente valores públicos ficticios; no se leen ni comparan secretos locales.
 - La prueba manual con una cuenta autorizada de Supabase sigue pendiente; las pruebas simuladas no la sustituyen. Se completa en la tarea 20.

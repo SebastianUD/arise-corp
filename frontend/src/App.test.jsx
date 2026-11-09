@@ -11,7 +11,7 @@ const { auth, store } = vi.hoisted(() => ({
 vi.mock('./lib/supabase.js', () => ({ supabase: { auth }, configurationError: null }))
 
 const session = { access_token: 'fake-access-token', expires_at: 4_000_000_000, user: { id: 'test-user' } }
-const profile = { id: 'test-user', email: 'paula@example.test', role: 'authenticated' }
+const profile = { id: 'test-user', email: 'paula@example.test', role: 'COMERCIAL' }
 const emit = (event, value) => {
   store.session = value
   store.listeners.forEach(listener => listener(event, value))
@@ -98,6 +98,8 @@ it('completa Login → sesión → perfil y envía el Bearer a la API', async ()
   submit()
   await screen.findByText('paula@example.test')
   expect(screen.getByText('test-user')).toBeVisible()
+  expect(screen.getByText('Rol empresarial')).toBeVisible()
+  expect(screen.getByText('Comercial')).toBeVisible()
   expect(auth.signInWithPassword).toHaveBeenCalledWith({ email: 'paula@example.test', password: 'fake-password' })
   expect(fetch).toHaveBeenCalledWith('http://localhost:8080/api/me', expect.objectContaining({
     headers: { Authorization: 'Bearer fake-access-token' },
@@ -177,13 +179,47 @@ it('descarta la sesión y explica su expiración ante un 401', async () => {
   expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
 })
 
-it('muestra falta de permisos ante un 403 sin cerrar sesión', async () => {
+it('explica el perfil sin permiso ante un 403 sin cerrar sesión ni repetir la petición', async () => {
   store.session = session
   fetch.mockResolvedValue({ status: 403, ok: false })
   mount('/perfil')
-  expect(await screen.findByRole('alert')).toHaveTextContent('No tienes permisos')
+  expect(await screen.findByRole('alert')).toHaveTextContent('Tu cuenta no tiene un perfil activo o permisos para acceder. Contacta al administrador.')
   expect(screen.getByRole('heading', { name: 'Mi perfil' })).toBeVisible()
+  expect(screen.queryByText('Rol empresarial')).not.toBeInTheDocument()
+  expect(screen.queryByText('paula@example.test')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Volver al inicio de sesión' })).toBeVisible()
+  expect(fetch).toHaveBeenCalledTimes(1)
   expect(auth.signOut).not.toHaveBeenCalled()
+})
+
+it.each([
+  ['ADMINISTRADOR', 'Administrador'],
+  ['COMERCIAL', 'Comercial'],
+  ['FINANZAS_RRHH', 'Finanzas / RR. HH.'],
+  ['OPERACIONES', 'Operaciones'],
+])('muestra el rol empresarial %s recibido de la API', async (role, label) => {
+  store.session = session
+  fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
+  mount('/perfil')
+  expect(await screen.findByText(label)).toBeVisible()
+  expect(screen.getByText('Rol empresarial')).toBeVisible()
+  expect(screen.queryByText('authenticated')).not.toBeInTheDocument()
+})
+
+it('permite salir de un perfil sin permiso sin volver a la ruta protegida, incluso sin red', async () => {
+  store.session = session
+  auth.signOut.mockRejectedValue(new Error('offline'))
+  fetch.mockResolvedValue({ status: 403, ok: false })
+  mount('/perfil')
+  await screen.findByRole('alert')
+  fireEvent.click(screen.getByRole('button', { name: 'Volver al inicio de sesión' }))
+  await screen.findByRole('heading', { name: 'Bienvenido de nuevo' })
+  expect(screen.queryByRole('heading', { name: 'Mi perfil' })).not.toBeInTheDocument()
+  expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
+  await act(async () => emit('TOKEN_REFRESHED', session))
+  expect(screen.getByRole('heading', { name: 'Bienvenido de nuevo' })).toBeVisible()
+  expect(fetch).toHaveBeenCalledTimes(1)
 })
 
 it('permite reintentar después de un fallo de red usando el token renovado', async () => {
