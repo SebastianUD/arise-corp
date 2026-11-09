@@ -175,11 +175,13 @@ Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiert
   - Añadir pruebas de rol y perfil sin permiso.
   - _Requisitos: AUTH-04, AUTH-05, NF-06, NF-07_
 
-- [ ] 20. Validar integración con Supabase real y aprovisionamiento inicial
+- [x] 20. Validar integración con Supabase real y aprovisionamiento inicial
   - Área: integración/documentación · Responsable: Sebastián; apoyo de Paula
   - Aplicar la migración revisada de forma controlada en `arise-corp-dev`, aprovisionar una cuenta Administrador por procedimiento documentado, y verificar login, `GET /api/me`, rol y un caso 403.
   - Registrar solo resultado, fecha y entorno (sin UUID, token, correo ni credenciales); no usar esta cuenta en CI.
   - _Requisitos: AUTH-01 a AUTH-05, CA-02, CA-03_
+
+  - **Verificación — 2026-11-09, `arise-corp-dev`:** el MCP confirmó que `app.perfiles_usuario` existe con la estructura esperada, RLS activo y sin privilegios de esquema/lectura para `anon` ni `authenticated`; el historial remoto contiene la migración `app_perfiles_usuario`. No se volvió a ejecutar una migración ya aplicada. Se aprovisionó el perfil Administrador y se verificó mediante login real que `/api/me` entrega identidad y rol empresarial. Una segunda cuenta Auth sin perfil recibió 403; la interfaz mostró el mensaje de permisos y la salida segura al inicio de sesión. No se registraron datos personales ni credenciales.
 
 - [ ] 21. Checkpoint final de `001-foundation`
   - Área: backend/frontend/documentación · Responsables: los tres
