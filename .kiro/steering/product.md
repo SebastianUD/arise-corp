@@ -95,15 +95,16 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - Conexión a Supabase PostgreSQL mediante Session pooler (verificada según el README).
 - `.env` local, plantilla `backend/.env.example` y reglas de `.gitignore`.
 - Spring Security como OAuth2 Resource Server que valida JWT de Supabase Auth (ES256, JWKS, issuer y audiencia).
-- Frontend React con login, sesión, rutas protegidas, cliente HTTP y perfil; cobertura automática de 30 pruebas frontend y 58 backend documentada en `001-foundation/tasks.md`.
+- Frontend React con login, sesión, rutas protegidas, cliente HTTP y perfil; cobertura automática de 35 pruebas frontend y 58 backend documentada en `001-foundation/tasks.md`.
 - Endpoint protegido `GET /api/me` con identidad y rol empresarial del perfil activo.
 - Autorización por rol en backend: `PerfilJwtAuthenticationConverter` deriva `ROLE_<ROL>` del perfil activo y `SecurityConfig` aplica la matriz de módulos y las lecturas cruzadas mínimas de ERP-05/SGA-05 (tarea 17).
 - Administración de perfiles por el rol Administrador mediante `PUT /api/admin/usuarios/{id}/perfil` y `PATCH /api/admin/usuarios/{id}/estado`.
 - CORS configurable para el frontend, con valor local por defecto `http://localhost:5173`.
 - Errores API y de seguridad en formato RFC 9457 Problem Details; 401 conserva `WWW-Authenticate`.
+- Validación manual con Supabase real: cuenta Administrador, `/api/me` con identidad y rol, y 403 seguro para cuenta sin perfil (tarea 20 de `001-foundation`).
+- Primera fase `001-foundation` cerrada: tareas 1–21 completadas; backend/frontend, build, secretos, migración y documentación verificados (tarea 21).
 
 [Aprobado, pendiente de implementar]
-- Completar `001-foundation`: mostrar el rol empresarial en el perfil frontend, validación manual con Supabase real y checkpoint final (tareas 19–21).
 - Migraciones de negocio para CRM, ERP y SGA.
 - Módulos CRM, ERP y SGA y sus interfaces.
 - Dockerfile, Docker Compose y automatización CI.

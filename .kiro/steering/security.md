@@ -11,7 +11,7 @@ Etiquetas de estado: ver `product.md`. Los códigos HTTP y el formato de errores
 - El frontend no accede a las tablas de negocio; todos los datos pasan por la API de Spring Boot.
 
 ## Autenticación y autorización
-- **Autenticación**: comprobar quién es el usuario. Supabase Auth inicia la sesión y emite el JWT; Spring Security verifica ese JWT en cada petición. Estado: [Implementado] en backend y frontend; pendiente validación manual con una cuenta real de Supabase.
+- **Autenticación**: comprobar quién es el usuario. Supabase Auth inicia la sesión y emite el JWT; Spring Security verifica ese JWT en cada petición. Estado: [Implementado] en backend y frontend; flujo validado manualmente con Supabase real en tarea 20 de `001-foundation`.
 - **Autorización**: decidir qué puede hacer un usuario ya autenticado según el rol empresarial activo de su perfil. La aplica Spring Boot conforme a la matriz en `product.md`. Estado: [Implementado] en `SecurityConfig` con un converter que deriva `ROLE_<ROL>` del perfil activo (tarea 17).
 
 ## Flujo de autenticación

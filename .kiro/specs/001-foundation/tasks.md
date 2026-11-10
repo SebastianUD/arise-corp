@@ -2,7 +2,7 @@
 
 ## Overview
 
-Este plan convierte el diseño aprobado de `001-foundation` (integración vertical de autenticación) en tareas de código pequeñas e incrementales. Las tareas 1–19 implementan el flujo frontend, la autenticación JWT, el perfil empresarial y su administración, la autorización por rol y los errores RFC 9457. La validación con una cuenta real de Supabase y el cierre de fase siguen pendientes (tareas 20–21).
+Este plan convierte el diseño aprobado de `001-foundation` (integración vertical de autenticación) en tareas de código pequeñas e incrementales. Las tareas 1–21 están completadas: flujo frontend, autenticación JWT, perfil empresarial y administración, autorización por rol, errores RFC 9457, validación controlada con Supabase real y checkpoint final.
 
 Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiertas reflejan trabajo necesario tras las decisiones ya adoptadas.
 
@@ -191,7 +191,7 @@ Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiert
 ## Notes
 
 - Las tareas marcadas con `*` identifican pruebas/verificaciones de detalle; no se omiten cuando cubren NF-07, CA-03 o el Definition of Done.
-- Las tareas 1–19 están implementadas; quedan 20–21 para validar Supabase real y cerrar la primera fase.
+- Las tareas 1–21 de `001-foundation` están completadas; la siguiente funcionalidad se desarrolla en una nueva spec.
 - El esquema/perfil (15), backend `/api/me` (16), autorización/administración (17) y Problem Details (18) están implementados; el perfil frontend muestra el rol empresarial y ofrece salida segura ante un 403 (19).
 - No se incluyen pruebas basadas en propiedades (PBT): la validación JWT se delega a Spring Security y el mapeo/reglas se cubren con pruebas por ejemplo.
 - La validación extremo a extremo con un usuario real contra Supabase se realiza de forma manual y controlada (fuera de estas tareas de código y de CI, para no depender de `arise-corp-dev`), según el diseño y el Requirement 10.
@@ -268,7 +268,7 @@ Cada tarea indica **área**, **responsable** y **requisitos**. Las tareas abiert
 - El perfil muestra el rol empresarial recibido de `/api/me`, con etiquetas Administrador, Comercial, Finanzas / RR. HH. y Operaciones. No consulta el claim técnico del token ni realiza autorización por rol en el frontend.
 - Ante 403 se ocultan los datos del perfil y se indica que falta un perfil activo o permisos, con orientación a contactar al administrador. La sesión se conserva hasta que el usuario elige salir; el botón Volver al inicio de sesión limpia la sesión local aun si falla la red. No hay reintentos ni redirecciones automáticas en 403. Los errores de conexión mantienen Reintentar.
 - Pruebas: cuatro roles, rol visible en el flujo Login → Perfil, perfil sin permiso y salida sin bucle incluso ante fallo de signOut y eventos tardíos. `npm test`: 35 pruebas aprobadas. `npm run build` y `npm run check:secrets`: correctos.
-- Tareas 20 y 21 continúan pendientes. No se valida una cuenta real ni se aplican migraciones en este cambio.
+- En el momento de este cambio de tarea 19, las tareas 20 y 21 aún estaban pendientes; sus verificaciones posteriores se registran a continuación.
 
 ### Verificación de la tarea 20 — 2026-11-09
 

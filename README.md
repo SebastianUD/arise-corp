@@ -2,7 +2,7 @@
 
 Plataforma web de gestión empresarial para centralizar los procesos comerciales, administrativos y operativos de Arise Corp., empresa colombiana orientada al transporte y entrega de paquetes mediante drones.
 
-> **Estado del proyecto:** consulte `.kiro/steering/product.md`; el trabajo abierto de la primera fase está en `.kiro/specs/001-foundation/tasks.md`.
+> **Estado del proyecto:** `001-foundation` está completada. El resumen vigente y las próximas funcionalidades están en `.kiro/steering/product.md`.
 
 ## 1. Objetivo del proyecto
 
@@ -100,7 +100,7 @@ Las versiones y dependencias adicionales que aún no estén aprobadas se definir
 
 ## 4. Estado actual del desarrollo
 
-El estado implementado y las tareas abiertas se mantienen en `.kiro/steering/product.md`; la primera fase pendiente de cierre está desglosada en `.kiro/specs/001-foundation/tasks.md`. Este README concentra instalación y uso; el resumen del estado se mantiene en la fuente de avance enlazada.
+El estado implementado y las próximas funcionalidades se mantienen en `.kiro/steering/product.md`. La spec `001-foundation` está cerrada; sus tareas y evidencias de verificación se conservan en `.kiro/specs/001-foundation/tasks.md`. Este README concentra instalación y uso.
 
 El proyecto se ejecuta localmente (`localhost`); no incluye CD, publicación de imágenes ni entornos remotos.
 
@@ -414,7 +414,7 @@ El ciclo de trabajo será:
 
 Los Steering Files de `.kiro/steering/` son el contexto permanente del proyecto. Las especificaciones aprobadas son la referencia común para frontend y backend.
 
-La primera especificación será `001-foundation`, centrada en completar la integración de autenticación e infraestructura.
+La primera especificación `001-foundation`, centrada en la integración de autenticación e infraestructura, está completada. Las siguientes especificaciones cubrirán los módulos de negocio del MVP.
 
 ## 14. Git y colaboración
 
