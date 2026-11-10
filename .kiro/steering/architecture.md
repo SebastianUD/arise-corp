@@ -14,10 +14,10 @@ Etiquetas de estado: ver `product.md`. El diagrama general de componentes está 
 ## Componentes y responsabilidades
 | Componente | Responsabilidades | No debe | Estado |
 |---|---|---|---|
-| SPA React (Vite, Tailwind CSS, React Router) | Vistas (Login, Dashboard, CRM, ERP, SGA), navegación y rutas protegidas, estado de la sesión, formularios con validación y estados de carga/error, llamadas a la API con el token | Leer o escribir tablas de negocio en Supabase; decidir permisos por sí sola; contener las reglas de negocio | [Aprobado]; `frontend/` vacío |
-| Supabase Auth | Inicio y cierre de sesión, emisión y renovación de JWT (ES256), publicación de las claves públicas (JWKS) | Almacenar datos de negocio | [Implementado] en el proyecto; integración con el frontend pendiente |
-| API Spring Boot | Validar el JWT, autorizar por rol, validar entradas, aplicar reglas de negocio, gestionar transacciones, acceder a PostgreSQL, responder JSON con códigos HTTP coherentes | Renderizar vistas; delegar permisos al frontend | [Implementado] la base de seguridad; módulos pendientes |
-| Supabase PostgreSQL | Persistencia e integridad (PK, FK, UNIQUE, NOT NULL, CHECK) | Ser modificado por Hibernate; exponer tablas de negocio al frontend | [Implementado] la conexión; sin tablas de negocio |
+| SPA React (Vite, Tailwind CSS, React Router) | Login, perfil, navegación y rutas protegidas, sesión, formularios y llamadas autenticadas a la API | Leer o escribir tablas de negocio en Supabase; decidir permisos por sí sola; contener reglas de negocio | [Implementado] para login/perfil; módulos funcionales pendientes |
+| Supabase Auth | Inicio y cierre de sesión, emisión y renovación de JWT (ES256), publicación de las claves públicas (JWKS) | Almacenar datos de negocio | [Implementado] e integrado; flujo validado manualmente en `arise-corp-dev` |
+| API Spring Boot | Validar JWT, autorizar por rol, validar entradas, reglas de negocio, transacciones y persistencia | Renderizar vistas; delegar permisos al frontend | JWT, `/api/me`, perfil, autorización por rol, administración de perfiles y Problem Details implementados (tareas 15–18) |
+| Supabase PostgreSQL | Persistencia e integridad relacional | Ser modificado por Hibernate; exponer tablas de negocio al frontend | [Implementada] la conexión y `app.perfiles_usuario`; tablas de negocio pendientes |
 
 ## Flujo de una petición autenticada
 ```mermaid
@@ -41,7 +41,7 @@ sequenceDiagram
     API-->>FE: Respuesta JSON y código HTTP
 ```
 
-- Estado: [Implementado] desde la recepción de la petición hasta la validación del JWT (`GET /api/me`). Inicio de sesión en React, autorización por rol y acceso a tablas de negocio: [Aprobado], pendientes.
+- Estado: [Implementado] el login/perfil frontend (incluido el rol), la validación JWT hasta `GET /api/me`, el perfil empresarial, la autorización por rol, la administración de perfiles y Problem Details. `001-foundation` está cerrada (tareas 1–21); los datos de negocio se construyen en specs posteriores.
 - El backend no guarda sesión (`SessionCreationPolicy.STATELESS`): cada petición se autentica solo con su JWT.
 
 ## Capas del backend [Aprobado, MVP §9]
@@ -65,7 +65,7 @@ Justificación de que las entidades no salgan de la capa de servicio: con `sprin
 | `erp` | Empleados, proveedores, facturas o movimientos financieros | Puede relacionar registros financieros con clientes del CRM (ERP-05) |
 | `sga` | Drones, paquetes, inventario, historial de estados | Asocia paquetes a clientes y contratos del CRM (SGA-05) |
 
-Todos los módulos dependen de la autorización por rol. La forma en que un módulo usa los datos de otro se define en DP-ARQ-01.
+Todos los módulos dependen de la autorización por rol. ERP y SGA consultan CRM solo a través de sus servicios y para las lecturas cruzadas autorizadas en `product.md`. Las relaciones entre módulos conservan UUID y FK en PostgreSQL; no se crean asociaciones JPA entre módulos.
 
 ### Orden de construcción [Aprobado, MVP §13]
 1. Constitución del proyecto: alcance, stack, arquitectura y convenciones (estos steering files).
@@ -77,7 +77,7 @@ Todos los módulos dependen de la autorización por rol. La forma en que un mód
 7. Validación final: pruebas, criterios de aceptación y documentación.
 
 ## Datos [Aprobado]
-- Una única instancia de Supabase PostgreSQL con separación lógica por tablas y relaciones. La separación en esquemas puede evaluarse más adelante (DP-ARQ-02).
+- Una única instancia de Supabase PostgreSQL. Las tablas de negocio y perfiles viven en el esquema privado `app`, fuera de los esquemas expuestos por la Data API.
 - Spring Boot es el único componente que lee y escribe tablas de negocio, mediante Spring Data JPA/Hibernate sobre JDBC, con el Session pooler y `sslmode=require`.
 - React usa Supabase solo para autenticación.
 - Supabase Auth gestiona los usuarios en su propio esquema (`auth`). No crear tablas ni modificar objetos en ese esquema. El backend identifica al usuario por el claim `sub` del JWT (UUID).
@@ -101,8 +101,8 @@ Todos los módulos dependen de la autorización por rol. La forma en que un mód
 - API REST sobre HTTP con cuerpos JSON. Convenciones en `api-conventions.md`.
 - El token de acceso de Supabase viaja en el encabezado `Authorization: Bearer <token>`. No se usan cookies de sesión.
 - Desarrollo local: frontend en `http://localhost:5173` y API en `http://localhost:8080`, con CORS configurado en el backend (ver `security.md`).
-- La URL base de la API se configurará con una variable `VITE_*` (DP-TEC-01).
+- La URL base de la API usa `VITE_API_BASE_URL` (DP-TEC-01).
 
-## Decisiones pendientes de aprobación
-- **DP-ARQ-01** Dependencias entre módulos. Propuesta: dependencias en un solo sentido (`erp` → `crm`, `sga` → `crm`; `crm` no depende de `erp` ni de `sga`); un módulo usa los datos de otro a través de su servicio, nunca de su repositorio. Decidir también si las entidades de módulos distintos se relacionan con asociaciones JPA (`@ManyToOne`) o solo por identificador con una FK en la base. Lo segundo mantiene los módulos más independientes.
-- **DP-ARQ-02** Esquema de PostgreSQL para las tablas de negocio: `public` (expuesto por defecto por la Data API de Supabase) o un esquema propio no expuesto. Afecta a la seguridad; ver DP-SEG-05.
+## Decisiones adoptadas
+- **DP-ARQ-01:** dependencias unidireccionales `erp → crm` y `sga → crm`; CRM no depende de ERP ni SGA. Se consulta otro módulo mediante su servicio. Las entidades guardan UUIDs de referencia y las FK se definen en PostgreSQL; no hay `@ManyToOne` entre módulos.
+- **DP-ARQ-02:** las tablas de negocio se crean en el esquema privado `app`, no expuesto por la Data API. Hibernate y las migraciones seleccionan explícitamente ese esquema. La protección se completa con permisos de base de datos y RLS según `security.md`.

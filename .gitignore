@@ -31,17 +31,51 @@
 **/node_modules/
 **/dist/
 
+# Cachés locales y resultados de pruebas
+**/.vite/
+**/.vite-temp/
+**/.vitest/
+**/.cache/
+**/.npm/
+**/coverage/
+**/playwright-report/
+**/test-results/
+**/blob-report/
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+
 # =================================
 # IDE Y SISTEMA OPERATIVO
 # =================================
 
 .idea/
 *.iml
+.classpath
+.project
+.settings/
+.factorypath
 .DS_Store
 Thumbs.db
+Desktop.ini
+
+# Archivos temporales y copias del editor
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Volcados de memoria y diagnósticos locales de Java
+*.hprof
+replay_pid*
 
 # =================================
 # SUPABASE
 # =================================
 
 supabase/.temp/
+
+# Metadatos locales generados por Kiro
+.kiro/**/.config.kiro
+.kiro/**/tasks.meta.json

@@ -1,0 +1,27 @@
+root = true
+
+# Estilo comun del repositorio (DP-EST-03).
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+[*.java]
+indent_size = 4
+
+[*.{js,jsx,json,css,html,yml,yaml}]
+indent_size = 2
+
+[*.{cmd,bat}]
+end_of_line = crlf
+
+[mvnw]
+end_of_line = lf
+
+[*.xml]
+indent_style = tab
+
+[*.md]
+trim_trailing_whitespace = false

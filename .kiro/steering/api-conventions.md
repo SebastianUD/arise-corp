@@ -3,24 +3,27 @@
 Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles están en `security.md`.
 
 ## Endpoints existentes [Implementado]
-| Método | Ruta | Autenticación | Respuesta 200 |
+| Método | Ruta | Autenticación | Respuesta de éxito |
 |---|---|---|---|
 | GET | `/api/me` | JWT obligatorio | `{ "id": "<sub>", "email": "<email>", "role": "<role>" }` |
+| PUT | `/api/admin/usuarios/{id}/perfil` | JWT de Administrador | 201 al crear (con `Location`) o 200 al actualizar el rol |
+| PATCH | `/api/admin/usuarios/{id}/estado` | JWT de Administrador | 200 al activar/desactivar un perfil existente |
 
-- Sin token, o con un token inválido o vencido, Spring Security responde 401 con el encabezado `WWW-Authenticate` y sin cuerpo JSON.
-- El campo `role` contiene el claim `role` de Supabase (normalmente `authenticated`). No es el rol empresarial (ver `security.md`).
+- Sin token, o con un token inválido o vencido, el backend responde 401 Problem Details con el encabezado `WWW-Authenticate` (DP-API-02).
+- El campo `role` de `/api/me` refleja el rol empresarial del perfil activo en `app.perfiles_usuario`; un perfil ausente o inactivo produce 403. El claim técnico `role` de Supabase no autoriza operaciones (tarea 16 de `001-foundation`).
+- `PUT` recibe `{ "rol": "<ROL>" }`; `PATCH` recibe `{ "activo": true|false }`. El identificador de ruta es el UUID de Supabase Auth y los campos de auditoría los asigna el servidor. Respuestas: 201/200 según corresponda, 400 por cuerpo inválido, 403 si el actor no es Administrador o no tiene perfil activo, 404 si el perfil o la identidad de Auth no existe.
 - No existen endpoints públicos. La ruta `/api/public/**` está reservada para ellos en `SecurityConfig`.
-- No existe manejo global de errores.
+- El manejo global de errores está implementado en `shared.error`: todos los 400/401/403/404/405/409/500 usan el mismo formato Problem Details (tarea 18 de `001-foundation`).
 
 ## Rutas
 - [Implementado] Todas las rutas cuelgan de `/api`. Las rutas sin autenticación van exclusivamente bajo `/api/public/**`.
-- Estructura y versionado: DP-API-01. Propuesta:
+- Estructura y versionado [DP-API-01]:
   - `/api/{modulo}/{recurso}`, con `modulo` ∈ `crm`, `erp`, `sga`. Ejemplos: `/api/crm/clientes`, `/api/crm/clientes/{id}`, `/api/sga/paquetes/{id}/estados`.
-  - El prefijo de módulo permite aplicar la autorización por módulo con una sola regla de ruta (ver `security.md`).
+  - El prefijo de módulo permite aplicar la autorización por módulo (ver `security.md`).
   - `/api/me` se mantiene tal como está.
 - Reglas generales para cualquier opción:
   - Recursos como sustantivos en plural, en minúsculas y con kebab-case (`cuentas-corporativas`). El idioma depende de DP-EST-02.
-  - Sin verbos en la ruta, salvo acciones de estado que no encajen en CRUD (DP-API-05).
+  - Sin verbos en la ruta, salvo acciones de estado definidas en DP-API-05.
   - Subrecursos para relaciones de pertenencia: `/api/crm/clientes/{id}/contratos`.
   - Filtros, búsqueda, orden y paginación como parámetros de consulta, nunca en la ruta.
 
@@ -34,7 +37,7 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 | DELETE | Eliminar, solo si la especificación lo permite | 204 sin cuerpo |
 
 - CRM-01 pide desactivar clientes, no eliminarlos: la desactivación es lógica.
-- Los estados de contratos y paquetes, y las cantidades de inventario, no se modifican con un PUT genérico. Cambian mediante operaciones explícitas que validan la transición y, para los paquetes, registran el historial en la misma transacción (SGA-03, SGA-04). La forma de estas operaciones se define en DP-API-05.
+- Los estados de contratos y paquetes, y las cantidades de inventario, no se modifican con un PUT genérico. Cambian mediante operaciones explícitas que validan la transición y, para los paquetes, registran el historial en la misma transacción (SGA-03, SGA-04). Las operaciones siguen DP-API-05.
 
 ## Códigos de respuesta
 | Código | Cuándo |
@@ -53,12 +56,12 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 - Las excepciones no controladas no deben mostrar trazas, SQL, nombres de clases ni datos internos (CA-06).
 
 ## Formato JSON
-- `Content-Type: application/json` en UTF-8 para solicitudes y respuestas (salvo el formato de errores de DP-API-02).
+- `Content-Type: application/json` en UTF-8 para solicitudes y respuestas (salvo las respuestas Problem Details de DP-API-02).
 - Nombres de campos en camelCase, la convención por defecto de Jackson y de JavaScript; `/api/me` ya la cumple.
 - Las solicitudes y respuestas usan DTO, nunca entidades JPA (justificación en `architecture.md`).
 - Los DTO de entrada solo incluyen los campos que el cliente puede fijar. El identificador, las fechas de creación y modificación, el estado actual, los totales calculados y el usuario que realiza la operación los asigna el servidor.
-- Las fechas y horas se envían como texto ISO-8601. Tipos concretos, zona horaria, identificadores, valores monetarios y enumeraciones: DP-API-04.
-- Las listas se paginan según DP-API-03.
+- Las fechas y horas se envían como texto ISO-8601. Se usan UUID para identificadores, `date`/`LocalDate` para fechas de calendario e instantes ISO-8601 UTC (`timestamptz`, `Instant`) para marcas temporales; importes COP como `numeric`/`BigDecimal` y texto decimal JSON para no perder precisión en JavaScript; enumeraciones `UPPER_SNAKE_CASE` en JSON y texto en PostgreSQL con `CHECK` y `EnumType.STRING` (DP-API-04).
+- Las listas usan `page` desde 0 (por defecto 0), `size` por defecto 20 y máximo 100, y `sort=campo,asc|desc`. La respuesta usa `{ "content": [], "page": 0, "size": 20, "totalElements": 0, "totalPages": 0 }`; no se serializa directamente `Page` de Spring Data (DP-API-03).
 
 ## Validaciones
 - Los DTO de entrada se validan con Bean Validation: `@Valid` en el `@RequestBody` y anotaciones como `@NotNull`, `@NotBlank`, `@Size`, `@Email` o `@Positive` en los campos. Los parámetros de ruta y de consulta se validan con `@Validated` en el controlador.
@@ -69,9 +72,10 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 - Los mensajes de validación deben ser comprensibles para el usuario (AUTH-05, NF-06). Su idioma depende de DP-EST-02.
 
 ## Manejo uniforme de errores
-- [Aprobado] Todas las respuestas de error tienen el mismo formato, con un mensaje comprensible y sin información sensible (CA-06, AUTH-05). La traducción de excepciones a respuestas se centraliza en un único manejador global (`@RestControllerAdvice`), no en cada controlador.
-- Los 401 y 403 de Spring Security usan el mismo formato mediante un `AuthenticationEntryPoint` y un `AccessDeniedHandler` propios, que conservan el encabezado `WWW-Authenticate`.
-- Formato concreto: DP-API-02. Propuesta: RFC 9457 Problem Details (`application/problem+json`), soportado de forma nativa por Spring con `ProblemDetail`, `ErrorResponseException` y `ResponseEntityExceptionHandler`. Ejemplo:
+- [Implementado] Todas las respuestas de error tienen el mismo formato, con un mensaje comprensible y sin información sensible (CA-06, AUTH-05). La traducción de excepciones a respuestas se centraliza en `GlobalExceptionHandler` (`@RestControllerAdvice`), no en cada controlador.
+- Los 401 y 403 de Spring Security usan el mismo formato mediante `RestAuthenticationEntryPoint` y `RestAccessDeniedHandler`. El 401 conserva el encabezado `WWW-Authenticate`; el entry point se registra también en `oauth2ResourceServer()` para cubrir los rechazos del filtro Bearer.
+- Los 404 de recursos de negocio usan `RecursoNoEncontradoException`; los 409 de integridad y los 500 inesperados responden mensajes genéricos sin exponer SQL, trazas ni datos internos.
+- Formato adoptado DP-API-02: RFC 9457 Problem Details (`application/problem+json`), soportado de forma nativa por Spring con `ProblemDetail` y `ResponseEntityExceptionHandler`. La extensión `errors` se usa en validaciones por campo. Ejemplo:
 
 ```json
 {
@@ -91,7 +95,7 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 - Decisión: DP-API-01.
 
 ## Documentación de la API
-- [Aprobado, README §8] El `design.md` de cada especificación documenta el contrato de cada endpoint antes de implementarlo. El contrato aprobado es la referencia común para el frontend y el backend. Plantilla:
+- [Aprobado, README §13] El `design.md` de cada especificación documenta el contrato de cada endpoint antes de implementarlo. El contrato aprobado es la referencia común para el frontend y el backend. Plantilla:
 
 ```markdown
 ### POST /api/crm/clientes
@@ -102,21 +106,14 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 - Errores: 400 (validación), 401, 403, 409 (identificador de cliente duplicado)
 ```
 
-  Los nombres del ejemplo son ilustrativos y dependen de DP-EST-02.
-- Si el código y el contrato difieren, se corrige uno de los dos en el mismo Pull Request (ver `sdd-workflow.md`).
-- Documentación generada (OpenAPI/Swagger UI): DP-API-06.
+  Los nombres del ejemplo siguen el vocabulario español del MVP.
+- Si el código y el contrato difieren, se corrige en la rama de la spec y queda actualizado antes de su PR final (ver `sdd-workflow.md`).
+- Los contratos mantenidos en los `design.md` son la documentación de API del MVP (DP-API-06).
 
-## Decisiones pendientes de aprobación
-- **DP-API-01** Estructura de rutas y versionado. Confirmar el prefijo de módulo `/api/{modulo}/{recurso}`. Versionado: (a) sin versión durante el MVP, como hoy; (b) `/api/v1/...`, que obliga a mover `/api/me` y `/api/public/**`. Recomendación: (a), porque hay un solo cliente y se despliega junto con la API.
-- **DP-API-02** Formato de errores: Problem Details (RFC 9457) o un formato JSON propio. Recomendación: Problem Details, con la extensión `errors` para errores por campo.
-- **DP-API-03** Paginación, filtros y orden. Propuesta: parámetros `page` (desde 0), `size` (por defecto 20, máximo 100) y `sort=campo,asc|desc`, con la respuesta `{ "content": [], "page": 0, "size": 20, "totalElements": 0, "totalPages": 0 }`. No serializar directamente `Page` de Spring Data, cuya estructura JSON no es estable.
-- **DP-API-04** Tipos de datos:
-  - Identificadores de las entidades de negocio: UUID o `bigint` autoincremental. El UUID evita identificadores secuenciales predecibles y es coherente con el `sub` de Supabase; el `bigint` es más legible.
-  - Fechas: `date` con `LocalDate`, e instantes con `timestamptz` y `OffsetDateTime` o `Instant`. Definir si se envían en UTC y cómo se muestran en hora de Colombia.
-  - Valores monetarios: `numeric` con `BigDecimal`, número o texto en JSON, y moneda (COP).
-  - Enumeraciones: valores en JSON (propuesta: `UPPER_SNAKE_CASE`), almacenados como texto con una restricción CHECK y mapeados con `@Enumerated(EnumType.STRING)`.
-- **DP-API-05** Operaciones de estado. Propuesta:
-  - Desactivar un cliente con `PATCH /api/crm/clientes/{id}` y el campo de estado, o con `POST /api/crm/clientes/{id}/desactivacion`.
-  - Cambiar el estado de un paquete con `POST /api/sga/paquetes/{id}/estados`, que crea la entrada del historial y actualiza el estado actual; consultar el historial con `GET /api/sga/paquetes/{id}/estados`.
-  - Cambiar existencias con movimientos de inventario (`POST .../movimientos`), no fijando la cantidad directamente.
-- **DP-API-06** Documentación generada: agregar springdoc-openapi (dependencia nueva) o mantener los contratos solo en el `design.md` de cada especificación.
+## Decisiones adoptadas
+- **DP-API-01:** rutas `/api/{modulo}/{recurso}` y sin prefijo de versión durante el MVP; `/api/me` se conserva.
+- **DP-API-02:** todos los errores de API usan RFC 9457 Problem Details (`application/problem+json`); errores de campo usan una extensión `errors` con `field` y `message`. 401/403 también usan el formato común y conservan `WWW-Authenticate` en 401.
+- **DP-API-03:** listas aceptan `page` desde 0 (por defecto 0), `size` por defecto 20 y máximo 100, `sort=campo,asc|desc`; responden `content`, `page`, `size`, `totalElements`, `totalPages`. Cada especificación lista los filtros permitidos; nunca se acepta ordenar por campos no permitidos.
+- **DP-API-04:** identificadores UUID; fechas calendario ISO-8601 con `LocalDate`; instantes ISO-8601 en UTC con `Instant`/`timestamptz`; dinero COP con `BigDecimal`/`numeric` serializado como texto decimal JSON y moneda explícita si el recurso admite más de una; enumeraciones `UPPER_SNAKE_CASE` serializadas y persistidas como texto con restricción `CHECK`.
+- **DP-API-05:** desactivar cliente con `PATCH /api/crm/clientes/{id}` y `activo: false`; cambio de contrato mediante operación explícita `PATCH /api/crm/contratos/{id}/estado`; transición de paquete mediante `POST /api/sga/paquetes/{id}/estados` y consulta por `GET` a la misma ruta; inventario solo mediante `POST .../movimientos`. Las operaciones validan transiciones y registran auditoría en la misma transacción.
+- **DP-API-06:** no se añade springdoc al MVP. Cada `design.md` mantiene el contrato aprobado y la API se documenta allí; reevaluar OpenAPI si se incorporan más clientes o se requiere publicar documentación navegable.

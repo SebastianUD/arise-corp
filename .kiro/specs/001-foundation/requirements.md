@@ -6,10 +6,7 @@ Esta es la primera especificación del proyecto Arise Corp. (`001-foundation`). 
 
 Esta funcionalidad es la base técnica sobre la que se construirán los módulos CRM, ERP y SGA. Cubre los requisitos AUTH-01 a AUTH-05 del MVP, con los requisitos no funcionales NF-01, NF-02, NF-06 y NF-07, y los criterios globales de aceptación CA-01, CA-02, CA-03 y CA-06.
 
-Alcance parcial o diferido (no se resuelven decisiones pendientes como definitivas):
-
-- **Perfil y rol empresarial (AUTH-04):** el almacenamiento del rol empresarial (DP-SEG-01) y el mecanismo de autorización por rol (DP-SEG-02) son decisiones pendientes del equipo. Esta especificación entrega la autenticación completa y la autorización por defecto (JWT válido requerido), pero trata la autorización por rol empresarial como alcance condicional: queda documentada como diferida hasta que el equipo apruebe DP-SEG-01 y DP-SEG-02. No se implementa una matriz de roles empresariales como definitiva.
-- **Inicialización del frontend (DP-TEC-01):** las versiones concretas de Node.js, React, Vite, Tailwind CSS, React Router y `@supabase/supabase-js`, el gestor de paquetes, el uso de JavaScript o TypeScript, el cliente HTTP, las herramientas de pruebas y los nombres de las variables `VITE_*` son una decisión pendiente. Esta especificación describe el comportamiento mínimo del frontend de login sin fijar esas herramientas como definitivas; su confirmación corresponde al equipo.
+Alcance: integración de sesión, perfil empresarial, autorización por rol, manejo de errores, pruebas y validación manual controlada. Las decisiones DP que afectan esta spec están adoptadas en los steering files y concretadas en `design.md`; el código ya implementado se conserva y las tareas abiertas completan la fase.
 
 Parte del backend ya está implementada (OAuth2 Resource Server, endpoint `GET /api/me`, CORS, sesiones STATELESS). Esta especificación no re-implementa esos componentes, pero sí define los requisitos de comportamiento e integración que deben verificarse sobre ellos.
 
@@ -22,7 +19,7 @@ Parte del backend ya está implementada (OAuth2 Resource Server, endpoint `GET /
 - **Token de acceso:** el JWT que el Frontend envía al Backend en el encabezado `Authorization: Bearer <token>`.
 - **Claim sub:** identificador único del usuario (UUID de Supabase Auth); es el identificador autoritativo del usuario en el Backend.
 - **Claim role (técnico):** claim `role` de Supabase cuyo valor es el rol de PostgreSQL (normalmente `authenticated`); no representa el rol empresarial del usuario.
-- **Rol empresarial:** rol de negocio del usuario (por ejemplo, Administrador, Comercial, Finanzas / RR. HH., Operaciones). Su almacenamiento y aplicación son decisiones pendientes (DP-SEG-01, DP-SEG-02) y quedan fuera del alcance definitivo de esta especificación.
+- **Rol empresarial:** rol de negocio del usuario (por ejemplo, Administrador, Comercial, Finanzas / RR. HH., Operaciones). Se almacena en `app.perfiles_usuario`; cada usuario tiene un solo rol de los definidos en `product.md`. Spring Boot aplica los permisos de backend y rechaza perfiles ausentes o inactivos.
 - **Endpoint /api/me:** endpoint protegido del Backend que devuelve la identidad del usuario autenticado a partir del JWT validado.
 - **Ruta privada:** ruta del Frontend que solo puede visitarse con una sesión activa.
 - **Sesion expirada:** estado en el que el token de acceso del usuario ha superado su tiempo de expiración (`exp`).
@@ -77,7 +74,7 @@ Parte del backend ya está implementada (OAuth2 Resource Server, endpoint `GET /
 3. THE Backend SHALL aceptar únicamente tokens firmados con el algoritmo ES256. _(AUTH-03, CA-02)_
 4. WHEN el Backend valida un JWT, THE Backend SHALL verificar el emisor (`iss` igual a `${SUPABASE_URL}/auth/v1`), la audiencia (`aud` igual a `authenticated`), la expiración (`exp`) y el momento de validez (`nbf`), aplicando una tolerancia de reloj de 60 segundos. _(AUTH-03, CA-02)_
 5. WHEN el Backend recibe una petición a un endpoint protegido con un token válido y vigente, THE Backend SHALL permitir el acceso al recurso solicitado. _(AUTH-03, CA-02)_
-6. IF una petición a un endpoint protegido llega sin token de acceso, THEN THE Backend SHALL responder con el código HTTP 401, con el encabezado `WWW-Authenticate` y sin cuerpo JSON. _(AUTH-03, CA-02, CA-06)_
+6. IF una petición a un endpoint protegido llega sin token de acceso, THEN THE Backend SHALL responder con el código HTTP 401, con el encabezado `WWW-Authenticate` y un cuerpo RFC 9457 Problem Details. _(AUTH-03, CA-02, CA-06)_
 7. IF una petición presenta un token con firma inválida, con emisor o audiencia incorrectos o mal formado, THEN THE Backend SHALL responder con el código HTTP 401. _(AUTH-03, CA-02, CA-06)_
 8. IF una petición presenta un token expirado, THEN THE Backend SHALL responder con el código HTTP 401. _(AUTH-03, CA-02, CA-06)_
 
@@ -90,24 +87,23 @@ Parte del backend ya está implementada (OAuth2 Resource Server, endpoint `GET /
 1. WHEN el Backend recibe una petición a `GET /api/me` con un JWT válido y vigente en el encabezado `Authorization: Bearer <token>`, THE Backend SHALL responder con el código HTTP 200 y un cuerpo JSON con los campos `id`, `email` y `role`. _(AUTH-03, CA-02)_
 2. THE Backend SHALL obtener el campo `id` del claim `sub` del JWT validado. _(AUTH-03, AUTH-04)_
 3. THE Backend SHALL derivar la identidad del usuario a partir del JWT ya validado por Spring Security, sin decodificar el token manualmente. _(AUTH-03)_
-4. THE Backend SHALL devolver en el campo `role` el claim técnico `role` de Supabase, que no representa el rol empresarial del usuario. _(AUTH-04)_
+4. THE Backend SHALL devolver en `role` el rol empresarial activo obtenido de `app.perfiles_usuario`, nunca el claim técnico `role` de Supabase. Si no existe perfil activo, SHALL responder 403 con Problem Details. _(AUTH-04, NF-02)_
 5. IF el JWT validado no contiene el claim `email`, THEN THE Backend SHALL devolver el campo `email` con valor nulo o vacío sin provocar un error. _(AUTH-03)_
-6. IF una petición a `GET /api/me` llega sin token o con un token inválido o vencido, THEN THE Backend SHALL responder con el código HTTP 401, sin cuerpo JSON y con el encabezado `WWW-Authenticate`. _(AUTH-03, CA-02, CA-06)_
+6. IF una petición a `GET /api/me` llega sin token o con un token inválido o vencido, THEN THE Backend SHALL responder con el código HTTP 401, con Problem Details y el encabezado `WWW-Authenticate`. _(AUTH-03, CA-02, CA-06)_
 7. WHEN el Frontend recibe la respuesta 200 de `GET /api/me`, THE Frontend SHALL mostrar la identidad del usuario en una vista protegida. _(AUTH-03)_
 
-### Requirement 6: Perfil y rol empresarial (AUTH-04, alcance diferido)
+### Requirement 6: Perfil y autorización por rol empresarial (AUTH-04)
 
-**User Story:** Como Administrador, quiero que los permisos por rol empresarial se apliquen en el backend, para controlar qué puede hacer cada usuario según su rol; esta capacidad se define en una especificación posterior una vez aprobadas las decisiones pendientes.
+**User Story:** Como Administrador, quiero que los permisos por rol empresarial se apliquen en el backend, para controlar qué puede hacer cada usuario según su rol.
 
 #### Acceptance Criteria
 
-1. WHEN el Backend recibe una petición a un endpoint protegido sin un JWT válido (ausente, mal formado, con firma inválida, vencido o con emisor o audiencia incorrectos), THE Backend SHALL rechazar la petición con el código HTTP 401 sin ejecutar la operación solicitada. _(AUTH-04, NF-02, CA-03)_
-2. WHILE la autorización por rol empresarial no esté aprobada e implementada, THE Backend SHALL exigir únicamente un JWT válido para autorizar el acceso a todo endpoint protegido. _(AUTH-04, NF-02, CA-03)_
-3. WHERE la autorización por rol empresarial esté aprobada e implementada, WHEN el Backend recibe una petición autenticada a una operación protegida, THE Backend SHALL verificar en el servidor el rol empresarial del usuario contra el conjunto de roles permitidos declarado para esa operación antes de ejecutarla. _(AUTH-04, NF-02, CA-03)_
-4. WHERE la autorización por rol empresarial esté aprobada e implementada, IF un usuario autenticado carece del rol empresarial requerido por la operación, THEN THE Backend SHALL rechazar la petición con el código HTTP 403, no ejecutar la operación ni modificar datos, y devolver un mensaje de error que indique falta de permisos sin exponer trazas, SQL ni datos internos. _(AUTH-04, AUTH-05, CA-03, CA-06)_
-5. THE Backend SHALL obtener el rol empresarial de una fuente que el usuario no pueda modificar, sin usar el claim técnico `role` ni `user_metadata` para decisiones de autorización de negocio. _(AUTH-04, NF-02)_
-
-> **Nota de alcance:** el almacenamiento del rol empresarial (DP-SEG-01) y el mecanismo de autorización (DP-SEG-02) son decisiones pendientes del equipo. Los criterios con cláusula `WHERE` de este requisito quedan diferidos y se implementarán en una especificación posterior tras la aprobación del equipo. Esta especificación no asume ninguna de esas decisiones como definitiva.
+1. WHEN se recibe una petición protegida con JWT válido, THE Backend SHALL buscar el perfil usando el `sub` UUID del JWT en `app.perfiles_usuario`.
+2. IF el perfil no existe, está inactivo o no tiene un rol permitido, THEN THE Backend SHALL rechazar la petición con HTTP 403 sin ejecutar la operación.
+3. THE Backend SHALL aplicar en Spring Boot la matriz de roles y lecturas cruzadas de `.kiro/steering/product.md`; el frontend no es autoridad de permisos.
+4. WHEN un usuario sin el rol requerido invoca una operación, THEN THE Backend SHALL responder 403 en Problem Details y no modificar datos.
+5. THE Backend SHALL permitir únicamente al Administrador crear o actualizar perfiles mediante `PUT /api/admin/usuarios/{id}/perfil` y activar/desactivar perfiles mediante `PATCH /api/admin/usuarios/{id}/estado`. Al crear devuelve 201 y al actualizar 200.
+6. THE Backend SHALL obtener el rol empresarial de una fuente no modificable por el usuario, sin utilizar el claim técnico `role`, `user_metadata` ni confiar en un rol enviado por el cliente. _(NF-02)_
 
 ### Requirement 7: Manejo de errores claros para el usuario (AUTH-05)
 
@@ -118,7 +114,7 @@ Parte del backend ya está implementada (OAuth2 Resource Server, endpoint `GET /
 1. IF el inicio de sesión falla por credenciales incorrectas, THEN THE Frontend SHALL mostrar, en un plazo máximo de 2 segundos desde la respuesta de Supabase_Auth, un mensaje comprensible indicando que las credenciales no son válidas, sin revelar si el fallo corresponde al correo o a la contraseña, y conservar el correo introducido en el formulario. _(AUTH-05, NF-06)_
 2. WHEN el Backend responde con el código HTTP 401 a una petición del Frontend, THE Frontend SHALL informar al usuario, mediante un mensaje comprensible, que la sesión expiró o no es válida y redirigirlo a la vista de inicio de sesión. _(AUTH-05)_
 3. WHEN el Backend responde con el código HTTP 403 a una petición del Frontend, THE Frontend SHALL mostrar un mensaje comprensible indicando que el usuario no tiene permisos para la operación y mantener al usuario en la vista actual sin cerrar su sesión. _(AUTH-05)_
-4. THE Backend SHALL responder a los errores con un cuerpo que contenga únicamente un mensaje comprensible para el usuario, sin exponer trazas de pila, sentencias SQL, nombres de clases, rutas de archivos ni datos internos del sistema. _(AUTH-05, CA-06)_
+4. THE Backend SHALL responder los errores con RFC 9457 Problem Details, con mensajes comprensibles y sin exponer trazas de pila, sentencias SQL, nombres de clases, rutas de archivos ni datos internos del sistema. _(AUTH-05, CA-06)_
 5. IF el Frontend no recibe respuesta del Backend dentro de un plazo máximo de 30 segundos o la conexión falla, THEN THE Frontend SHALL mostrar un mensaje comprensible indicando que no se pudo completar la operación y permitir al usuario reintentarla. _(AUTH-05, NF-06)_
 
 ### Requirement 8: Gestión de secretos y configuración (NF-01, CA-01)
@@ -133,7 +129,7 @@ Parte del backend ya está implementada (OAuth2 Resource Server, endpoint `GET /
 4. THE proyecto SHALL versionar un archivo `.env.example` por cada componente que requiera variables de entorno (frontend y backend), conteniendo cada archivo todas las variables requeridas por ese componente con valores ficticios y sin ningún valor secreto real. _(NF-01, CA-01)_
 5. THE proyecto SHALL documentar, en el README versionado, las instrucciones para ejecutar el frontend y el backend en local, incluyendo los comandos de instalación, de arranque y las variables de entorno requeridas por cada componente. _(CA-01)_
 
-> **Nota de alcance (DP-TEC-01):** los nombres concretos de las variables `VITE_*`, el gestor de paquetes y las herramientas del frontend son una decisión pendiente. Esta especificación describe el comportamiento esperado sin fijar esas herramientas como definitivas.
+> **Decisión adoptada (DP-TEC-01):** stack, comandos y variables `VITE_*` se concretan en `design.md` y `.kiro/steering/tech.md`.
 
 ### Requirement 9: Pruebas de los endpoints protegidos (NF-07, CA-03)
 
@@ -141,14 +137,13 @@ Parte del backend ya está implementada (OAuth2 Resource Server, endpoint `GET /
 
 #### Acceptance Criteria
 
-1. WHEN se ejecuta la suite de pruebas del Backend, THE Backend SHALL incluir una prueba que verifique que una petición a `GET /api/me` sin token recibe el código HTTP 401 y no devuelve cuerpo JSON. _(NF-07, CA-02, CA-03)_
+1. WHEN se ejecuta la suite de pruebas del Backend, THE Backend SHALL incluir una prueba que verifique que una petición a `GET /api/me` sin token recibe el código HTTP 401 y un cuerpo RFC 9457 Problem Details. _(NF-07, CA-02, CA-03)_
 2. WHEN se ejecuta la suite de pruebas del Backend, THE Backend SHALL incluir una prueba que verifique que una petición a `GET /api/me` con un JWT válido simulado que incluye el claim `sub` recibe el código HTTP 200. _(NF-07, CA-02, CA-03)_
 3. THE Backend SHALL incluir una prueba que verifique que el cuerpo de la respuesta 200 de `GET /api/me` contiene los campos `id`, `email` y `role`. _(NF-07, CA-02, CA-03)_
 4. THE Backend SHALL utilizar JWT simulados con `SecurityMockMvcRequestPostProcessors.jwt()` en todas las pruebas de endpoints protegidos, sin usar tokens reales de Supabase_Auth. _(NF-07)_
 5. WHEN se ejecuta la suite de pruebas del Backend, THE Backend SHALL incluir una prueba que verifique que una petición a `GET /api/me` con un token inválido o vencido recibe el código HTTP 401. _(NF-07, CA-02)_
-6. WHERE la autorización por rol empresarial esté aprobada e implementada, THE Backend SHALL incluir una prueba que verifique que una petición con un JWT válido sin el rol requerido recibe el código HTTP 403. _(NF-07, CA-03)_
+6. THE Backend SHALL incluir pruebas de acceso autorizado y denegado que verifiquen que un JWT válido sin perfil/rol permitido recibe el código HTTP 403. _(NF-07, CA-03)_
 
-> **Nota de alcance:** el criterio 6 queda diferido hasta la aprobación de DP-SEG-01 y DP-SEG-02, en coherencia con el Requirement 6.
 
 ### Requirement 10: Integración vertical extremo a extremo
 
@@ -156,7 +151,7 @@ Parte del backend ya está implementada (OAuth2 Resource Server, endpoint `GET /
 
 #### Acceptance Criteria
 
-1. WHEN un usuario autorizado inicia sesión en el Frontend con credenciales válidas y navega a la vista protegida, THE Frontend SHALL obtener el token de acceso, llamar a `GET /api/me` del Backend incluyendo el token en el encabezado `Authorization: Bearer <token>` y mostrar los campos de identidad devueltos (identificador y correo) en un plazo máximo de 3 segundos. _(AUTH-01, AUTH-02, AUTH-03, CA-02, CA-05)_
+1. WHEN un usuario autorizado inicia sesión en el Frontend con credenciales válidas y navega a la vista protegida, THE Frontend SHALL obtener el token de acceso, llamar a `GET /api/me` del Backend incluyendo el token en el encabezado `Authorization: Bearer <token>` y mostrar los campos de identidad devueltos (identificador y correo) en un plazo máximo de 3 segundos. _(AUTH-01, AUTH-02, AUTH-03, CA-02)_
 2. IF el Backend responde a `GET /api/me` con un estado de autenticación fallida (token ausente, inválido o vencido), THEN THE Frontend SHALL descartar la sesión local, redirigir al usuario a la vista de inicio de sesión y mostrar un mensaje de error indicando que la sesión no es válida o ha expirado, sin exponer el contenido del token. _(AUTH-02, AUTH-03, CA-02, CA-06)_
-3. WHILE el Frontend espera la respuesta de `GET /api/me`, THE Frontend SHALL mostrar un indicador de carga y no permitir una segunda solicitud simultánea a `GET /api/me`. _(AUTH-03, CA-05)_
+3. WHILE el Frontend espera la respuesta de `GET /api/me`, THE Frontend SHALL mostrar un indicador de carga y no permitir una segunda solicitud simultánea a `GET /api/me`. _(AUTH-03)_
 4. WHILE el frontend React no esté inicializado, THE equipo SHALL inicializar el frontend con el alcance mínimo necesario para el inicio de sesión y el consumo de `GET /api/me`, documentando el comando de arranque y las variables de entorno requeridas. _(AUTH-01, CA-01)_
