@@ -528,8 +528,8 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Menú por rol en `/perfil`, un único botón "Cerrar sesión" y `/perfil` con una sola petición a `/api/me`; las pruebas de `001-foundation` siguen en verde
     - _Requisitos: 19.1–19.3, 19.7, 25.3, 25.5_
 
-- [ ] 24. Crear los componentes compartidos del CRM
-  - [ ] 24.1 Implementar los componentes compartidos y el hook de consulta
+- [x] 24. Crear los componentes compartidos del CRM
+  - [x] 24.1 Implementar los componentes compartidos y el hook de consulta
     - Área: frontend · Responsable: Paula
     - `EstadoConsulta` (carga con `role="status"`, error con `role="alert"` y "Reintentar" si `reintentable`, 403 y 404), `Campo` (marca de obligatorio, `aria-invalid` y `aria-describedby`), `Paginacion`, `DialogoConfirmacion` (`role="dialog"` y `aria-modal`), `EstadoContratoEtiqueta` y `lib/useConsulta.js`, que ignora respuestas de efectos desmontados
     - Ningún componente usa `dangerouslySetInnerHTML`
