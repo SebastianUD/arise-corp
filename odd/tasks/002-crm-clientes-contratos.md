@@ -1,4 +1,4 @@
-# Feature: 002-crm-clientes-contratos — tareas 2 a 13.1
+# Feature: 002-crm-clientes-contratos — tareas 2 a 13
 
 Rama `feat/crm-clientes-contratos`. Estrategia de entrega: un unico PR al cerrar la spec
 (`ask-on-risk`). Pruebas backend: `.\mvnw.cmd test` (Surefire + H2, sin Docker).
@@ -64,6 +64,9 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
 | T12 | S1 | `backend/src/main/java/com/arise/corp/crm/dto/**` | completada | DTO de entrada/salida, validadores de clase y `VistaCliente`; `ClienteRequestValidacionTests`, `CuentaCorporativaRequestValidacionTests`, `ContratoRequestValidacionTests` y `SerializacionCrmTests` cubren las Properties 3, 4, 5 y 6 |
 | T13.1 | S1 | `backend/src/main/java/com/arise/corp/crm/service/ConflictosCrm.java`, `backend/src/main/java/com/arise/corp/crm/repository/EspecificacionesCrm.java` | completada | Ocho fabricas de conflicto con codigo, `campo`, `detail` y extensiones; siete filtros con `LIKE ... ESCAPE '\'`, documento y NIT normalizados y filtros ausentes sin restriccion; `ConflictosCrmTests` (3) y `EspecificacionesCrmTests` (10) en verde |
 | T13.2 | S1 | `backend/src/main/java/com/arise/corp/crm/service/CuentaCorporativaService.java`, `backend/src/main/java/com/arise/corp/crm/service/FiltroCuentas.java` | completada | `listar`, `obtener`, `crear`, `actualizar` y `cambiarEstado` con `CUENTA_NIT_DUPLICADO` sobre el NIT normalizado, conservacion de `activa` y `creadoEn`, `PATCH` idempotente que no toca clientes y auditoria desde `Clock` truncado a microsegundos; `.\mvnw.cmd test` -> 156 pruebas en verde |
+| T13.5 | S1 | `backend/src/main/java/com/arise/corp/crm/service/ResumenComercialService.java` | completada | `obtener()` con las dos consultas agrupadas (`contarPorActivo` y `contarPorEstado`) en una transaccion de solo lectura, `EnumMap` con los cuatro estados en 0 y totales como suma de sus componentes; `mvn test` en verde |
+| T13.7 | S1 | `backend/src/test/java/com/arise/corp/crm/service/CuentaCorporativaServiceTests.java` | completada | 12 pruebas con Mockito y `Clock.fixed`: alta con NIT normalizado y auditoria, edicion que conserva `activa` y `creadoEn`, 404, Property 7 con 120 variantes de NIT y Property 8 con las cuatro combinaciones; la desactivacion no modifica los clientes |
+| T13.9 | S1 | `backend/src/test/java/com/arise/corp/crm/service/ResumenComercialServiceTests.java` | completada | 5 pruebas: cuatro estados en 0, conteo de clientes aunque falte un grupo, solo dos consultas, `@Transactional(readOnly = true)` y Property 13 con 120 casos de conteos generados |
 
 ## Log
 
@@ -214,3 +217,21 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   con el repositorio de clientes (Requirement 14.5). Evidencia observada:
   `.\mvnw.cmd test -Dtest=ClienteServiceTests,ContratoServiceTests` -> 62 pruebas, 0 fallos;
   `.\mvnw.cmd test` -> 218 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase.
+
+- L15 (2026-11-11): tareas 13.5, 13.7 y 13.9 completadas. `ResumenComercialService.obtener()`
+  ejecuta las dos consultas agrupadas del diseno (`contarPorActivo` y `contarPorEstado`) en una
+  transaccion de solo lectura, indexa los conteos ignorando claves ausentes o nulas y construye
+  `ResumenComercialResponse` con `ConteoClientes.desde` y `ConteoContratos.desde`, de modo que los
+  cuatro estados aparecen siempre con 0 y los totales son la suma de sus componentes.
+  `CuentaCorporativaServiceTests` (12 pruebas) usa Mockito y `Clock.fixed` para el alta con NIT
+  normalizado y auditoria, la edicion que conserva `activa` y `creadoEn`, el NIT de otra cuenta,
+  el 404, Property 7 con 120 variantes de mayusculas, espacios y guiones, Property 8 con las
+  cuatro combinaciones de estado y la desactivacion que no modifica los clientes asociados.
+  `ResumenComercialServiceTests` (5 pruebas) cubre los cuatro estados en 0, el conteo de clientes
+  cuando falta un grupo, las dos consultas, la transaccion de solo lectura y Property 13 con 120
+  casos de conteos generados. Evidencia observada: RED en la compilacion de
+  `ResumenComercialServiceTests` por el servicio ausente, GREEN tras implementarlo;
+  `.\mvnw.cmd test -Dtest=CuentaCorporativaServiceTests` -> 12 pruebas, 0 fallos;
+  `.\mvnw.cmd test` -> 235 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase.
+  Riesgo declarado: item 6 (el resumen nuevo no tenia pruebas propias hasta esta misma entrega,
+  que las anade); sin cambios en contratos, datos ni concurrencia.

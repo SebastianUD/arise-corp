@@ -223,7 +223,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 6: Los campos controlados por el servidor no se toman del cuerpo** (propiedades desconocidas ignoradas) · **Validates: Requirements 4.9, 11.12, 13.4**
     - _Requisitos: 12.5, NF-07_
 
-- [ ] 13. Implementar los servicios del CRM
+- [x] 13. Implementar los servicios del CRM
   - [x] 13.1 Crear `ConflictosCrm` y `EspecificacionesCrm`
     - Área: backend · Responsable: Sebastián
     - `crm.service.ConflictosCrm`: una fábrica por cada fila del catálogo de conflictos (código, `campo`, `detail` y extensiones), sin datos personales
@@ -246,7 +246,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - `cambiarEstado` no consulta el estado del cliente y solo actualiza la auditoría de estado (D9, D10)
     - _Requisitos: 11.1, 11.9–11.12, 12.1–12.6, 13.1, 13.3–13.6, 14.1–14.6, 16.6, CRM-03, CRM-04, DP-API-05, DP-SEG-06_
 
-  - [ ] 13.5 Implementar `ResumenComercialService`
+  - [x] 13.5 Implementar `ResumenComercialService`
     - Área: backend · Responsable: Davidson
     - Dos consultas agrupadas en una transacción de solo lectura; `EnumMap` con los cuatro estados en 0 y totales calculados como suma de sus componentes
     - _Requisitos: 15.1–15.3, CRM-05, CA-04_
@@ -259,7 +259,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 9: Las referencias inactivas no se asignan** (combinaciones de cuenta actual y destino) · **Validates: Requirements 10.1, 10.2, 10.4, 10.5**
     - _Requisitos: 23.1, NF-07, CRM-01, CRM-04_
 
-  - [ ] 13.7 Escribir `CuentaCorporativaServiceTests`
+  - [x] 13.7 Escribir `CuentaCorporativaServiceTests`
     - Área: backend · Responsable: Davidson
     - Mockito y `Clock.fixed`: NIT duplicado con variantes (mayúsculas, espacios y guiones) y conservación de los clientes al desactivar una cuenta
     - **Property 7: Los duplicados se detectan sobre el valor normalizado** (NIT) · **Validates: Requirements 7.4, 9.5**
@@ -274,7 +274,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 9: Las referencias inactivas no se asignan** (cliente inactivo sin contratos nuevos) · **Validates: Requirements 11.11**
     - _Requisitos: 23.1, 23.2, NF-07, CRM-03_
 
-  - [ ]* 13.9 Escribir `ResumenComercialServiceTests`
+  - [x]* 13.9 Escribir `ResumenComercialServiceTests`
     - Área: backend · Responsable: Davidson
     - **Property 13: El resumen comercial es consistente** (conteos simulados generados) · **Validates: Requirements 15.1, 15.2, 15.3**
     - _Requisitos: 15.1–15.3, NF-07_
