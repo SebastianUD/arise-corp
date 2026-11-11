@@ -16,7 +16,7 @@ Etiquetas de estado: ver `product.md`. Las reglas de seguridad están en `securi
 | Autenticación | Supabase Auth (JWT firmados con ES256) | — | [Implementado] en backend y frontend |
 | Frontend | React, Vite, Tailwind CSS, React Router, `@supabase/supabase-js` | versiones fijadas en `frontend/package.json` y `package-lock.json` (DP-TEC-01) | [Implementado: autenticación y perfil] |
 | Contenedores | Docker y Docker Compose para empaquetar/ejecutar el backend | versiones por fijar en el proyecto | [Aprobado; implementación pendiente] |
-| CI | GitHub Actions | workflows por crear | [Aprobado; implementación pendiente] |
+| CI | GitHub Actions | `backend-ci.yml`, `integration-tests.yml` y `frontend-ci.yml`; `actions/checkout@v7`, `actions/setup-java@v6` y `actions/setup-node@v7` | [Implementado] |
 | Herramientas | Kiro, Git, GitHub (`SebastianUD/arise-corp`) | — | [Implementado] |
 
 ## Dependencias del backend (`backend/pom.xml`)
@@ -109,11 +109,14 @@ Toda variable nueva se agrega a `.env.example` con un valor ficticio/default y s
 - `docker-compose.yml` se utilizará para facilitar el arranque local del backend. Supabase PostgreSQL permanece como servicio administrado externo; no se dockeriza la base de datos de desarrollo.
 - Sebastián es responsable del Dockerfile, `.dockerignore` y configuración Compose del backend.
 
-## GitHub Actions y CI [Aprobado; implementación pendiente]
+## GitHub Actions y CI [Implementado]
 - Davidson es responsable principal de crear y mantener los workflows de GitHub Actions.
-- El CI debe instalar dependencias, ejecutar pruebas unitarias de backend y frontend, ejecutar las pruebas de integración automatizables, compilar ambos proyectos y comprobar que la imagen Docker del backend se construye correctamente.
-- Los workflows no deben necesitar secretos de la instancia compartida Supabase para pruebas unitarias o de integración.
-- El proyecto se ejecuta en local (`localhost`): no hay despliegue continuo (CD), publicación de imágenes a un registro externo ni entornos de destino. El alcance de GitHub Actions se limita a CI (validación, pruebas y comprobación del build de la imagen Docker).
+- Los tres workflows viven en `.github/workflows/`: `backend-ci.yml` (job `backend-ci`), `integration-tests.yml` (job `integration-tests`) y `frontend-ci.yml` (job `frontend-ci`). Se ejecutan con `push` a cualquier rama, `pull_request` hacia `main` y `workflow_dispatch`, con `concurrency` y `cancel-in-progress: true` por workflow y ref, y `permissions: contents: read`.
+- Acciones oficiales fijadas por versión mayor, verificadas en sus páginas de releases: `actions/checkout@v7`, `actions/setup-java@v6` (Temurin 21 con caché de Maven) y `actions/setup-node@v7` (versión de `frontend/.nvmrc` con caché de npm). `checkout` usa `persist-credentials: false`.
+- Comandos: `backend-ci` ejecuta `./mvnw -B test` y `docker build --pull -t arise-backend:ci .` desde `backend/`; `integration-tests` ejecuta `./mvnw -B verify` desde `backend/`; `frontend-ci` ejecuta `npm ci`, `npm test`, `npm run build` (con `VITE_*` ficticias declaradas solo en ese paso) y `npm run check:secrets` desde `frontend/`.
+- `backend/mvnw` está versionado con modo `100755` (`git update-index --chmod=+x`), para que `./mvnw` funcione en los runners Linux. El bit no se conserva al construir desde Windows, por eso el Dockerfile ejecuta `chmod +x mvnw`.
+- Los workflows no necesitan secretos de la instancia compartida Supabase ni credenciales de `arise-corp-dev` para las pruebas unitarias o de integración.
+- El proyecto se ejecuta en local (`localhost`): no hay despliegue continuo (CD), publicación de imágenes a un registro externo ni entornos de destino. El alcance de GitHub Actions se limita a CI (validación, pruebas y comprobación del build de la imagen Docker). Los checks `backend-ci`, `integration-tests` y `frontend-ci` son obligatorios en la protección de `main`.
 - No incluir credenciales en YAML, Dockerfile, argumentos de build, logs ni artefactos.
 
 ## Comandos

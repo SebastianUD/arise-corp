@@ -39,88 +39,88 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Se hace antes del código que aplica estas reglas (`sdd-workflow.md`, "Registro de decisiones"); DP-TEC-03 ya está registrado en `tech.md`, y los ajustes de D8 y D19 se confirman con `docs(crm): registrar en steering los ajustes de la spec 002`. El estado [Implementado] de cada área se actualiza en las tareas 6.2, 19.2 y 29.1
     - _Requisitos: 29.5, 29.10, NF-05, DP-TEC-03, DP-EST-05_
 
-- [ ] 2. Crear la migración del CRM
-  - [ ] 2.1 Crear `supabase/migrations/<timestamp>_app_crm_clientes_contratos.sql`
+- [x] 2. Crear la migración del CRM
+  - [x] 2.1 Crear `supabase/migrations/<timestamp>_app_crm_clientes_contratos.sql`
     - Área: base de datos · Responsable: Davidson
     - Generar el archivo con `supabase migration new app_crm_clientes_contratos`; el timestamp debe ser posterior a `20261108000000`. No modificar `20261108000000_app_perfiles_usuario.sql`
     - Escribir el SQL de "Migración CRM" del diseño: `app.cuentas_corporativas`, `app.clientes` y `app.contratos` en orden de dependencia, con `create table` sin `if not exists`; PK UUID; `UNIQUE` de `nit`, `(tipo_documento, numero_documento)` y `codigo`; `CHECK` de tipo y formato de documento, NIT, longitudes, teléfono, estado, `valor >= 0` y fechas; FK `cuenta_corporativa_id` y `cliente_id`; índices de FK y de `estado`; auditoría `timestamptz` y `uuid not null` sin FK a `auth.users` (D11); sin columna de cuenta en `contratos`
     - Habilitar RLS en las tres tablas y ejecutar `revoke all ... from anon, authenticated`. Sin `insert`, UUID personales, secretos ni sentencias que no admitan transacción
     - _Requisitos: 2.1–2.9, CRM-01, CRM-02, CRM-03, CRM-04, NF-01, NF-03, NF-05, DP-SEG-05, DP-SEG-06, DP-API-04_
 
-  - [ ] 2.2 Registrar la migración en `supabase/migrations/README.md`
+  - [x] 2.2 Registrar la migración en `supabase/migrations/README.md`
     - Área: base de datos · Responsable: Davidson
     - Añadir la fila de la migración CRM a la tabla (archivo, descripción y `002-crm-clientes-contratos`)
     - Sustituir las reglas "se revisan en PR" y "Davidson prepara y aplica ... tras el merge" por la aclaración de DP-TEC-03 ya registrada en `tech.md` y verificada en la tarea 1.2: otro integrante revisa antes de aplicar; Davidson la aplica de forma controlada después del merge como regla general y también antes del PR final cuando la validación extremo a extremo lo requiere y la migración es aditiva; nunca se edita una migración aplicada
     - _Requisitos: 29.6, 29.10, NF-05, DP-TEC-03_
 
-- [ ] 3. Implementar las entidades y los repositorios JPA del CRM
-  - [ ] 3.1 Crear las enumeraciones `TipoDocumento` y `EstadoContrato` en `crm.entity`
+- [x] 3. Implementar las entidades y los repositorios JPA del CRM
+  - [x] 3.1 Crear las enumeraciones `TipoDocumento` y `EstadoContrato` en `crm.entity`
     - Área: backend · Responsable: Davidson
     - `TipoDocumento { CC, CE, NIT, PASAPORTE }` y `EstadoContrato { BORRADOR, ACTIVO, FINALIZADO, CANCELADO }`, con la misma ubicación que `RolUsuario` en `login.entity`. Las reglas de transición se añaden en la tarea 10.3
     - _Requisitos: 1.1, 2.3, 2.5, DP-API-04_
 
-  - [ ] 3.2 Implementar las entidades `CuentaCorporativa` y `Cliente`
+  - [x] 3.2 Implementar las entidades `CuentaCorporativa` y `Cliente`
     - Área: backend · Responsable: Davidson
     - Mapeo según "Entidades JPA" del diseño: `@Table` sin esquema, `@Id @GeneratedValue(strategy = GenerationType.UUID)`, `@Enumerated(EnumType.STRING)`, `creadoEn` con `updatable = false`, restricciones `UNIQUE` repetidas en las anotaciones y `@ManyToOne(fetch = FetchType.LAZY)` de `Cliente` a `CuentaCorporativa`, sin colecciones inversas (D1)
     - Sin setters públicos: `static crear(..., UUID actor, Instant ahora)`, `actualizarDatos(..., actor, ahora)` y `boolean cambiarEstado(boolean, actor, ahora)`, que devuelve `false` y no toca la auditoría si el valor no cambia (D10)
     - _Requisitos: 1.1, 1.4, 2.2, 2.3, 2.7, 2.10, 8.3, 9.10, DP-ARQ-01, DP-SEG-06_
 
-  - [ ] 3.3 Implementar la entidad `Contrato`
+  - [x] 3.3 Implementar la entidad `Contrato`
     - Área: backend · Responsable: Davidson
     - `@ManyToOne(optional = false, fetch = FetchType.LAZY) @JoinColumn(updatable = false) Cliente cliente`; `valor` `BigDecimal` con `precision = 15, scale = 2`; `estado` de tipo `EstadoContrato`; `estadoActualizadoEn`, `estadoActualizadoPor` y auditoría de datos
     - `static crear(...)` en `BORRADOR`, con la auditoría de estado igual a la de datos; `actualizarDatos(..., actor, ahora)` cambia solo los datos y `actualizado_*`; `cambiarEstado(destino, actor, ahora)` cambia solo `estado` y su auditoría (D10). Las defensas de invariantes de la máquina de estados se añaden en la tarea 10.3
     - _Requisitos: 2.4–2.7, 2.10, 11.1, 13.4, 14.1, CRM-03, DP-SEG-06_
 
-  - [ ] 3.4 Crear los repositorios del CRM
+  - [x] 3.4 Crear los repositorios del CRM
     - Área: backend · Responsable: Davidson
     - `CuentaCorporativaRepository`, `ClienteRepository` y `ContratoRepository` con las firmas de "Backend: repositorios": `JpaSpecificationExecutor`, búsquedas por NIT, documento y código, `@EntityGraph` contra N+1, métodos con `@Lock(PESSIMISTIC_READ)` o `@Lock(PESSIMISTIC_WRITE)` sin *fetch join* (D9) y consultas agrupadas `contarPorActivo` y `contarPorEstado`
     - Crear la proyección `ConteoPorClave<K>`; si Spring Data no resuelve la proyección genérica, usar `ConteoPorActivo` y `ConteoPorEstado` sin cambiar el contrato que consume el servicio
     - _Requisitos: 1.1, 5.1, 9.6, 12.1, 15.1, CRM-01, CRM-03, CRM-05_
 
-  - [ ]* 3.5 Escribir una prueba de humo de los repositorios en H2
+  - [x]* 3.5 Escribir una prueba de humo de los repositorios en H2
     - Área: backend · Responsable: Davidson
     - `crm/repository/CrmRepositoriosTests` con `@DataJpaTest` (comprobar el paquete de la anotación en la referencia de Spring Boot 4.1.2): guardar y leer las tres entidades, búsquedas derivadas, `@EntityGraph` y resolución de las proyecciones de conteo, con datos ficticios
     - _Requisitos: 2.10, 15.1, NF-07_
 
-- [ ] 4. Preparar `mvnw` para los runners Linux
-  - [ ] 4.1 Fijar el bit ejecutable de `backend/mvnw` en Git
+- [x] 4. Preparar `mvnw` para los runners Linux
+  - [x] 4.1 Fijar el bit ejecutable de `backend/mvnw` en Git
     - Área: CI · Responsable: Davidson
     - Ejecutar `git update-index --chmod=+x backend/mvnw`, confirmar con `chore(ci): marcar mvnw como ejecutable` y comprobar con `git ls-files -s backend/mvnw` que el modo es `100755`
     - No cambiar los finales de línea que fija `backend/.gitattributes` (D16)
     - _Requisitos: 28.7, 28.8, ENG-04_
 
-- [ ] 5. Crear los workflows de GitHub Actions
-  - [ ] 5.1 Crear `.github/workflows/backend-ci.yml`
+- [x] 5. Crear los workflows de GitHub Actions
+  - [x] 5.1 Crear `.github/workflows/backend-ci.yml`
     - Área: CI · Responsable: Davidson
     - YAML del diseño: `push` a `'**'`, `pull_request` hacia `main` y `workflow_dispatch`, sin filtros de rutas (D17); `concurrency` por workflow y ref con `cancel-in-progress: true`; `permissions: contents: read`; job `backend-ci` en `ubuntu-latest` con `timeout-minutes: 20` y `working-directory: backend`
     - Pasos: `actions/checkout@v7` con `persist-credentials: false`, `actions/setup-java@v6` (Temurin 21 y `cache: maven`), `./mvnw -B test` y `docker build --pull -t arise-backend:ci .`, sin publicar la imagen ni iniciar sesión en registros. Antes de fijar las versiones mayores del diseño, comprobarlas en las páginas de *releases* de cada acción y usar las mismas en los tres workflows
     - El paso `docker build` necesita `backend/Dockerfile` (tarea 18.1); hasta entonces el job termina en rojo en la rama, con el fallo solo en ese paso. Se acepta sin añadir condiciones al YAML (diseño, "Riesgos y limitaciones"): en ese periodo, el estado de las pruebas se lee en el paso `./mvnw -B test`
     - _Requisitos: 28.1–28.7, 28.10, 28.11, ENG-01, ENG-02, ENG-04, NF-01_
 
-  - [ ] 5.2 Crear `.github/workflows/integration-tests.yml`
+  - [x] 5.2 Crear `.github/workflows/integration-tests.yml`
     - Área: CI · Responsable: Davidson
     - Mismos disparadores, `concurrency` y permisos; job `integration-tests` con `timeout-minutes: 30`, `actions/checkout@v7` con `persist-credentials: false`, `actions/setup-java@v6` (Temurin 21 con caché de Maven) y `./mvnw -B verify` desde `backend/` con el Docker del runner. Sin variables de Supabase ni `secrets.*`
     - Hasta la tarea 16.1 `verify` solo ejecuta Surefire y el empaquetado, así que este workflow puede estar en verde desde su creación
     - _Requisitos: 28.1–28.6, 28.8, 28.10, 28.11, ENG-03, DP-TEC-04_
 
-  - [ ] 5.3 Crear `.github/workflows/frontend-ci.yml`
+  - [x] 5.3 Crear `.github/workflows/frontend-ci.yml`
     - Área: CI · Responsable: Davidson
     - Mismos disparadores, `concurrency` y permisos; job `frontend-ci` con `timeout-minutes: 15` y `working-directory: frontend`; `actions/checkout@v7` con `persist-credentials: false` y `actions/setup-node@v7` con `node-version-file: frontend/.nvmrc`, `cache: npm` y `cache-dependency-path: frontend/package-lock.json`
     - Pasos: `npm ci`, `npm test`, `npm run build` con `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` y `VITE_API_BASE_URL` ficticias declaradas solo en ese paso, y `npm run check:secrets`. Comprobar que los valores ficticios no coinciden con los patrones de `scripts/check-secrets.mjs`
     - _Requisitos: 25.6, 28.1–28.6, 28.9, 28.10, 28.11, ENG-02, ENG-04, NF-01_
 
-- [ ] 6. Documentar la integración continua
-  - [ ] 6.1 Actualizar el README §10
+- [x] 6. Documentar la integración continua
+  - [x] 6.1 Actualizar el README §10
     - Área: documentación · Responsable: Davidson
     - Describir los tres workflows, sus disparadores, los comandos que ejecutan, la ausencia de secretos y de credenciales de `arise-corp-dev`, y los checks `backend-ci`, `integration-tests` y `frontend-ci` como obligatorios en la protección de `main`
     - _Requisitos: 29.3, 29.9, ENG-04_
 
-  - [ ] 6.2 Actualizar la sección "GitHub Actions y CI" de `.kiro/steering/tech.md`
+  - [x] 6.2 Actualizar la sección "GitHub Actions y CI" de `.kiro/steering/tech.md`
     - Área: documentación · Responsable: Davidson
     - Marcar CI como [Implementado] con los nombres de los workflows y las versiones mayores de las acciones, y registrar el bit ejecutable de `mvnw`. La aclaración de DP-TEC-03 ya quedó registrada en la tarea 1.2; el resto de `tech.md` se actualiza en la tarea 19.2
     - _Requisitos: 29.5, ENG-04_
 
-- [ ] 7. Checkpoint de persistencia y CI
+- [x] 7. Checkpoint de persistencia y CI
   - Área: verificación · Responsable: Davidson
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/`: el contexto arranca con las entidades CRM en H2 y las pruebas existentes pasan. Comprobar `git ls-files -s backend/mvnw` (`100755`) y revisar el YAML contra el Requirement 28. Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
 

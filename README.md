@@ -214,28 +214,19 @@ Estos archivos se incorporarán durante la etapa de integración y entrega local
 
 ## 10. Integración continua (GitHub Actions)
 
-Davidson será responsable de configurar y mantener los workflows de GitHub Actions.
+El CI está implementado en `.github/workflows/` con tres workflows independientes. Los tres se ejecutan con `push` a cualquier rama (`branches: ['**']`), con `pull_request` hacia `main` y con `workflow_dispatch`; cada uno cancela la ejecución anterior de la misma rama (`concurrency` con `cancel-in-progress`) y declara `permissions: contents: read`.
 
-Estructura prevista:
+| Workflow | Comandos | Alcance |
+|---|---|---|
+| `backend-ci` (`backend-ci.yml`) | `./mvnw -B test` y `docker build --pull -t arise-backend:ci .` desde `backend/` | Pruebas unitarias, de contexto y de seguridad con H2 (Surefire, sin Docker) y construcción de la imagen del backend sin publicarla. Configura Temurin 21 con caché de Maven. `timeout-minutes: 20`. |
+| `integration-tests` (`integration-tests.yml`) | `./mvnw -B verify` desde `backend/` | Pruebas unitarias y de integración con PostgreSQL efímero (Failsafe + Testcontainers) usando el Docker del runner. `timeout-minutes: 30`. |
+| `frontend-ci` (`frontend-ci.yml`) | `npm ci`, `npm test`, `npm run build` y `npm run check:secrets` desde `frontend/` | Pruebas Vitest, build del bundle con variables `VITE_*` ficticias declaradas solo en el paso de build y verificación de ausencia de credenciales en fuente, plantilla y bundle. Usa la versión de `frontend/.nvmrc` con caché de npm. `timeout-minutes: 15`. |
 
-```text
-.github/
-└── workflows/
-    ├── backend-ci.yml
-    ├── frontend-ci.yml
-    └── integration-tests.yml
-```
+Todos los workflows usan solo acciones oficiales (`actions/checkout@v7`, `actions/setup-java@v6`, `actions/setup-node@v7`), con `persist-credentials: false`. No usan GitHub Secrets ni credenciales de `arise-corp-dev`, no inician sesión en registros, no publican imágenes ni despliegan: el proyecto se ejecuta en local (`localhost`) y el alcance es únicamente CI.
 
-Los workflows deberán cubrir progresivamente:
+En la protección de `main` los checks `backend-ci`, `integration-tests` y `frontend-ci` son obligatorios (Requirement 29.9). Mientras no exista `backend/Dockerfile` (tarea 18.1), el último paso de `backend-ci` falla; el estado de las pruebas se lee en el paso `./mvnw -B test`.
 
-1. Instalación de dependencias.
-2. Compilación del backend.
-3. Ejecución de pruebas unitarias.
-4. Ejecución de pruebas de integración.
-5. Pruebas y build del frontend.
-6. Comprobación de que la imagen Docker del backend se construye correctamente.
-
-**CI** está aprobado y pendiente de implementación. El proyecto se ejecuta en local (`localhost`): no hay despliegue continuo (CD), publicación de imágenes a un registro externo ni entornos de destino.
+**Diferencia de comandos:** `.\mvnw.cmd test` no necesita Docker ni Supabase; `.\mvnw.cmd verify` sí necesita Docker, porque ejecuta las pruebas de integración con Testcontainers.
 
 Los secretos de GitHub Actions, si algún workflow los necesitara, se gestionarán mediante GitHub Secrets. Nunca se escribirán credenciales en workflows, logs, imágenes Docker o repositorio.
 
