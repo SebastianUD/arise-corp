@@ -224,7 +224,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - _Requisitos: 12.5, NF-07_
 
 - [ ] 13. Implementar los servicios del CRM
-  - [ ] 13.1 Crear `ConflictosCrm` y `EspecificacionesCrm`
+  - [x] 13.1 Crear `ConflictosCrm` y `EspecificacionesCrm`
     - Área: backend · Responsable: Sebastián
     - `crm.service.ConflictosCrm`: una fábrica por cada fila del catálogo de conflictos (código, `campo`, `detail` y extensiones), sin datos personales
     - `crm.repository.EspecificacionesCrm`: `nombreODocumentoContiene`, `activoIgual`, `cuentaIgual`, `razonSocialONitContiene`, `activaIgual`, `clienteIgual` y `estadoIgual` con JPQL portable, `LIKE ... ESCAPE '\'` y filtros ausentes ignorados

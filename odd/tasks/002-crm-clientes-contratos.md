@@ -1,4 +1,4 @@
-# Feature: 002-crm-clientes-contratos — tareas 2 a 12
+# Feature: 002-crm-clientes-contratos — tareas 2 a 13.1
 
 Rama `feat/crm-clientes-contratos`. Estrategia de entrega: un unico PR al cerrar la spec
 (`ask-on-risk`). Pruebas backend: `.\mvnw.cmd test` (Surefire + H2, sin Docker).
@@ -62,6 +62,7 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
 | T10 | S1 | `backend/src/main/java/com/arise/corp/shared/normalizacion/**`, `crm/entity/**` | completada | `NormalizadorTexto` final e idempotente; `EstadoContrato` con las cuatro transiciones; defensas en `Contrato.actualizarDatos`/`cambiarEstado`; `NormalizadorTextoTests` (4) y `EstadoContratoTests` (21) |
 | T11 | S1 | `backend/src/main/java/com/arise/corp/shared/paginacion/**`, `config/**`, `shared/validacion/**` | completada | `PaginaResponse.desde`, `Paginacion.crear` con desempate `id,asc`, `ClockConfig`, `@Correo`/`@Telefono`/`@ValorCop`; `PaginacionTests` (10, incluye Property 14) |
 | T12 | S1 | `backend/src/main/java/com/arise/corp/crm/dto/**` | completada | DTO de entrada/salida, validadores de clase y `VistaCliente`; `ClienteRequestValidacionTests`, `CuentaCorporativaRequestValidacionTests`, `ContratoRequestValidacionTests` y `SerializacionCrmTests` cubren las Properties 3, 4, 5 y 6 |
+| T13.1 | S1 | `backend/src/main/java/com/arise/corp/crm/service/ConflictosCrm.java`, `backend/src/main/java/com/arise/corp/crm/repository/EspecificacionesCrm.java` | completada | Ocho fabricas de conflicto con codigo, `campo`, `detail` y extensiones; siete filtros con `LIKE ... ESCAPE '\'`, documento y NIT normalizados y filtros ausentes sin restriccion; `ConflictosCrmTests` (3) y `EspecificacionesCrmTests` (10) en verde |
 
 ## Log
 
@@ -144,3 +145,13 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   unico ajuste de comportamiento previo fue reordenar una prueba de `CrmRepositoriosTests` para
   editar el contrato antes de cambiar su estado, porque `Contrato.actualizarDatos` ahora solo
   admite `BORRADOR`.
+- L10 (2026-11-11): tarea 13.1 completada. `ConflictosCrm` centraliza las ocho fabricas del
+  catalogo de "Error Handling" con codigos estables, `campo`, `detail` en espanol y extensiones
+  (`clienteId`, `estadoActual`, `estadoSolicitado`), sin datos personales.
+  `EspecificacionesCrm` implementa los siete filtros con la API de criterios y
+  `LIKE ... ESCAPE '\'`: el nombre y la razon social se comparan sin distinguir mayusculas, el
+  documento y el NIT se buscan con su valor normalizado, los comodines `%`, `_` y `\` se escapan
+  y un filtro ausente devuelve una especificacion sin restricciones para poder combinarla con
+  `Specification.allOf`. Evidencia observada: `.\mvnw.cmd clean test` -> 156 pruebas, 0 fallos,
+  0 errores, sin Docker ni Supabase; `ConflictosCrmTests` (3) y `EspecificacionesCrmTests` (10)
+  cubren el catalogo, la busqueda, los comodines y las combinaciones de filtros sobre H2.
