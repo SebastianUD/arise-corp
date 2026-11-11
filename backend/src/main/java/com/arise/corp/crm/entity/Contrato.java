@@ -135,6 +135,12 @@ public class Contrato {
     /**
      * Reemplaza los datos del contrato y su auditoria; no toca el estado ni la
      * auditoria del estado.
+     *
+     * <p>Defensa de invariante: el servicio comprueba antes el estado y lanza
+     * el conflicto de negocio correspondiente.
+     *
+     * @throws IllegalStateException si el contrato no esta en
+     *         {@link EstadoContrato#BORRADOR}
      */
     public void actualizarDatos(
             String codigo,
@@ -144,6 +150,11 @@ public class Contrato {
             BigDecimal valor,
             UUID actor,
             Instant ahora) {
+
+        if (this.estado != EstadoContrato.BORRADOR) {
+            throw new IllegalStateException(
+                    "Solo se pueden editar contratos en estado BORRADOR.");
+        }
 
         this.codigo = codigo;
         this.descripcion = descripcion;
@@ -157,8 +168,18 @@ public class Contrato {
     /**
      * Cambia el estado y solo su auditoria; los datos y su auditoria no se
      * modifican.
+     *
+     * <p>Defensa de invariante: el servicio comprueba antes la transicion y
+     * lanza el conflicto de negocio correspondiente.
+     *
+     * @throws IllegalStateException si la transicion no esta permitida
      */
     public void cambiarEstado(EstadoContrato destino, UUID actor, Instant ahora) {
+        if (!this.estado.puedeTransicionarA(destino)) {
+            throw new IllegalStateException(
+                    "La transición de estado del contrato no está permitida.");
+        }
+
         this.estado = destino;
         this.estadoActualizadoEn = ahora;
         this.estadoActualizadoPor = actor;
