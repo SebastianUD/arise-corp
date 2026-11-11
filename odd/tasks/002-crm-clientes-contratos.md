@@ -30,6 +30,12 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   sus comandos y el bit ejecutable de `mvnw`, y CI queda marcado como [Implementado].
 - S8. El checkpoint 7 exige `.\mvnw.cmd clean test` en verde e `git ls-files -s backend/mvnw`
   con modo `100755`; todas las pruebas pasan antes de cerrar.
+- S9. Las tareas 16.1, 16.2 y 16.3 introducen Testcontainers y Failsafe (dependencias de alcance
+  `test`, sin `testcontainers-junit-jupiter`, con `**/integration/**/*IT.java` y
+  `arise.migraciones.dir`), el perfil `it` con `ddl-auto=validate` sobre PostgreSQL efímero, la
+  infraestructura de IT sin credenciales de `arise-corp-dev` y `MigracionesCrmIT`, que comprueba
+  tipos, restricciones con SQLState 23505/23514/23503, RLS y ausencia de privilegios. `mvn test`
+  no recoge las `*IT` y `mvn verify` sí.
 
 ## Tasks
 
@@ -41,6 +47,7 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
 | T5 | S1, S5 | inline | completada | commit `86f768a`; YAML validado con PyYAML contra Requirement 28 |
 | T6 | S1, S7 | inline | completada | este commit; README §10 y `tech.md` |
 | T7 | S8 | inline | completada | `.\mvnw.cmd clean test`: 66 pruebas en verde (commit previo) |
+| T16 | S9 | inline | completada | Testcontainers + Failsafe, infra `it` y `MigracionesCrmIT`: 7/7 en verde |
 
 ## Log
 
@@ -70,3 +77,19 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   estan vacias; `has_schema_privilege('anon'|'authenticated', 'app', 'usage')` es `false`.
   `get_advisors` (security) solo reporta `rls_enabled_no_policy` (INFO, esperado en el esquema
   privado) y `auth_leaked_password_protection` (WARN del proyecto Auth, ajeno a esta migracion).
+- L6 (2026-11-11): tareas 16.1, 16.2 y 16.3 completadas. `backend/pom.xml` agrega
+  `spring-boot-testcontainers` y `org.testcontainers:testcontainers-postgresql` (sin version, la
+  gestiona el parent) y `maven-failsafe-plugin` con `**/integration/**/*IT.java` y
+  `arise.migraciones.dir`. Infra: `application-it.properties`, `integration/preparacion-supabase.sql`,
+  `MigracionesSupabase`, `PostgresContenedorConfig` y `PostgresIntegracionBase`.
+  Evidencia observada: `.\mvnw.cmd test` -> 66 pruebas, 0 fallos y **sin** ejecutar `MigracionesCrmIT`
+  (Surefire no recoge `*IT`); `.\mvnw.cmd verify` -> Surefire 66 + Failsafe 7 (`MigracionesCrmIT`),
+  BUILD SUCCESS contra `postgres:17-alpine` en Testcontainers 2.0.5 (Docker 29.3.1).
+  Aprendido: el SQL completo de cada migracion se ejecuta en un solo `Statement.execute`, asi que
+  el PostgreSQL efimero aplica los dos archivos reales sin copiarlos; el script de preparacion
+  concede privilegios por defecto a `anon`/`authenticated` para que la revocacion de la migracion
+  sea significativa.
+  RDD: `gentle-ai review assess --base-ref ec1d359 --committed-only` devuelve `medium` y
+  `review_due=false` (`under_budget`), asi que no se inicia revision nativa y la frontera revisada
+  sigue en `ec1d359`. El primer intento salio `unassessable` por los archivos sin trackear
+  (`.atl/`, `opencode.json`); se repitio con `--untracked-scope=exclude`.

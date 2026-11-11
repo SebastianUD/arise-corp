@@ -354,20 +354,20 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/` sin Docker, sin Supabase y sin `.env` (Requirement 23.9). Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
 
 - [ ] 16. Implementar las pruebas de integración con PostgreSQL efímero
-  - [ ] 16.1 Añadir Testcontainers y Failsafe a `backend/pom.xml`
+  - [x] 16.1 Añadir Testcontainers y Failsafe a `backend/pom.xml`
     - Área: backend · Responsable: Davidson
     - Dependencias de alcance `test` `org.springframework.boot:spring-boot-testcontainers` y `org.testcontainers:testcontainers-postgresql`, sin versión; `maven-failsafe-plugin` con la inclusión `**/integration/**/*IT.java`, la propiedad `arise.migraciones.dir=${project.basedir}/../supabase/migrations` y los objetivos `integration-test` y `verify`
     - Sin `testcontainers-junit-jupiter` (D12) y sin configurar Surefire, para que `.\mvnw.cmd test` no recoja las `*IT`
     - _Requisitos: 23.9, 24.1, 24.2, DP-TEC-04, DP-EST-05_
 
-  - [ ] 16.2 Crear la infraestructura de las IT
+  - [x] 16.2 Crear la infraestructura de las IT
     - Área: backend · Responsable: Davidson
     - `src/test/resources/application-it.properties` (perfil `it`, `ddl-auto=validate`, `default_schema=app`, `spring.sql.init.mode=never`) y `src/test/resources/integration/preparacion-supabase.sql` (roles `anon` y `authenticated`, `auth.users` mínima y privilegios por defecto desfavorables)
     - En `com.arise.corp.integration`: `MigracionesSupabase.aplicar` (script previo y migraciones ordenadas por nombre, cada una en su transacción, con error que nombra el archivo), `PostgresContenedorConfig` (`@Bean @ServiceConnection` con `postgres:17-alpine`, alineada con la versión mayor de `arise-corp-dev`) y `PostgresIntegracionBase` (`@SpringBootTest`, `@AutoConfigureMockMvc`, `@ActiveProfiles("it")`, `truncate ... cascade` en `@BeforeEach` y ayudante para un `auth.users` ficticio)
     - Ningún archivo usa credenciales de `arise-corp-dev`, `.env` ni red hacia Supabase
     - _Requisitos: 24.3, 24.4, 24.10, ENG-03, NF-01_
 
-  - [ ] 16.3 Escribir `MigracionesCrmIT`
+  - [x] 16.3 Escribir `MigracionesCrmIT`
     - Área: backend · Responsable: Davidson
     - `ddl-auto=validate` acepta las entidades; las tablas están vacías tras migrar; `information_schema` confirma los tipos y la ausencia de columna de cuenta en `contratos`; inserciones JDBC inválidas producen SQLState 23505, 23514 y 23503 (unicidad, `CHECK` y FK); RLS activo y sin privilegios `select`, `insert`, `update` ni `delete` para `anon` y `authenticated`
     - _Requisitos: 2.2–2.10, 24.5, 24.6, 24.9, DP-SEG-05_
