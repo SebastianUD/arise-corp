@@ -625,9 +625,10 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - README §11.6: vistas y rutas CRM por rol, y comandos `npm test`, `npm run build` y `npm run check:secrets`, sin variables nuevas. `structure.md`: `pages/crm`, `context/PerfilContext`, `routes/RolRoute`, `components/AppLayout` y `lib/permisos`, `validacionCrm` y `formato`. `architecture.md`: fila de la SPA con las vistas CRM. `product.md`: vistas CRM del frontend implementadas en "Estado actual"
     - _Requisitos: 29.5, 29.7, CA-01, CA-07_
 
-- [ ] 30. Checkpoint del frontend
+- [x] 30. Checkpoint del frontend
   - Área: verificación · Responsable: Paula
   - Ejecutar desde `frontend/` `npm test`, `npm run build` y `npm run check:secrets` (Requirements 25.5, 25.6). Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
+  - El 2026-11-11 pasaron las 159 pruebas de 18 archivos. Vite generó el bundle de producción y la comprobación de secretos no detectó patrones de credenciales privadas en `src/`, `.env.example` ni `dist/`.
 
 - [ ] 31. Validar el CRM de extremo a extremo con Supabase real
   - [ ] 31.1 Ejecutar la validación manual del Requirement 30
