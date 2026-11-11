@@ -215,18 +215,8 @@ class CrmRepositoriosTests {
 
     @Test
     void exponeElEstadoDeAuditoriaDeLosDatosYDelEstado() {
-        contrato.cambiarEstado(EstadoContrato.ACTIVO, ACTOR, AHORA.plusSeconds(60));
-        contratos.saveAndFlush(contrato);
-        em.clear();
-
-        Contrato leido = contratos.findById(contrato.getId()).orElseThrow();
-        assertEquals(EstadoContrato.ACTIVO, leido.getEstado());
-        assertEquals(AHORA.plusSeconds(60), leido.getEstadoActualizadoEn());
-        assertEquals(AHORA, leido.getActualizadoEn());
-        assertEquals(ACTOR, leido.getEstadoActualizadoPor());
-
-        Contrato actualizado = contratos.findById(contrato.getId()).orElseThrow();
-        actualizado.actualizarDatos(
+        // Los datos solo se editan en BORRADOR (Property 12).
+        contrato.actualizarDatos(
                 "CT-002",
                 "Contrato renombrado",
                 LocalDate.of(2026, 2, 1),
@@ -234,14 +224,25 @@ class CrmRepositoriosTests {
                 new BigDecimal("2000000.50"),
                 ACTOR,
                 AHORA.plusSeconds(120));
+        contratos.saveAndFlush(contrato);
+        em.clear();
+
+        Contrato actualizado = contratos.findById(contrato.getId()).orElseThrow();
+        assertEquals("CT-002", actualizado.getCodigo());
+        assertEquals(AHORA.plusSeconds(120), actualizado.getActualizadoEn());
+        assertEquals(EstadoContrato.BORRADOR, actualizado.getEstado());
+        assertEquals(AHORA, actualizado.getEstadoActualizadoEn());
+
+        // El cambio de estado solo toca su propia auditoria (D10).
+        actualizado.cambiarEstado(EstadoContrato.ACTIVO, ACTOR, AHORA.plusSeconds(60));
         contratos.saveAndFlush(actualizado);
         em.clear();
 
         Contrato releido = contratos.findById(contrato.getId()).orElseThrow();
-        assertEquals("CT-002", releido.getCodigo());
-        assertEquals(AHORA.plusSeconds(120), releido.getActualizadoEn());
-        assertEquals(AHORA.plusSeconds(60), releido.getEstadoActualizadoEn());
         assertEquals(EstadoContrato.ACTIVO, releido.getEstado());
+        assertEquals(AHORA.plusSeconds(60), releido.getEstadoActualizadoEn());
+        assertEquals(ACTOR, releido.getEstadoActualizadoPor());
+        assertEquals(AHORA.plusSeconds(120), releido.getActualizadoEn());
     }
 
     private static <K> Map<K, Long> indexar(List<ConteoPorClave<K>> conteos, Function<ConteoPorClave<K>, K> clave) {
