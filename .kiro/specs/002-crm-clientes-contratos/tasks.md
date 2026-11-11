@@ -505,25 +505,25 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Formato COP de `"0.00"`, `"1500000.5"` y `"9999999999999.99"`
     - _Requisitos: 21.5_
 
-- [ ] 23. Compartir el perfil e incorporar el layout privado y la protección por rol
-  - [ ] 23.1 Crear `context/PerfilContext.jsx` y adaptar `pages/Perfil.jsx`
+- [x] 23. Compartir el perfil e incorporar el layout privado y la protección por rol
+  - [x] 23.1 Crear `context/PerfilContext.jsx` y adaptar `pages/Perfil.jsx`
     - Área: frontend · Responsable: Paula
     - `PerfilProvider` hace una sola llamada a `GET /api/me` por montaje, con la deduplicación actual bajo StrictMode; `usePerfil()` devuelve `{ perfil, rol, cargando, error, recargar }` (D14)
     - `Perfil` consume `usePerfil()` y conserva textos, estados y botones; "Cerrar sesión" pasa al layout
     - _Requisitos: 18.9, 19.1, 19.7, AUTH-04_
 
-  - [ ] 23.2 Crear `components/AppLayout.jsx` y `routes/RolRoute.jsx`
+  - [x] 23.2 Crear `components/AppLayout.jsx` y `routes/RolRoute.jsx`
     - Área: frontend · Responsable: Paula
     - `AppLayout`: `PerfilProvider`, menú construido con `opcionesMenu(rol)`, enlace "Perfil", botón "Cerrar sesión" y `<Outlet />`
     - `RolRoute`: "Cargando…" mientras carga el perfil; si `permite(rol)` es falso, muestra "No tienes permisos para acceder a esta sección." sin renderizar la página ni pedir sus datos
     - _Requisitos: 19.1–19.6, AUTH-05, NF-02_
 
-  - [ ] 23.3 Envolver las rutas privadas con `AppLayout` en `App.jsx`
+  - [x] 23.3 Envolver las rutas privadas con `AppLayout` en `App.jsx`
     - Área: frontend · Responsable: Paula
     - `ProtectedRoute` → `AppLayout` → `/perfil`; `/login` y la redirección `*` → `/perfil` sin cambios
     - _Requisitos: 19.1, 19.7, AUTH-01, AUTH-02_
 
-  - [ ] 23.4 Ampliar `App.test.jsx` para el layout y el perfil
+  - [x] 23.4 Ampliar `App.test.jsx` para el layout y el perfil
     - Área: frontend · Responsable: Paula
     - Menú por rol en `/perfil`, un único botón "Cerrar sesión" y `/perfil` con una sola petición a `/api/me`; las pruebas de `001-foundation` siguen en verde
     - _Requisitos: 19.1–19.3, 19.7, 25.3, 25.5_

@@ -1,8 +1,11 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import App from './App.jsx'
+import { PerfilProvider } from './context/PerfilContext.jsx'
+import { puedeGestionarCrm } from './lib/permisos.js'
+import RolRoute from './routes/RolRoute.jsx'
 
 const { auth, store } = vi.hoisted(() => ({
   auth: { getSession: vi.fn(), signInWithPassword: vi.fn(), signOut: vi.fn(), onAuthStateChange: vi.fn() },
@@ -267,4 +270,57 @@ it('retira la suscripción de autenticación al desmontar', async () => {
   await screen.findByRole('heading', { name: 'Bienvenido de nuevo' })
   view.unmount()
   expect(store.unsubscribe).toHaveBeenCalledTimes(1)
+})
+
+it.each([
+  ['ADMINISTRADOR', ['Clientes', 'Cuentas corporativas', 'Resumen comercial']],
+  ['COMERCIAL', ['Clientes', 'Cuentas corporativas', 'Resumen comercial']],
+  ['OPERACIONES', ['Clientes']],
+  ['FINANZAS_RRHH', ['Clientes']],
+  [null, []],
+])('comparte el perfil con el menú de %s bajo StrictMode', async (role, opciones) => {
+  store.session = session
+  fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
+  mount('/perfil', true)
+  await screen.findByText(profile.email)
+  expect(screen.getAllByRole('link').map(enlace => enlace.textContent)).toEqual(['Perfil', ...opciones])
+  expect(screen.getByRole('link', { name: 'Perfil' })).toHaveAttribute('aria-current', 'page')
+  expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible()
+  expect(fetch).toHaveBeenCalledTimes(1)
+  expect(fetch).toHaveBeenCalledWith('http://localhost:8080/api/me', expect.anything())
+})
+
+it.each([
+  ['OPERACIONES', false], [null, false], ['COMERCIAL', true],
+])('al abrir una ruta directamente espera al perfil y aplica el permiso de %s', async (role, permitido) => {
+  store.session = session
+  let responder
+  fetch.mockImplementationOnce(() => new Promise(resolve => { responder = resolve }))
+  const consultarVista = vi.fn()
+  function Vista() {
+    useEffect(() => { consultarVista() }, [])
+    return <h1>Resumen comercial</h1>
+  }
+  render(
+    <MemoryRouter initialEntries={['/crm/resumen']}>
+      <PerfilProvider>
+        <Routes>
+          <Route element={<RolRoute permite={puedeGestionarCrm} />}>
+            <Route path="/crm/resumen" element={<Vista />} />
+          </Route>
+        </Routes>
+      </PerfilProvider>
+    </MemoryRouter>,
+  )
+  expect(screen.getByRole('status')).toHaveTextContent('Cargando…')
+  expect(consultarVista).not.toHaveBeenCalled()
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+  await act(async () => responder({ ok: true, status: 200, json: async () => ({ ...profile, role }) }))
+  if (permitido) {
+    expect(screen.getByRole('heading', { name: 'Resumen comercial' })).toBeVisible()
+    expect(consultarVista).toHaveBeenCalledTimes(1)
+  } else {
+    expect(screen.getByRole('alert')).toHaveTextContent('No tienes permisos para acceder a esta sección.')
+    expect(consultarVista).not.toHaveBeenCalled()
+  }
 })

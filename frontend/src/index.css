@@ -42,7 +42,7 @@
 }
 
 .app-root { min-height: 100vh; min-height: 100svh; }
-.profile-workspace { min-height: 100vh; display: flex; align-items: center; padding: 48px 24px; background: #020617; color: #f1f5f9; }
+.profile-workspace { flex: 1; display: flex; align-items: center; padding: 48px 24px; background: #020617; color: #f1f5f9; }
 .access-loading { min-height: 100vh; display: grid; place-items: center; background: var(--access-background); color: var(--access-text); }
 .access-page { min-height: 100vh; min-height: 100svh; background: var(--access-background); color: var(--access-text); }
 .access-header { height: 160px; display: flex; justify-content: space-between; align-items: flex-start; padding: 48px 14.3% 0 64px; }
