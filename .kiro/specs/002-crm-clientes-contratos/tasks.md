@@ -230,7 +230,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - `crm.repository.EspecificacionesCrm`: `nombreODocumentoContiene`, `activoIgual`, `cuentaIgual`, `razonSocialONitContiene`, `activaIgual`, `clienteIgual` y `estadoIgual` con JPQL portable, `LIKE ... ESCAPE '\'` y filtros ausentes ignorados
     - _Requisitos: 5.3–5.5, 9.6, 12.1, 17.4, CRM-01, CRM-04_
 
-  - [ ] 13.2 Implementar `CuentaCorporativaService`
+  - [x] 13.2 Implementar `CuentaCorporativaService`
     - Área: backend · Responsable: Davidson
     - `listar`, `obtener`, `crear`, `actualizar` y `cambiarEstado` según el diseño: NIT duplicado, de cuenta activa o inactiva → `CUENTA_NIT_DUPLICADO`; conservación de `activa` y `creadoEn`; `PATCH` idempotente que no toca clientes; `@Transactional`, `Clock`, actor con `UUID.fromString(sub)` y conversión a DTO dentro de la transacción
     - _Requisitos: 9.1–9.13, 16.6, CRM-02, CRM-04, DP-SEG-06_

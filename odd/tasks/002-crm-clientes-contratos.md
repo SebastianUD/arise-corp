@@ -63,6 +63,7 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
 | T11 | S1 | `backend/src/main/java/com/arise/corp/shared/paginacion/**`, `config/**`, `shared/validacion/**` | completada | `PaginaResponse.desde`, `Paginacion.crear` con desempate `id,asc`, `ClockConfig`, `@Correo`/`@Telefono`/`@ValorCop`; `PaginacionTests` (10, incluye Property 14) |
 | T12 | S1 | `backend/src/main/java/com/arise/corp/crm/dto/**` | completada | DTO de entrada/salida, validadores de clase y `VistaCliente`; `ClienteRequestValidacionTests`, `CuentaCorporativaRequestValidacionTests`, `ContratoRequestValidacionTests` y `SerializacionCrmTests` cubren las Properties 3, 4, 5 y 6 |
 | T13.1 | S1 | `backend/src/main/java/com/arise/corp/crm/service/ConflictosCrm.java`, `backend/src/main/java/com/arise/corp/crm/repository/EspecificacionesCrm.java` | completada | Ocho fabricas de conflicto con codigo, `campo`, `detail` y extensiones; siete filtros con `LIKE ... ESCAPE '\'`, documento y NIT normalizados y filtros ausentes sin restriccion; `ConflictosCrmTests` (3) y `EspecificacionesCrmTests` (10) en verde |
+| T13.2 | S1 | `backend/src/main/java/com/arise/corp/crm/service/CuentaCorporativaService.java`, `backend/src/main/java/com/arise/corp/crm/service/FiltroCuentas.java` | completada | `listar`, `obtener`, `crear`, `actualizar` y `cambiarEstado` con `CUENTA_NIT_DUPLICADO` sobre el NIT normalizado, conservacion de `activa` y `creadoEn`, `PATCH` idempotente que no toca clientes y auditoria desde `Clock` truncado a microsegundos; `.\mvnw.cmd test` -> 156 pruebas en verde |
 
 ## Log
 
@@ -164,3 +165,18 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   `testTimeout`/`hookTimeout` de 15 s y `asyncUtilTimeout` de 5 s, sin debilitar ninguna
   asercion. La suite pasa completa en dos ejecuciones consecutivas (~30 s) y tambien pasan
   `npm run build` con variables ficticias y `npm run check:secrets`.
+- L12 (2026-11-11): tarea 13.2 completada. `CuentaCorporativaService` implementa `listar` con
+  `EspecificacionesCrm.razonSocialONitContiene` y `activaIgual` combinadas con
+  `Specification.allOf`, `obtener` con 404 "La cuenta corporativa no existe.", `crear` con
+  `activa = true` y `CUENTA_NIT_DUPLICADO` si el NIT existe (activa o inactiva), `actualizar`
+  que detecta el NIT de otra cuenta, reemplaza los datos y conserva `activa` y `creadoEn`, y
+  `cambiarEstado` que delega en `CuentaCorporativa.cambiarEstado` (sin cambios de auditoria si
+  el valor coincide y sin tocar clientes). El actor se convierte con `UUID.fromString(sub)` y el
+  instante sale de `Clock` truncado a `MICROS`; el DTO se construye dentro de la transaccion.
+  Se agrego `FiltroCuentas(q, activa)` en `crm.service` porque el controlador (14.4) lo
+  construye y el servicio no puede depender de `crm.controller`. Evidencia observada:
+  `.\mvnw.cmd test` -> 156 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase. `CuentaCorporativaServiceTests`
+  queda en la tarea 13.7 (Properties 7 y 8). Riesgo declarado: item 6, porque el servicio nuevo
+  aun no tiene pruebas propias hasta la 13.7. RDD: `gentle-ai review assess --base-ref ec1d359
+  --committed-only` devuelve `medium` y `review_due=false` (`under_budget`); no se inicia revision
+  nativa y la frontera revisada sigue en `ec1d359`.
