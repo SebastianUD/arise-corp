@@ -180,3 +180,21 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   aun no tiene pruebas propias hasta la 13.7. RDD: `gentle-ai review assess --base-ref ec1d359
   --committed-only` devuelve `medium` y `review_due=false` (`under_budget`); no se inicia revision
   nativa y la frontera revisada sigue en `ec1d359`.
+- L13 (2026-11-11): tareas 13.3 y 13.4 completadas. `ClienteService` implementa `listar` con
+  `nombreODocumentoContiene`, `activoIgual` y `cuentaIgual` y la vista `COMPLETA` o `REDUCIDA`
+  segun el actor; `obtener` con `@EntityGraph` y 404; `crear` carga la cuenta con
+  `PESSIMISTIC_READ` (404 con `campo = cuentaCorporativaId`), distingue documento activo
+  (`CLIENTE_DUPLICADO`) de inactivo (`CLIENTE_INACTIVO_EXISTENTE` con `clienteId`) y rechaza
+  una cuenta inactiva (`CUENTA_INACTIVA`); `actualizar` acepta la cuenta actual aunque este
+  inactiva, permite quitarla con `null`, rechaza el documento de otro cliente y conserva
+  `activo` y `creadoEn`; `cambiarEstado` es idempotente y no toca contratos. `ContratoService`
+  implementa `listar` con `clienteIgual` y `estadoIgual` (un `clienteId` inexistente deja la
+  pagina vacia), `obtener` con 404, `crear` con `PESSIMISTIC_READ` sobre el cliente (404 con
+  `campo = clienteId`), `CLIENTE_INACTIVO_SIN_CONTRATOS`, `CONTRATO_CODIGO_DUPLICADO` y estado
+  inicial `BORRADOR` con auditoria de datos y de estado; `actualizar` y `cambiarEstado` usan
+  `PESSIMISTIC_WRITE`, `CONTRATO_NO_EDITABLE` y `TRANSICION_NO_PERMITIDA` con `estadoActual` y
+  `estadoSolicitado`. Se agregaron `FiltroClientes(q, activo, cuentaCorporativaId)` y
+  `FiltroContratos(clienteId, estado)` en `crm.service` porque los controladores (14.3 y 14.5)
+  los construyen. Evidencia observada: `.\mvnw.cmd compile` sin errores y `.\mvnw.cmd test`
+  -> 156 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase. `ClienteServiceTests` (13.6) y
+  `ContratoServiceTests` (13.8) quedan pendientes y cubriran las Properties 7 a 12.

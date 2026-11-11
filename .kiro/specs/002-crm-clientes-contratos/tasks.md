@@ -235,12 +235,12 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - `listar`, `obtener`, `crear`, `actualizar` y `cambiarEstado` según el diseño: NIT duplicado, de cuenta activa o inactiva → `CUENTA_NIT_DUPLICADO`; conservación de `activa` y `creadoEn`; `PATCH` idempotente que no toca clientes; `@Transactional`, `Clock`, actor con `UUID.fromString(sub)` y conversión a DTO dentro de la transacción
     - _Requisitos: 9.1–9.13, 16.6, CRM-02, CRM-04, DP-SEG-06_
 
-  - [ ] 13.3 Implementar `ClienteService`
+  - [x] 13.3 Implementar `ClienteService`
     - Área: backend · Responsable: Sebastián
     - `listar`, `obtener`, `crear`, `actualizar` y `cambiarEstado` con los pasos del diseño: cuenta cargada con `PESSIMISTIC_READ` (404 con `campo`), `CLIENTE_DUPLICADO`, `CLIENTE_INACTIVO_EXISTENTE` con `clienteId`, regla de asignación de cuenta (`CUENTA_INACTIVA`), vista completa o reducida, conservación de `activo` y `creadoEn`, y desactivación sin tocar contratos. No registrar datos de clientes en logs
     - _Requisitos: 4.1, 4.7–4.9, 5.1–5.8, 6.1–6.4, 7.1–7.6, 8.1–8.5, 8.7, 10.1–10.6, 16.6, CRM-01, CRM-02, CRM-04_
 
-  - [ ] 13.4 Implementar `ContratoService`
+  - [x] 13.4 Implementar `ContratoService`
     - Área: backend · Responsable: Sebastián
     - `listar` (lista vacía con un `clienteId` inexistente), `obtener`, `crear` (cliente con `PESSIMISTIC_READ`, `CLIENTE_INACTIVO_SIN_CONTRATOS`, `CONTRATO_CODIGO_DUPLICADO`), y `actualizar` y `cambiarEstado` con `PESSIMISTIC_WRITE`, `CONTRATO_NO_EDITABLE` y `TRANSICION_NO_PERMITIDA` con `estadoActual` y `estadoSolicitado`
     - `cambiarEstado` no consulta el estado del cliente y solo actualiza la auditoría de estado (D9, D10)
