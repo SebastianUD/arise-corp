@@ -38,8 +38,8 @@ arise-corp/
 │           ├── AriseBackendApplicationTests.java
 │           ├── config/                       # pruebas del converter de autorización
 │           ├── login/                        # pruebas de /api/me, admin y matriz de módulos
-│           ├── unit/                         # pruebas unitarias
-│           └── integration/                  # pruebas PostgreSQL
+│           ├── crm/                          # pruebas *Tests en el paquete de la clase probada
+│           └── integration/                  # pruebas PostgreSQL *IT (Failsafe)
 ├── frontend/                                # React + Vite; login/perfil y pruebas implementados
 ├── supabase/migrations/                     # migración app.perfiles_usuario           [Implementado]
 ├── .github/workflows/                       # workflows CI de GitHub Actions           [Aprobado; por crear]
@@ -112,7 +112,7 @@ frontend/
 - No incluir archivos `.env` ni secretos dentro de la imagen Docker, del contexto de construcción ni en archivos YAML versionados.
 
 ## Pruebas
-- Backend: pruebas unitarias en `backend/src/test/java/`; pruebas de integración con PostgreSQL aislado/efímero. Las pruebas unitarias usan el paquete `unit` y sufijo `Tests`; las pruebas PostgreSQL usan `integration`, sufijo `IT` y Maven Failsafe (DP-EST-05).
+- Backend: pruebas unitarias en `backend/src/test/java/`; pruebas de integración con PostgreSQL aislado/efímero. Las pruebas unitarias y de contexto usan el sufijo `Tests` y van en el paquete de la clase probada (práctica de `001-foundation`); el paquete `unit` no se usa. Las pruebas PostgreSQL usan el paquete `integration`, el sufijo `IT` y Maven Failsafe (DP-EST-05, D19).
 - Frontend: pruebas unitarias y de integración junto a los componentes o bajo una carpeta `tests/`, junto a los módulos bajo `frontend/src/`.
 - Los workflows de GitHub Actions ejecutan los comandos de prueba documentados por cada proyecto.
 
@@ -139,4 +139,4 @@ frontend/
 - **DP-EST-02:** documentación y textos de interfaz en español. Nombres de dominio, tablas, columnas, rutas, JSON y enums en español y con términos del MVP; nombres técnicos de framework/clases utilitarias en inglés según convención (`SecurityConfig`, `Controller`). JSON camelCase; tablas/columnas snake_case.
 - **DP-EST-03:** 4 espacios, `.editorconfig`, inyección por constructor y DTO `record` en Java 21 cuando sean DTO de datos; no reformatear archivos completos salvo que sea parte de la tarea.
 - **DP-EST-04:** frontend organizado en `src/pages`, `components`, `routes`, `services`, `context`, `lib` y `test`; pruebas junto al módulo o archivo bajo `src/` con Vitest y Testing Library, siguiendo la estructura existente.
-- **DP-EST-05:** pruebas backend bajo `src/test/java/com/arise/corp/unit` y `integration`; unitarias/contexto con sufijo `Tests` se ejecutan en Surefire, integración PostgreSQL con sufijo `IT` se ejecuta en Failsafe y perfil aislado, con Testcontainers según DP-TEC-04.
+- **DP-EST-05:** pruebas backend con sufijo `Tests` en el paquete de la clase probada (práctica de `001-foundation`; el paquete `unit` no se usa) se ejecutan en Surefire; las pruebas de integración PostgreSQL van en `src/test/java/com/arise/corp/integration` con sufijo `IT`, se ejecutan en Failsafe y perfil aislado, con Testcontainers según DP-TEC-04 (D19).

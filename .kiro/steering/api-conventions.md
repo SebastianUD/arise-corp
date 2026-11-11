@@ -64,7 +64,7 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 - Las listas usan `page` desde 0 (por defecto 0), `size` por defecto 20 y máximo 100, y `sort=campo,asc|desc`. La respuesta usa `{ "content": [], "page": 0, "size": 20, "totalElements": 0, "totalPages": 0 }`; no se serializa directamente `Page` de Spring Data (DP-API-03).
 
 ## Validaciones
-- Los DTO de entrada se validan con Bean Validation: `@Valid` en el `@RequestBody` y anotaciones como `@NotNull`, `@NotBlank`, `@Size`, `@Email` o `@Positive` en los campos. Los parámetros de ruta y de consulta se validan con `@Validated` en el controlador.
+- Los DTO de entrada se validan con Bean Validation: `@Valid` en el `@RequestBody` y anotaciones como `@NotNull`, `@NotBlank`, `@Size`, `@Email` o `@Positive` en los campos. Los parámetros de ruta y de consulta se validan con la validación de métodos integrada de Spring MVC, con las restricciones (`@Min`, `@Max`, `@Pattern`, etc.) directamente en los `@RequestParam` y `@PathVariable`, sin `@Validated` a nivel de clase (D8).
 - Las reglas que dependen de datos (duplicados, existencia y estado de los recursos referenciados, transiciones válidas, existencias de inventario) se comprueban en el servicio y producen 404 o 409.
 - No confiar en identificadores enviados por el cliente: comprobar que el recurso referenciado existe y está activo antes de usarlo (por ejemplo, el cliente al que se asocia un paquete).
 - Las restricciones de PostgreSQL son la última defensa (NF-03). Una `DataIntegrityViolationException` se traduce a 409 sin exponer el mensaje de la base.

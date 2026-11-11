@@ -31,7 +31,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Comprobar con `git status` que ningún archivo `.env` queda preparado para commit
     - _Requisitos: 29.8, DP-SDD-03, DP-SDD-04, DP-SDD-05, NF-05_
 
-  - [ ] 1.2 Verificar y completar en los steering los ajustes de reglas que adopta el diseño
+  - [x] 1.2 Verificar y completar en los steering los ajustes de reglas que adopta el diseño
     - Área: documentación · Responsable: Davidson
     - `tech.md`: comprobar que la entrada DP-TEC-03 coincide literalmente con el texto registrado en "Aclaración de DP-TEC-03" del diseño (D18), que ya está escrito en el steering; si difiere, alinearlo. Este ajuste no se redacta de nuevo en esta tarea
     - `api-conventions.md`, sección "Validaciones": sustituir la frase sobre `@Validated` en el controlador por la validación de métodos integrada de Spring MVC, con las restricciones en los `@RequestParam` y sin `@Validated` a nivel de clase (D8)
