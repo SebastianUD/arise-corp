@@ -587,23 +587,23 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Transiciones ofrecidas en cada estado, confirmación irreversible, recarga tras un 409, edición solo en `BORRADOR` y OPERACIONES sin acciones
     - _Requisitos: 21.7–21.10, 25.2, 25.3_
 
-- [ ] 27. Implementar las vistas de cuentas corporativas y del resumen comercial
-  - [ ] 27.1 Implementar `CuentasLista`, `CuentaFormulario` y `CuentaDetalle` en `pages/crm/`
+- [x] 27. Implementar las vistas de cuentas corporativas y del resumen comercial
+  - [x] 27.1 Implementar `CuentasLista`, `CuentaFormulario` y `CuentaDetalle` en `pages/crm/`
     - Área: frontend · Responsable: Paula
     - Lista con búsqueda por razón social o NIT, filtro Todas/Activas/Inactivas y paginación; formulario con `nit` y `razonSocial` obligatorios, validación local y errores 400 y 409 junto al campo; detalle con "Activar"/"Desactivar" confirmado y los clientes de `GET /api/crm/clientes?cuentaCorporativaId={id}`
     - _Requisitos: 22.1–22.6, CRM-02, NF-06_
 
-  - [ ] 27.2 Implementar `pages/crm/ResumenComercial.jsx`
+  - [x] 27.2 Implementar `pages/crm/ResumenComercial.jsx`
     - Área: frontend · Responsable: Paula
     - Tarjetas con clientes activos, inactivos y total, y contratos por estado y total; indicador de carga y error con reintento
     - _Requisitos: 22.7, CRM-05, NF-06_
 
-  - [ ]* 27.3 Escribir las pruebas de las vistas de cuentas
+  - [x]* 27.3 Escribir las pruebas de las vistas de cuentas
     - Área: frontend · Responsable: Paula
     - `CuentasLista.test.jsx`, `CuentaFormulario.test.jsx` y `CuentaDetalle.test.jsx`: lista, formulario con 400 y 409, y detalle con los clientes asociados
     - _Requisitos: 22.1–22.6, 25.2_
 
-  - [ ]* 27.4 Escribir `pages/crm/ResumenComercial.test.jsx`
+  - [x]* 27.4 Escribir `pages/crm/ResumenComercial.test.jsx`
     - Área: frontend · Responsable: Paula
     - Carga, error con reintento y conteos
     - _Requisitos: 22.7_
