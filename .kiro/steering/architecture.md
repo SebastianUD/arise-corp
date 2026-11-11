@@ -14,7 +14,7 @@ Etiquetas de estado: ver `product.md`. El diagrama general de componentes está 
 ## Componentes y responsabilidades
 | Componente | Responsabilidades | No debe | Estado |
 |---|---|---|---|
-| SPA React (Vite, Tailwind CSS, React Router) | Login, perfil, navegación y rutas protegidas, sesión, formularios y llamadas autenticadas a la API | Leer o escribir tablas de negocio en Supabase; decidir permisos por sí sola; contener reglas de negocio | [Implementado] para login/perfil; módulos funcionales pendientes |
+| SPA React (Vite, Tailwind CSS, React Router) | Gestiona la sesión, comparte el perfil de `GET /api/me`, presenta las vistas según el rol y envía las consultas y escrituras del CRM a Spring Boot con el token vigente | Acceder directamente a tablas de negocio, decidir la autorización definitiva o ejecutar reglas de negocio del servidor | [Implementado] Acceso, perfil, clientes, contratos, cuentas corporativas y resumen comercial |
 | Supabase Auth | Inicio y cierre de sesión, emisión y renovación de JWT (ES256), publicación de las claves públicas (JWKS) | Almacenar datos de negocio | [Implementado] e integrado; flujo validado manualmente en `arise-corp-dev` |
 | API Spring Boot | Validar JWT, autorizar por rol, validar entradas, reglas de negocio, transacciones y persistencia | Renderizar vistas; delegar permisos al frontend | JWT, `/api/me`, perfil, autorización por rol, administración de perfiles y Problem Details implementados (tareas 15–18) |
 | Supabase PostgreSQL | Persistencia e integridad relacional | Ser modificado por Hibernate; exponer tablas de negocio al frontend | [Implementada] la conexión y `app.perfiles_usuario`; tablas de negocio pendientes |

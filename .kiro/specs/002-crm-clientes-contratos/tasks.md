@@ -619,8 +619,8 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Menú por rol con enlaces a `/crm/*`; una ruta CRM no permitida (por ejemplo `/crm/clientes/nuevo` con FINANZAS_RRHH) muestra el mensaje sin solicitar sus datos; un 403 del backend muestra el mensaje de permisos sin cerrar sesión
     - _Requisitos: 19.5, 19.6, 25.3, 25.4_
 
-- [ ] 29. Documentar el frontend del CRM
-  - [ ] 29.1 Actualizar la documentación del frontend
+- [x] 29. Documentar el frontend del CRM
+  - [x] 29.1 Actualizar la documentación del frontend
     - Área: documentación · Responsable: Paula
     - README §11.6: vistas y rutas CRM por rol, y comandos `npm test`, `npm run build` y `npm run check:secrets`, sin variables nuevas. `structure.md`: `pages/crm`, `context/PerfilContext`, `routes/RolRoute`, `components/AppLayout` y `lib/permisos`, `validacionCrm` y `formato`. `architecture.md`: fila de la SPA con las vistas CRM. `product.md`: vistas CRM del frontend implementadas en "Estado actual"
     - _Requisitos: 29.5, 29.7, CA-01, CA-07_

@@ -360,6 +360,22 @@ npm run preview      # vista previa local del bundle
 
 Dependencias fijadas en `package.json` y `package-lock.json`; usar `npm ci` para reproducir la instalación. Tailwind CSS usa `@tailwindcss/vite`; las pruebas usan React Testing Library + jsdom.
 
+#### Vistas del CRM por rol
+
+Al iniciar sesión, la SPA abre `/perfil` y construye el menú con el rol que devuelve `GET /api/me`. Los **gestores** (`ADMINISTRADOR` y `COMERCIAL`) ven Clientes, Cuentas corporativas y Resumen comercial. `OPERACIONES` y `FINANZAS_RRHH` entran por Clientes y consultan una vista reducida. Desde el detalle del cliente, Operaciones también puede abrir sus contratos. El CRM utiliza las tres variables públicas de esta sección.
+
+| Vista | Ruta en la SPA | Roles con acceso |
+|---|---|---|
+| Lista de clientes con búsqueda, estado y paginación | `/crm/clientes` | Los cuatro roles |
+| Detalle del cliente | `/crm/clientes/:id` | Los cuatro roles |
+| Alta y edición de clientes | `/crm/clientes/nuevo`, `/crm/clientes/:id/editar` | Gestores |
+| Alta de contrato desde un cliente activo | `/crm/clientes/:clienteId/contratos/nuevo` | Gestores |
+| Detalle del contrato | `/crm/contratos/:id` | Gestores y `OPERACIONES`. Solo los gestores pueden cambiar el estado |
+| Edición de un contrato en borrador | `/crm/contratos/:id/editar` | Gestores |
+| Lista y detalle de cuentas corporativas con sus clientes asociados | `/crm/cuentas-corporativas`, `/crm/cuentas-corporativas/:id` | Gestores |
+| Alta y edición de cuentas corporativas | `/crm/cuentas-corporativas/nueva`, `/crm/cuentas-corporativas/:id/editar` | Gestores |
+| Resumen de clientes y contratos por estado | `/crm/resumen` | Gestores |
+
 ### 11.7 Validar la integración de autenticación
 
 Las pruebas automáticas se ejecutan sin servicios externos: el backend usa H2 y JWT simulados, y el frontend simula Supabase y la API. La configuración en `backend/src/test/resources/application.properties` reemplaza la principal y no importa el archivo `.env`. Los tokens inválidos/vencidos se prueban simulando el rechazo del decoder de Spring Security.

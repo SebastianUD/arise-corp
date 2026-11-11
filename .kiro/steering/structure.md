@@ -40,7 +40,7 @@ arise-corp/
 │           ├── login/                        # pruebas de /api/me, admin y matriz de módulos
 │           ├── crm/                          # pruebas *Tests en el paquete de la clase probada
 │           └── integration/                  # pruebas PostgreSQL *IT (Failsafe)
-├── frontend/                                # React + Vite; login/perfil y pruebas implementados
+├── frontend/                                # SPA React con acceso, perfil y vistas CRM
 ├── supabase/migrations/                     # migración app.perfiles_usuario           [Implementado]
 ├── .github/workflows/                       # workflows CI de GitHub Actions           [Aprobado; por crear]
 │   ├── backend-ci.yml                       # CI backend y build de Docker (propuesto)
@@ -91,17 +91,31 @@ com.arise.corp
 - Comentarios y encabezados de sección de `application.properties` en español.
 
 ## Frontend [Aprobado, MVP §9]
-React organizará el código en páginas, componentes compartidos, rutas y servicios HTTP dentro de `frontend/src/` (README §5). Las vistas previstas son Login, Dashboard, CRM, ERP y SGA. Distribución adoptada y ya inicializada:
+La SPA organiza las vistas de acceso, perfil y CRM en `frontend/src/`. La sección 11.6 del README enumera las rutas disponibles por rol.
 
 ```text
 frontend/
 ├── .env.example      # solo variables VITE_* públicas
 └── src/
-    ├── pages/        # vistas: Login, Dashboard, CRM, ERP, SGA
-    ├── components/   # componentes compartidos
-    ├── routes/       # configuración de React Router y rutas protegidas
-    ├── services/     # cliente HTTP hacia la API de Spring Boot
-    └── lib/          # inicialización del cliente de Supabase (solo autenticación)
+    ├── App.jsx                    # registro de rutas y agrupación por permiso
+    ├── pages/                     # Login.jsx y Perfil.jsx
+    │   └── crm/                   # clientes, contratos, cuentas corporativas y resumen
+    ├── context/
+    │   ├── AuthContext.jsx        # sesión de Supabase
+    │   └── PerfilContext.jsx      # perfil y rol compartidos de GET /api/me
+    ├── components/
+    │   └── AppLayout.jsx          # cabecera privada, menú por rol y salida de sesión
+    ├── routes/
+    │   ├── ProtectedRoute.jsx     # comprueba la sesión
+    │   └── RolRoute.jsx           # comprueba el rol antes de montar la vista
+    ├── services/
+    │   ├── apiClient.js           # cliente HTTP autenticado y errores de la API
+    │   └── crmApi.js              # consultas y escrituras del CRM
+    └── lib/
+        ├── supabase.js            # cliente de autenticación
+        ├── permisos.js            # menú, permisos y transiciones visibles
+        ├── validacionCrm.js       # normalización y validación de formularios
+        └── formato.js             # importes en COP, fechas e instantes en es-CO
 ```
 
 ## Docker e infraestructura de entrega
