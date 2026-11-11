@@ -58,3 +58,15 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   fallback de proyecciones ni una estrategia de carga adicional. Los tres YAML se validaron con
   PyYAML comprobando disparadores, `concurrency`, `permissions`, acciones oficiales, comandos
   y ausencia de referencias a secretos.
+- L5 (2026-11-11): instruccion del usuario "Ya esta autenticado el supabase, haz la migracion".
+  Se aplico la migracion en `arise-corp-dev` (project id `dttzrepohlrfsepygmln`) con
+  `apply_migration` del MCP, nombre `app_crm_clientes_contratos`, version remota
+  `20261111061432`. La tarea 8.1 (revision de la migracion por otro integrante) **no** se
+  ejecuto antes de aplicarla; queda registrada como pendiente y ya no se puede editar la
+  migracion, solo crear una nueva si la revision lo exige.
+  Evidencia observada: `list_migrations` muestra `app_perfiles_usuario` y
+  `app_crm_clientes_contratos`; las tres tablas existen con `relrowsecurity = true`;
+  `has_table_privilege` de `anon` y `authenticated` en `select` es `false`; las tres tablas
+  estan vacias; `has_schema_privilege('anon'|'authenticated', 'app', 'usage')` es `false`.
+  `get_advisors` (security) solo reporta `rls_enabled_no_policy` (INFO, esperado en el esquema
+  privado) y `auth_leaked_password_protection` (WARN del proyecto Auth, ajeno a esta migracion).
