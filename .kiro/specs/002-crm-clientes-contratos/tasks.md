@@ -372,17 +372,17 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - `ddl-auto=validate` acepta las entidades; las tablas están vacías tras migrar; `information_schema` confirma los tipos y la ausencia de columna de cuenta en `contratos`; inserciones JDBC inválidas producen SQLState 23505, 23514 y 23503 (unicidad, `CHECK` y FK); RLS activo y sin privilegios `select`, `insert`, `update` ni `delete` para `anon` y `authenticated`
     - _Requisitos: 2.2–2.10, 24.5, 24.6, 24.9, DP-SEG-05_
 
-  - [ ] 16.4 Escribir `ContratoTransaccionIT`
+  - [x] 16.4 Escribir `ContratoTransaccionIT`
     - Área: backend · Responsable: Sebastián
     - Un cambio de estado confirmado actualiza juntas las tres columnas de estado; un `TransactionTemplate` que llama a `cambiarEstado` y después lanza una excepción no deja cambios en el estado ni en su auditoría
     - _Requisitos: 14.4, 24.8, DP-SEG-06_
 
-  - [ ] 16.5 Escribir `FlujoCrmIT`
+  - [x] 16.5 Escribir `FlujoCrmIT`
     - Área: backend · Responsable: Sebastián
     - Flujo cuenta → cliente → contrato → `ACTIVO` → `FINALIZADO` por MockMvc contra PostgreSQL; un `saveAndFlush` de un cliente duplicado lanza `DataIntegrityViolationException`, que la API traduce a 409 genérico
     - _Requisitos: 17.5, 24.11, CA-04, CA-05, ENG-03_
 
-  - [ ] 16.6 Escribir `ConsultasCrmIT`
+  - [x] 16.6 Escribir `ConsultasCrmIT`
     - Área: backend · Responsable: Sebastián
     - Conjunto sembrado con semilla fija (tildes, mayúsculas, documentos con letras, cuentas activas e inactivas y contratos en los cuatro estados) y al menos 100 combinaciones generadas de filtros y orden, incluidos valores de `q` con `%` y `_`
     - **Property 15: Filtros, búsqueda y orden coinciden con un modelo en memoria** · **Validates: Requirements 5.1, 5.3, 5.4, 5.5, 9.6, 12.1, 24.7**
