@@ -6,11 +6,13 @@ import AppLayout from './components/AppLayout.jsx'
 import Login from './pages/Login.jsx'
 import Perfil from './pages/Perfil.jsx'
 import RolRoute from './routes/RolRoute.jsx'
-import { puedeGestionarCrm, puedeLeerClientes } from './lib/permisos.js'
+import { puedeGestionarCrm, puedeLeerClientes, puedeLeerContratos } from './lib/permisos.js'
 
 const ClientesLista = lazy(() => import('./pages/crm/ClientesLista.jsx'))
 const ClienteFormulario = lazy(() => import('./pages/crm/ClienteFormulario.jsx'))
 const ClienteDetalle = lazy(() => import('./pages/crm/ClienteDetalle.jsx'))
+const ContratoFormulario = lazy(() => import('./pages/crm/ContratoFormulario.jsx'))
+const ContratoDetalle = lazy(() => import('./pages/crm/ContratoDetalle.jsx'))
 
 export default function App() {
   return (
@@ -25,7 +27,12 @@ export default function App() {
                 <Route path="/crm/clientes" element={<ClientesLista />} />
                 <Route path="/crm/clientes/:id" element={<ClienteDetalle />} />
               </Route>
+              <Route element={<RolRoute permite={puedeLeerContratos} />}>
+                <Route path="/crm/contratos/:id" element={<ContratoDetalle />} />
+              </Route>
               <Route element={<RolRoute permite={puedeGestionarCrm} />}>
+                <Route path="/crm/clientes/:clienteId/contratos/nuevo" element={<ContratoFormulario />} />
+                <Route path="/crm/contratos/:id/editar" element={<ContratoFormulario />} />
                 <Route path="/crm/clientes/nuevo" element={<ClienteFormulario />} />
                 <Route path="/crm/clientes/:id/editar" element={<ClienteFormulario />} />
               </Route>

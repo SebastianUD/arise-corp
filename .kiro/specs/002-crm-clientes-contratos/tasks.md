@@ -566,23 +566,23 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Contratos para gestor y OPERACIONES, ninguna solicitud de contratos con FINANZAS_RRHH, confirmación de la desactivación y alta oculta para un cliente inactivo
     - _Requisitos: 20.9–20.11, 21.2, 25.2, 25.3_
 
-- [ ] 26. Implementar las vistas de contratos
-  - [ ] 26.1 Implementar `pages/crm/ContratoFormulario.jsx`
+- [x] 26. Implementar las vistas de contratos
+  - [x] 26.1 Implementar `pages/crm/ContratoFormulario.jsx`
     - Área: frontend · Responsable: Paula
     - Alta desde un cliente activo y edición solo en `BORRADOR`; campos código, descripción, fechas y `valor` como texto con `inputMode="decimal"`; validación local; 409 `CONTRATO_CODIGO_DUPLICADO` junto a "Código" con los valores conservados
     - _Requisitos: 21.1, 21.3, 21.4, 21.6, 21.10, CRM-03, CRM-04_
 
-  - [ ] 26.2 Implementar `pages/crm/ContratoDetalle.jsx`
+  - [x] 26.2 Implementar `pages/crm/ContratoDetalle.jsx`
     - Área: frontend · Responsable: Paula
     - Datos, valor en COP y auditoría de estado. Para gestor: un botón por cada estado de `TRANSICIONES[estado]`, confirmación "Este cambio es irreversible." hacia los estados finales, "Editar" solo en `BORRADOR` y recarga tras un 409. OPERACIONES ve el detalle sin acciones
     - _Requisitos: 21.5, 21.7–21.10, CRM-03, DP-API-05_
 
-  - [ ] 26.3 Escribir `pages/crm/ContratoFormulario.test.jsx`
+  - [x] 26.3 Escribir `pages/crm/ContratoFormulario.test.jsx`
     - Área: frontend · Responsable: Paula
     - Fecha de fin anterior a la de inicio, valor negativo o con más de 2 decimales, `valor` enviado como texto y 409 de código junto al campo
     - _Requisitos: 21.3, 21.4, 21.6, 25.2_
 
-  - [ ] 26.4 Escribir `pages/crm/ContratoDetalle.test.jsx`
+  - [x] 26.4 Escribir `pages/crm/ContratoDetalle.test.jsx`
     - Área: frontend · Responsable: Paula
     - Transiciones ofrecidas en cada estado, confirmación irreversible, recarga tras un 409, edición solo en `BORRADOR` y OPERACIONES sin acciones
     - _Requisitos: 21.7–21.10, 25.2, 25.3_
