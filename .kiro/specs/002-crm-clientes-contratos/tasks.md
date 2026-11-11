@@ -470,29 +470,29 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 5: El valor del contrato viaja como texto sin perder precisión** (lado frontend) · **Validates: Requirements 21.4**
     - _Requisitos: 21.4, NF-07_
 
-- [ ] 22. Implementar las reglas de interfaz del CRM
-  - [ ] 22.1 Crear `lib/permisos.js`
+- [x] 22. Implementar las reglas de interfaz del CRM
+  - [x] 22.1 Crear `lib/permisos.js`
     - Área: frontend · Responsable: Paula
     - `puedeGestionarCrm`, `puedeLeerClientes`, `puedeLeerContratos`, `TRANSICIONES`, `esEstadoFinal` y `opcionesMenu(rol)`
     - _Requisitos: 19.2–19.4, 21.7, DP-PRO-01_
 
-  - [ ] 22.2 Crear `lib/validacionCrm.js`
+  - [x] 22.2 Crear `lib/validacionCrm.js`
     - Área: frontend · Responsable: Paula
     - `normalizarDocumento`, `normalizarCodigo`, `validarCliente`, `validarCuenta` y `validarContrato` con los límites y mensajes del contrato de API; `valor` validado con `^\d{1,13}(\.\d{1,2})?$` sobre el texto, sin convertirlo a número
     - _Requisitos: 20.5, 21.3, 21.4, 22.3, NF-06_
 
-  - [ ] 22.3 Crear `lib/formato.js`
+  - [x] 22.3 Crear `lib/formato.js`
     - Área: frontend · Responsable: Paula
     - `formatoCop` con `Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 2 })` aplicado a la cadena decimal; `formatoFecha` y `formatoInstante` en `es-CO`
     - _Requisitos: 21.5, CRM-03_
 
-  - [ ]* 22.4 Escribir `lib/permisos.test.js`
+  - [x]* 22.4 Escribir `lib/permisos.test.js`
     - Área: frontend · Responsable: Paula
     - **Property 11: Solo se aceptan las cuatro transiciones permitidas** (transiciones que ofrece el frontend) · **Validates: Requirements 21.7**
     - **Property 19: El menú y los controles derivan del rol** · **Validates: Requirements 19.2, 19.3, 19.4**
     - _Requisitos: 19.2–19.4, 21.7, NF-07_
 
-  - [ ]* 22.5 Escribir `lib/validacionCrm.test.js`
+  - [x]* 22.5 Escribir `lib/validacionCrm.test.js`
     - Área: frontend · Responsable: Paula
     - Crear `src/test/generadores.js` (`mulberry32` con semilla fija)
     - **Property 1: La normalización es idempotente** · **Validates: Requirements 3.2**
@@ -500,7 +500,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 3: Las validaciones de formato coinciden con la regla de referencia** · **Validates: Requirements 20.5, 21.3, 22.3**
     - _Requisitos: 20.5, 21.3, 22.3, NF-07_
 
-  - [ ]* 22.6 Escribir `lib/formato.test.js`
+  - [x]* 22.6 Escribir `lib/formato.test.js`
     - Área: frontend · Responsable: Paula
     - Formato COP de `"0.00"`, `"1500000.5"` y `"9999999999999.99"`
     - _Requisitos: 21.5_
