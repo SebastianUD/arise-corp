@@ -23,7 +23,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
 
 ## Tasks
 
-- [ ] 1. Preparar la rama y las reglas de la spec
+- [x] 1. Preparar la rama y las reglas de la spec
   - [x] 1.1 Crear la rama `feat/crm-clientes-contratos` desde `main`
     - Área: integración/Git · Responsable: Sebastián
     - Actualizar `main` (`git switch main` y `git pull`), crear la rama con `git switch -c feat/crm-clientes-contratos` y publicarla con `git push -u origin feat/crm-clientes-contratos`
@@ -124,99 +124,99 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
   - Área: verificación · Responsable: Davidson
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/`: el contexto arranca con las entidades CRM en H2 y las pruebas existentes pasan. Comprobar `git ls-files -s backend/mvnw` (`100755`) y revisar el YAML contra el Requirement 28. Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
 
-- [ ] 8. Revisar la migración del CRM
-  - [ ] 8.1 Revisar la migración en la rama antes de aplicarla
+- [x] 8. Revisar la migración del CRM
+  - [x] 8.1 Revisar la migración en la rama antes de aplicarla
     - Área: base de datos · Responsable: Sebastián
     - Contrastar el SQL con "Migración CRM" y "Entidades JPA" del diseño: columnas, tipos, `CHECK`, `UNIQUE`, FK, índices, RLS, `revoke` y ausencia de datos. Los cambios que pida la revisión se hacen en el mismo archivo, porque todavía no está aplicado
     - No la apliques tú: la aplicación controlada es la tarea 17.1 y la realiza Davidson, autor de la migración, después de `MigracionesCrmIT` y de esta revisión
     - _Requisitos: 2.1–2.9, 29.10, DP-TEC-03, DP-SEG-05_
 
-- [ ] 9. Ampliar el manejo de errores en `shared.error`
-  - [ ] 9.1 Crear `ConflictoNegocioException` y ampliar `RecursoNoEncontradoException`
+- [x] 9. Ampliar el manejo de errores en `shared.error`
+  - [x] 9.1 Crear `ConflictoNegocioException` y ampliar `RecursoNoEncontradoException`
     - Área: backend · Responsable: Sebastián
     - `ConflictoNegocioException(conflicto, detalle, campo, extensiones)` con código estable en `UPPER_SNAKE_CASE` (D5); nuevo constructor `RecursoNoEncontradoException(String mensaje, String campo)` que conserva el actual
     - _Requisitos: 10.3, 11.10, 17.4, CA-06, DP-API-02_
 
-  - [ ] 9.2 Ampliar `GlobalExceptionHandler`
+  - [x] 9.2 Ampliar `GlobalExceptionHandler`
     - Área: backend · Responsable: Sebastián
     - Aplicar la tabla "Cambios en GlobalExceptionHandler": 409 con `conflicto`, `campo` y extensiones; `campo` en 404; deduplicación de `errors` por campo; `HttpMessageNotReadableException` con el campo de la `tools.jackson.databind.DatabindException`; `handleTypeMismatch` con el nombre del parámetro; 405 en español que conserva `Allow`; 415 en español; `ConcurrencyFailureException` → 409
     - Mensajes según el tipo de destino, sin nombres de clases. No registrar los mensajes de excepciones de datos; el 500 registra la traza pero no la devuelve
     - _Requisitos: 8.6, 17.1–17.6, CA-06, DP-API-02_
 
-  - [ ] 9.3 Ampliar `ErroresApiTests`
+  - [x] 9.3 Ampliar `ErroresApiTests`
     - Área: backend · Responsable: Sebastián
     - Casos: conflicto con extensiones, `campo` en 404, error de tipo en el cuerpo con su campo, error de parámetro, 405 con `Allow`, 415 y deduplicación de `errors`
     - **Property 17: Los errores no exponen información interna** (todas las respuestas de la clase) · **Validates: Requirements 17.1, 17.3, 17.5, 17.6**
     - _Requisitos: 17.1–17.6, CA-06, NF-07_
 
-- [ ] 10. Implementar la normalización y la máquina de estados
-  - [ ] 10.1 Implementar `shared.normalizacion.NormalizadorTexto`
+- [x] 10. Implementar la normalización y la máquina de estados
+  - [x] 10.1 Implementar `shared.normalizacion.NormalizadorTexto`
     - Área: backend · Responsable: Sebastián
     - Clase `final` con métodos estáticos puros `texto`, `documento`, `codigo` y `patronContiene` (escapa `\`, `%` y `_`), según el diseño (D2)
     - _Requisitos: 3.1–3.5, CRM-04_
 
-  - [ ] 10.2 Escribir `NormalizadorTextoTests`
+  - [x] 10.2 Escribir `NormalizadorTextoTests`
     - Área: backend · Responsable: Sebastián
     - Crear `GeneradoresCrm` con semilla fija en el paquete de prueba; ejemplos de `patronContiene` y de `1.023.456-7` → `10234567`
     - **Property 1: La normalización es idempotente** · **Validates: Requirements 3.2, 3.4, 3.5**
     - **Property 2: Las variantes de formato de un documento son el mismo documento** · **Validates: Requirements 3.1, 3.3**
     - _Requisitos: 23.3, NF-07, CRM-04_
 
-  - [ ] 10.3 Añadir las transiciones a `EstadoContrato` y las defensas de `Contrato`
+  - [x] 10.3 Añadir las transiciones a `EstadoContrato` y las defensas de `Contrato`
     - Área: backend · Responsable: Sebastián
     - `transicionesPermitidas()`, `puedeTransicionarA(destino)` y `esFinal()` con las cuatro Transicion_Permitida del diseño
     - En `Contrato`, `actualizarDatos` lanza `IllegalStateException` fuera de `BORRADOR` y `cambiarEstado` la lanza ante una transición no permitida. Son defensas de invariantes: el servicio comprueba la regla antes
     - _Requisitos: 13.3, 14.1, 14.2, CRM-03, DP-API-05_
 
-  - [ ] 10.4 Escribir `EstadoContratoTests`
+  - [x] 10.4 Escribir `EstadoContratoTests`
     - Área: backend · Responsable: Sebastián
     - `@ParameterizedTest` exhaustivo sobre los 16 pares de origen y destino, y sobre `esFinal`
     - **Property 11: Solo se aceptan las cuatro transiciones permitidas** (nivel enumeración) · **Validates: Requirements 14.1, 14.2, 23.2**
     - _Requisitos: 23.2, NF-07_
 
-- [ ] 11. Implementar las utilidades compartidas de paginación, reloj y validación
-  - [ ] 11.1 Implementar `shared.paginacion.PaginaResponse` y `Paginacion`
+- [x] 11. Implementar las utilidades compartidas de paginación, reloj y validación
+  - [x] 11.1 Implementar `shared.paginacion.PaginaResponse` y `Paginacion`
     - Área: backend · Responsable: Sebastián
     - `PaginaResponse<T>.desde(Page<T>)` con `content`, `page`, `size`, `totalElements` y `totalPages`; `Paginacion.crear(page, size, sort, camposPermitidos)` con desempate `id,asc` e `IllegalArgumentException` ante un campo no permitido (D7)
     - _Requisitos: 5.2, 9.6, 12.1, DP-API-03_
 
-  - [ ]* 11.2 Escribir `PaginacionTests`
+  - [x]* 11.2 Escribir `PaginacionTests`
     - Área: backend · Responsable: Sebastián
     - Desempate por `id`, rechazo de campos fuera de la lista y conservación de los metadatos en `PaginaResponse.desde`
     - **Property 14: Los parámetros de lista se aceptan o rechazan según DP-API-03** (parte unitaria) · **Validates: Requirements 5.2, 5.6, 9.7, 12.3**
     - _Requisitos: 5.2, NF-07_
 
-  - [ ] 11.3 Crear `config.ClockConfig`
+  - [x] 11.3 Crear `config.ClockConfig`
     - Área: backend · Responsable: Sebastián
     - `@Bean Clock clock()` con `Clock.systemUTC()` (D10)
     - _Requisitos: 14.1, DP-SEG-06_
 
-  - [ ] 11.4 Crear las restricciones compuestas de `shared.validacion`
+  - [x] 11.4 Crear las restricciones compuestas de `shared.validacion`
     - Área: backend · Responsable: Sebastián
     - `@Correo`, `@Telefono` y `@ValorCop` con `@ReportAsSingleViolation`; aceptan `null` y declaran sus mensajes en español (D3)
     - _Requisitos: 4.6, 9.4, 11.8, 17.2, CRM-04_
 
-- [ ] 12. Implementar los DTO del CRM
-  - [ ] 12.1 Crear los DTO de entrada y sus validadores de clase
+- [x] 12. Implementar los DTO del CRM
+  - [x] 12.1 Crear los DTO de entrada y sus validadores de clase
     - Área: backend · Responsable: Sebastián
     - `ClienteRequest`, `EstadoClienteRequest`, `CuentaCorporativaRequest`, `EstadoCuentaRequest`, `ContratoCrearRequest`, `ContratoActualizarRequest` (sin `clienteId` ni `estado`) y `EstadoContratoRequest` como `record` con `@JsonIgnoreProperties(ignoreUnknown = true)`, normalización en el constructor compacto, `@NotNull` separado del formato y mensajes en español
     - `@NumeroDocumentoValido` (informa sobre `numeroDocumento`) y `@RangoFechasContrato` (informa sobre `fechaFin`) en `crm.dto.validacion`; `toString()` sin datos personales en `ClienteRequest` y `CuentaCorporativaRequest`
     - _Requisitos: 3.1, 3.4, 3.5, 4.2–4.6, 4.9, 6.4, 9.2–9.4, 11.2–11.8, 11.12, 13.2, 13.4, CRM-04_
 
-  - [ ] 12.2 Crear los DTO de salida y `VistaCliente`
+  - [x] 12.2 Crear los DTO de salida y `VistaCliente`
     - Área: backend · Responsable: Sebastián
     - `ClienteVista` (interfaz sellada), `ClienteResponse`, `ClienteResumenResponse` (sin `correo`, `telefono`, `direccion` ni auditoría), `CuentaCorporativaRef`, `ClienteRef`, `CuentaCorporativaResponse`, `ContratoResponse` con `valor` como texto de dos decimales y `ResumenComercialResponse` con un `EnumMap` de los cuatro estados; `toString()` sin datos personales en `ClienteResponse` y `CuentaCorporativaResponse`
     - `crm.service.VistaCliente { COMPLETA, REDUCIDA }`
     - _Requisitos: 6.1, 6.2, 6.4, 10.6, 12.4, 12.5, 15.1, 15.2, DP-PRO-01, DP-API-04_
 
-  - [ ]* 12.3 Escribir las pruebas de validación de los DTO de entrada
+  - [x]* 12.3 Escribir las pruebas de validación de los DTO de entrada
     - Área: backend · Responsable: Sebastián
     - `ClienteRequestValidacionTests`, `CuentaCorporativaRequestValidacionTests` y `ContratoRequestValidacionTests` con `jakarta.validation.Validator` y `GeneradoresCrm`
     - **Property 3: Las validaciones de formato coinciden con la regla de referencia** · **Validates: Requirements 4.4, 4.5, 4.6, 7.2, 9.3, 9.4, 11.4, 11.5, 11.7, 11.8, 13.2**
     - **Property 4: Un error por cada campo inválido** · **Validates: Requirements 4.2, 4.3, 9.2, 11.2, 11.3, 17.2**
     - _Requisitos: 23.7, NF-07_
 
-  - [ ]* 12.4 Escribir `SerializacionCrmTests`
+  - [x]* 12.4 Escribir `SerializacionCrmTests`
     - Área: backend · Responsable: Sebastián
     - `@SpringBootTest` con el `ObjectMapper` de la aplicación
     - **Property 5: El valor del contrato viaja como texto sin perder precisión** · **Validates: Requirements 12.5**

@@ -1,4 +1,4 @@
-# Feature: 002-crm-clientes-contratos — tareas 2 a 7
+# Feature: 002-crm-clientes-contratos — tareas 2 a 12
 
 Rama `feat/crm-clientes-contratos`. Estrategia de entrega: un unico PR al cerrar la spec
 (`ask-on-risk`). Pruebas backend: `.\mvnw.cmd test` (Surefire + H2, sin Docker).
@@ -57,6 +57,11 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
 | T7 | S8 | inline | completada | `.\mvnw.cmd clean test`: 66 pruebas en verde (commit previo) |
 | T16 | S9 | inline | completada | Testcontainers + Failsafe, infra `it` y `MigracionesCrmIT`: 7/7 en verde |
 | T18 | S10 | inline | completada | `docker build` OK; imagen con usuario `arise`, `8080/tcp` y sin `.env`; `docker compose config --services` = `backend` |
+| T8 | S1 | inline | completada | Revisado el SQL contra "Migración CRM" y "Entidades JPA": columnas, tipos, `CHECK`, `UNIQUE`, FK, índices, RLS, `revoke` y ausencia de datos coinciden (113 líneas); no requirió cambios. Ya estaba aplicado en `arise-corp-dev` (L5), por lo que no se editó el archivo |
+| T9 | S1 | `backend/src/main/java/com/arise/corp/shared/error/**` | completada | `ConflictoNegocioException(conflicto, detalle, campo, extensiones)`, constructor `RecursoNoEncontradoException(mensaje, campo)` y handlers 409/404/405/415/concurrencia; `ErroresApiTests`: 19 pruebas (incluye Property 17) |
+| T10 | S1 | `backend/src/main/java/com/arise/corp/shared/normalizacion/**`, `crm/entity/**` | completada | `NormalizadorTexto` final e idempotente; `EstadoContrato` con las cuatro transiciones; defensas en `Contrato.actualizarDatos`/`cambiarEstado`; `NormalizadorTextoTests` (4) y `EstadoContratoTests` (21) |
+| T11 | S1 | `backend/src/main/java/com/arise/corp/shared/paginacion/**`, `config/**`, `shared/validacion/**` | completada | `PaginaResponse.desde`, `Paginacion.crear` con desempate `id,asc`, `ClockConfig`, `@Correo`/`@Telefono`/`@ValorCop`; `PaginacionTests` (10, incluye Property 14) |
+| T12 | S1 | `backend/src/main/java/com/arise/corp/crm/dto/**` | completada | DTO de entrada/salida, validadores de clase y `VistaCliente`; `ClienteRequestValidacionTests`, `CuentaCorporativaRequestValidacionTests`, `ContratoRequestValidacionTests` y `SerializacionCrmTests` cubren las Properties 3, 4, 5 y 6 |
 
 ## Log
 
@@ -124,3 +129,18 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   alrededor del valor, de modo que Compose y Spring leen los mismos valores. La parte de ejecucion
   de la 18.4 (`docker compose up backend` + `curl` -> 401) queda diferida al cierre del backend por
   decision del usuario.
+- L9 (2026-11-11): tareas 8 a 12 completadas. La revision 8.1 comparo la migracion
+  `20261111120000_app_crm_clientes_contratos.sql` con el bloque "Migración CRM" del diseno y no
+  encontro diferencias (columnas, tipos, `CHECK`, `UNIQUE`, FK, indices, RLS, `revoke` y tablas
+  vacias); como ya estaba aplicada en `arise-corp-dev` (L5), no se modifico el archivo.
+  Se anadieron `ConflictoNegocioException` y el manejo de 409/404 con `campo`, 405 y 415 en
+  espanol, deduplicacion de `errors`, `ConcurrencyFailureException` -> 409 y los mensajes por tipo
+  de destino; `NormalizadorTexto`, la maquina de estados de `EstadoContrato` con las cuatro
+  transiciones y las defensas de `Contrato`; `PaginaResponse`/`Paginacion`, `ClockConfig` y las
+  restricciones compuestas `@Correo`, `@Telefono` y `@ValorCop`; y todos los DTO de entrada y
+  salida del CRM con sus validadores de clase. Evidencia observada: `.\mvnw.cmd clean test` ->
+  143 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase. Las propiedades usan `GeneradoresCrm`
+  con semilla fija y 120 casos (`Property 1`, `2`, `3`, `4`, `5`, `6`, `11`, `14` y `17`). El
+  unico ajuste de comportamiento previo fue reordenar una prueba de `CrmRepositoriosTests` para
+  editar el contrato antes de cambiar su estado, porque `Contrato.actualizarDatos` ahora solo
+  admite `BORRADOR`.
