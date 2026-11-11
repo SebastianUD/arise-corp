@@ -279,7 +279,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 13: El resumen comercial es consistente** (conteos simulados generados) · **Validates: Requirements 15.1, 15.2, 15.3**
     - _Requisitos: 15.1–15.3, NF-07_
 
-- [ ] 14. Implementar los controladores del CRM y sus pruebas MockMvc
+- [x] 14. Implementar los controladores del CRM y sus pruebas MockMvc
   - [x] 14.1 Retirar los dobles CRM de `AutorizacionModulosTests`
     - Área: backend · Responsable: Sebastián
     - Eliminar los endpoints de prueba `GET /api/crm/clientes`, `GET /api/crm/clientes/{id}`, `POST /api/crm/clientes` y `GET /api/crm/contratos/{id}`; conservar `GET /api/erp/proveedores` y `GET /api/sga/paquetes`
@@ -317,7 +317,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - `CrmDatosPrueba` (paquete de prueba `com.arise.corp.crm`) crea perfiles, cuentas, clientes y contratos ficticios y limpia los repositorios en `@BeforeEach`. La autenticación usa `AutenticacionPerfilTestSupport.como(...)` con el `PerfilJwtAuthenticationConverter` real sobre perfiles persistidos en H2, sin tokens reales de Supabase
     - _Requisitos: 16.1–16.5, 23.4–23.6, NF-07_
 
-  - [ ] 14.8 Escribir `CrmAutorizacionTests`
+  - [x] 14.8 Escribir `CrmAutorizacionTests`
     - Área: backend · Responsable: Sebastián
     - Matriz exhaustiva: 17 operaciones (16 endpoints y `DELETE`) × {sin token, sin perfil, perfil inactivo, ADMINISTRADOR, COMERCIAL, FINANZAS_RRHH, OPERACIONES}. En los casos denegados, datos sin cambios y 403 también con un `{id}` inexistente; `DELETE` con rol gestor → 405 y cliente conservado; lecturas cruzadas de FINANZAS_RRHH y OPERACIONES
     - **Property 16: La matriz de acceso se aplica a todos los endpoints** · **Validates: Requirements 16.1, 16.2, 16.3, 16.4, 16.5, 23.4, 23.6**
@@ -338,7 +338,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 14: Los parámetros de lista se aceptan o rechazan según DP-API-03** · **Validates: Requirements 12.3**
     - _Requisitos: 11.1–11.12, 12.1–12.6, 13.1–13.6, 14.1–14.6, 23.7, NF-07_
 
-  - [ ]* 14.11 Escribir `CuentaCorporativaControllerTests` y `ResumenComercialControllerTests`
+  - [x]* 14.11 Escribir `CuentaCorporativaControllerTests` y `ResumenComercialControllerTests`
     - Área: backend · Responsable: Davidson
     - Cuentas: 201, 200, 400, 404, 409 `CUENTA_NIT_DUPLICADO`, `PATCH` idempotente y parámetros de lista. Resumen: los cuatro estados presentes, con 0 cuando no hay contratos, y totales coherentes
     - **Property 14: Los parámetros de lista se aceptan o rechazan según DP-API-03** · **Validates: Requirements 9.7**

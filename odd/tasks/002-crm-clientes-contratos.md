@@ -1,4 +1,4 @@
-# Feature: 002-crm-clientes-contratos — tareas 2 a 14.6
+# Feature: 002-crm-clientes-contratos — tareas 2 a 14
 
 Rama `feat/crm-clientes-contratos`. Estrategia de entrega: un unico PR al cerrar la spec
 (`ask-on-risk`). Pruebas backend: `.\mvnw.cmd test` (Surefire + H2, sin Docker).
@@ -69,6 +69,8 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
 | T13.9 | S1 | `backend/src/test/java/com/arise/corp/crm/service/ResumenComercialServiceTests.java` | completada | commit `fb7c8fc`; 5 pruebas: cuatro estados en 0, conteo de clientes aunque falte un grupo, solo dos consultas, `@Transactional(readOnly = true)` y Property 13 con 120 casos de conteos generados |
 | T14.4 | S1 | `backend/src/main/java/com/arise/corp/crm/controller/CuentaCorporativaController.java` | completada | commit `4cf78b8`; `GET`, `GET /{id}`, `POST` (201 con `Location`), `PUT /{id}` y `PATCH /{id}` en `/api/crm/cuentas-corporativas`, filtros `q` y `activa`, orden por defecto `razonSocial,asc` y actor desde `@AuthenticationPrincipal Jwt`; sin `DELETE` |
 | T14.6 | S1 | `backend/src/main/java/com/arise/corp/crm/controller/ResumenComercialController.java` | completada | commit `4cf78b8`; `GET /api/crm/resumen` delega en `ResumenComercialService.obtener()` bajo el patron `/api/crm/**` de `SecurityConfig` |
+| T14.8 | S1 | `backend/src/test/java/com/arise/corp/crm/controller/CrmAutorizacionTests.java` | completada | commit `02a6dc9`; 119 casos: 17 operaciones x 7 identidades con 401 sin token, 403 sin perfil, con perfil inactivo y por rol, datos sin cambios, 403 con un `{id}` inexistente y `DELETE` 405 que conserva el cliente |
+| T14.11 | S1 | `backend/src/test/java/com/arise/corp/crm/controller/CuentaCorporativaControllerTests.java`, `backend/src/test/java/com/arise/corp/crm/controller/ResumenComercialControllerTests.java` | completada | commit `50b1aed`; 41 pruebas de cuentas (201 con `Location`, 200, 400 por regla, 404, 409 `CUENTA_NIT_DUPLICADO`, `PATCH` idempotente sin tocar clientes, campos del servidor y Property 14) y 3 del resumen (cuatro estados en 0, conteos por estado y lectura en el momento de la solicitud) |
 
 ## Log
 
@@ -278,3 +280,21 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   que la linea base tras el pull, asi que no se rompio ningun contexto ni mapeo). Riesgo
   declarado: item 6, porque las pruebas MockMvc de los dos controladores son la tarea 14.11 y
   aun no existen; esa tarea es la verificacion pendiente de este cambio.
+- L18 (2026-11-11): tarea 14 completa. `CrmAutorizacionTests` recorre en una matriz
+  parametrizada las 17 operaciones (16 endpoints y `DELETE` de clientes) por las siete
+  identidades: sin token (401 con `WWW-Authenticate`), sin perfil y con perfil inactivo (403),
+  ADMINISTRADOR y COMERCIAL (permitidas; `DELETE` 405 con `Allow` y cliente conservado),
+  FINANZAS_RRHH (solo lecturas de clientes) y OPERACIONES (lecturas de clientes y contratos).
+  Los casos denegados comparan una instantanea de conteos y de los datos sembrados, y repiten
+  la peticion con un `{id}` inexistente esperando 403, porque la seguridad se evalua antes del
+  controlador: 119 casos en total. `CuentaCorporativaControllerTests` (41 pruebas) cubre 201
+  con `Location` y auditoria, 200, orden por defecto `razonSocial,asc` y filtros `q` y `activa`,
+  404 de ruta, 409 `CUENTA_NIT_DUPLICADO` al crear y editar (incluido el NIT con separadores),
+  `PATCH` idempotente que conserva la auditoria y no toca los clientes, los campos del servidor
+  ignorados, la ausencia de `DELETE` y Property 14 con 17 combinaciones de parametros.
+  `ResumenComercialControllerTests` (3 pruebas) comprueba los cuatro estados en 0 sin datos,
+  los conteos por estado con totales coherentes y la lectura en el momento de la solicitud.
+  Evidencia observada: `.\mvnw.cmd test -Dtest=CrmAutorizacionTests` -> 119 pruebas, 0 fallos;
+  `-Dtest=CuentaCorporativaControllerTests,ResumenComercialControllerTests` -> 41 + 3, 0 fallos;
+  `.\mvnw.cmd test` -> 520 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase.
+  Riesgo declarado: none (solo pruebas nuevas; no cambia codigo de produccion ni datos).
