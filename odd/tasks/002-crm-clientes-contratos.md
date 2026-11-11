@@ -155,3 +155,12 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   `Specification.allOf`. Evidencia observada: `.\mvnw.cmd clean test` -> 156 pruebas, 0 fallos,
   0 errores, sin Docker ni Supabase; `ConflictosCrmTests` (3) y `EspecificacionesCrmTests` (10)
   cubren el catalogo, la busqueda, los comodines y las combinaciones de filtros sobre H2.
+- L11 (2026-11-11): integracion del trabajo de Paula (frontend, tareas 21 a 30) con el avance
+  backend 8 a 13.1 mediante un merge `--no-ff` sobre `feat/crm-clientes-contratos`;
+  `tasks.md` conservo ambas marcas y el arbol quedo limpio. Evidencia observada:
+  `.\mvnw.cmd test` -> 156 pruebas, 0 fallos, 0 errores; `npm test` -> 159 pruebas, 0 fallos.
+  Los 7 fallos iniciales del frontend eran agotamientos de espera por contencion de CPU al
+  crear jsdom una vez por archivo, no defectos de logica: se configuro `pool: 'vmThreads'`,
+  `testTimeout`/`hookTimeout` de 15 s y `asyncUtilTimeout` de 5 s, sin debilitar ninguna
+  asercion. La suite pasa completa en dos ejecuciones consecutivas (~30 s) y tambien pasan
+  `npm run build` con variables ficticias y `npm run check:secrets`.
