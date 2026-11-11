@@ -96,6 +96,7 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - `.env` local, plantilla `backend/.env.example` y reglas de `.gitignore`.
 - Spring Security como OAuth2 Resource Server que valida JWT de Supabase Auth (ES256, JWKS, issuer y audiencia).
 - Frontend React con login, sesión, rutas protegidas, cliente HTTP y perfil; cobertura automática de 35 pruebas frontend y 58 backend documentada en `001-foundation/tasks.md`.
+- Vistas CRM del frontend disponibles para Administración y Comercial: gestión de clientes y cuentas corporativas, creación de contratos desde clientes activos, edición de borradores, cambios de estado y resumen comercial. Finanzas/RR. HH. consulta clientes y Operaciones consulta clientes y contratos.
 - Endpoint protegido `GET /api/me` con identidad y rol empresarial del perfil activo.
 - Autorización por rol en backend: `PerfilJwtAuthenticationConverter` deriva `ROLE_<ROL>` del perfil activo y `SecurityConfig` aplica la matriz de módulos y las lecturas cruzadas mínimas de ERP-05/SGA-05 (tarea 17).
 - Administración de perfiles por el rol Administrador mediante `PUT /api/admin/usuarios/{id}/perfil` y `PATCH /api/admin/usuarios/{id}/estado`.
@@ -106,7 +107,7 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 
 [Aprobado, pendiente de implementar]
 - Migraciones de negocio para CRM, ERP y SGA.
-- Módulos CRM, ERP y SGA y sus interfaces.
+- Trabajo pendiente del backend CRM según `.kiro/specs/002-crm-clientes-contratos/tasks.md`. Módulos ERP y SGA y sus interfaces.
 - Dockerfile, Docker Compose y automatización CI.
 
 ## Idioma

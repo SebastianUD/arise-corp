@@ -42,7 +42,7 @@
 }
 
 .app-root { min-height: 100vh; min-height: 100svh; }
-.profile-workspace { min-height: 100vh; display: flex; align-items: center; padding: 48px 24px; background: #020617; color: #f1f5f9; }
+.profile-workspace { flex: 1; display: flex; align-items: center; padding: 48px 24px; background: #020617; color: #f1f5f9; }
 .access-loading { min-height: 100vh; display: grid; place-items: center; background: var(--access-background); color: var(--access-text); }
 .access-page { min-height: 100vh; min-height: 100svh; background: var(--access-background); color: var(--access-text); }
 .access-header { height: 160px; display: flex; justify-content: space-between; align-items: flex-start; padding: 48px 14.3% 0 64px; }
@@ -142,6 +142,16 @@
 }
 
 @layer components {
+  .crm-panel { @apply mx-auto grid w-full max-w-5xl gap-6 rounded-2xl border border-slate-700 bg-slate-900 p-6; }
+  .crm-panel h1 { @apply text-3xl font-semibold; }
+  .crm-panel h2 { @apply text-xl font-semibold; }
+  .crm-panel select { @apply w-full rounded-lg border border-slate-600 bg-slate-950 px-3 py-3; }
+  .crm-panel a:not(.button) { @apply text-sky-300 underline underline-offset-2; }
+  .crm-cabecera, .crm-filtros { @apply flex flex-wrap items-center justify-between gap-4; }
+  .crm-filtros { @apply items-end justify-start; }
+  .crm-filtros label { @apply grid gap-1; }
+  .crm-panel table { @apply w-full text-left; }
+  .crm-panel th, .crm-panel td { @apply border-b border-slate-700 px-3 py-3; }
   .button { @apply rounded-lg bg-sky-300 px-4 py-3 font-semibold text-slate-950 transition hover:bg-sky-200; }
   .message { @apply mb-5 rounded-lg border border-rose-400/40 bg-rose-400/10 p-3 text-sm text-rose-200; }
 }

@@ -442,57 +442,57 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
   - Área: verificación · Responsable: Davidson
   - Ejecutar desde `backend/` `.\mvnw.cmd clean test` y, con Docker en ejecución, `.\mvnw.cmd verify` (Requirement 24.11); desde la raíz, `docker compose build backend`. Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
 
-- [ ] 21. Ampliar el cliente HTTP del frontend
-  - [ ] 21.1 Ampliar `services/apiClient.js`
+- [x] 21. Ampliar el cliente HTTP del frontend
+  - [x] 21.1 Ampliar `services/apiClient.js`
     - Área: frontend · Responsable: Paula
     - `apiRequest(path, { method = 'GET', body } = {})`, compatible con las llamadas actuales: Bearer vigente; `Content-Type: application/json` y `JSON.stringify(body)` solo cuando hay cuerpo; 204 → `null`
     - `ApiError` conserva `status`, `problem`, `title`, `detail` y `errors`, y añade `kind`, `conflicto`, `campo` y `reintentable` según la tabla del diseño. 401 sin cambios; 403 sin leer el cuerpo ni cerrar sesión, con mensaje propio para escrituras; 5xx sin leer el cuerpo
     - _Requisitos: 18.1–18.9, AUTH-03, AUTH-05_
 
-  - [ ] 21.2 Ampliar `services/apiClient.test.js`
+  - [x] 21.2 Ampliar `services/apiClient.test.js`
     - Área: frontend · Responsable: Paula
     - Métodos, cuerpo JSON y `Content-Type`, 400, 401, 403 en lectura y en escritura, 404, 409, 5xx y tiempo agotado. Las pruebas existentes se conservan sin cambios
     - _Requisitos: 18.1–18.9, 25.1, ENG-02_
 
-  - [ ]* 21.3 Escribir la prueba de propiedad del cliente HTTP
+  - [x]* 21.3 Escribir la prueba de propiedad del cliente HTTP
     - Área: frontend · Responsable: Paula
     - **Property 18: El cliente HTTP clasifica cada respuesta de forma uniforme** (métodos × estados de 200 a 599) · **Validates: Requirements 18.1, 18.2, 18.3, 18.4, 18.5, 18.7, 18.8, 25.1**
     - _Requisitos: 25.1, NF-07_
 
-  - [ ] 21.4 Crear `services/crmApi.js`
+  - [x] 21.4 Crear `services/crmApi.js`
     - Área: frontend · Responsable: Paula
     - Las 16 funciones del diseño, con consultas construidas con `URLSearchParams` que omiten los parámetros vacíos, y `valor` enviado como texto
     - _Requisitos: 18.1, 18.2, 21.4, DP-API-04_
 
-  - [ ]* 21.5 Escribir `services/crmApi.test.js`
+  - [x]* 21.5 Escribir `services/crmApi.test.js`
     - Área: frontend · Responsable: Paula
     - Rutas, métodos y consultas sin parámetros vacíos
     - **Property 5: El valor del contrato viaja como texto sin perder precisión** (lado frontend) · **Validates: Requirements 21.4**
     - _Requisitos: 21.4, NF-07_
 
-- [ ] 22. Implementar las reglas de interfaz del CRM
-  - [ ] 22.1 Crear `lib/permisos.js`
+- [x] 22. Implementar las reglas de interfaz del CRM
+  - [x] 22.1 Crear `lib/permisos.js`
     - Área: frontend · Responsable: Paula
     - `puedeGestionarCrm`, `puedeLeerClientes`, `puedeLeerContratos`, `TRANSICIONES`, `esEstadoFinal` y `opcionesMenu(rol)`
     - _Requisitos: 19.2–19.4, 21.7, DP-PRO-01_
 
-  - [ ] 22.2 Crear `lib/validacionCrm.js`
+  - [x] 22.2 Crear `lib/validacionCrm.js`
     - Área: frontend · Responsable: Paula
     - `normalizarDocumento`, `normalizarCodigo`, `validarCliente`, `validarCuenta` y `validarContrato` con los límites y mensajes del contrato de API; `valor` validado con `^\d{1,13}(\.\d{1,2})?$` sobre el texto, sin convertirlo a número
     - _Requisitos: 20.5, 21.3, 21.4, 22.3, NF-06_
 
-  - [ ] 22.3 Crear `lib/formato.js`
+  - [x] 22.3 Crear `lib/formato.js`
     - Área: frontend · Responsable: Paula
     - `formatoCop` con `Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 2 })` aplicado a la cadena decimal; `formatoFecha` y `formatoInstante` en `es-CO`
     - _Requisitos: 21.5, CRM-03_
 
-  - [ ]* 22.4 Escribir `lib/permisos.test.js`
+  - [x]* 22.4 Escribir `lib/permisos.test.js`
     - Área: frontend · Responsable: Paula
     - **Property 11: Solo se aceptan las cuatro transiciones permitidas** (transiciones que ofrece el frontend) · **Validates: Requirements 21.7**
     - **Property 19: El menú y los controles derivan del rol** · **Validates: Requirements 19.2, 19.3, 19.4**
     - _Requisitos: 19.2–19.4, 21.7, NF-07_
 
-  - [ ]* 22.5 Escribir `lib/validacionCrm.test.js`
+  - [x]* 22.5 Escribir `lib/validacionCrm.test.js`
     - Área: frontend · Responsable: Paula
     - Crear `src/test/generadores.js` (`mulberry32` con semilla fija)
     - **Property 1: La normalización es idempotente** · **Validates: Requirements 3.2**
@@ -500,134 +500,135 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 3: Las validaciones de formato coinciden con la regla de referencia** · **Validates: Requirements 20.5, 21.3, 22.3**
     - _Requisitos: 20.5, 21.3, 22.3, NF-07_
 
-  - [ ]* 22.6 Escribir `lib/formato.test.js`
+  - [x]* 22.6 Escribir `lib/formato.test.js`
     - Área: frontend · Responsable: Paula
     - Formato COP de `"0.00"`, `"1500000.5"` y `"9999999999999.99"`
     - _Requisitos: 21.5_
 
-- [ ] 23. Compartir el perfil e incorporar el layout privado y la protección por rol
-  - [ ] 23.1 Crear `context/PerfilContext.jsx` y adaptar `pages/Perfil.jsx`
+- [x] 23. Compartir el perfil e incorporar el layout privado y la protección por rol
+  - [x] 23.1 Crear `context/PerfilContext.jsx` y adaptar `pages/Perfil.jsx`
     - Área: frontend · Responsable: Paula
     - `PerfilProvider` hace una sola llamada a `GET /api/me` por montaje, con la deduplicación actual bajo StrictMode; `usePerfil()` devuelve `{ perfil, rol, cargando, error, recargar }` (D14)
     - `Perfil` consume `usePerfil()` y conserva textos, estados y botones; "Cerrar sesión" pasa al layout
     - _Requisitos: 18.9, 19.1, 19.7, AUTH-04_
 
-  - [ ] 23.2 Crear `components/AppLayout.jsx` y `routes/RolRoute.jsx`
+  - [x] 23.2 Crear `components/AppLayout.jsx` y `routes/RolRoute.jsx`
     - Área: frontend · Responsable: Paula
     - `AppLayout`: `PerfilProvider`, menú construido con `opcionesMenu(rol)`, enlace "Perfil", botón "Cerrar sesión" y `<Outlet />`
     - `RolRoute`: "Cargando…" mientras carga el perfil; si `permite(rol)` es falso, muestra "No tienes permisos para acceder a esta sección." sin renderizar la página ni pedir sus datos
     - _Requisitos: 19.1–19.6, AUTH-05, NF-02_
 
-  - [ ] 23.3 Envolver las rutas privadas con `AppLayout` en `App.jsx`
+  - [x] 23.3 Envolver las rutas privadas con `AppLayout` en `App.jsx`
     - Área: frontend · Responsable: Paula
     - `ProtectedRoute` → `AppLayout` → `/perfil`; `/login` y la redirección `*` → `/perfil` sin cambios
     - _Requisitos: 19.1, 19.7, AUTH-01, AUTH-02_
 
-  - [ ] 23.4 Ampliar `App.test.jsx` para el layout y el perfil
+  - [x] 23.4 Ampliar `App.test.jsx` para el layout y el perfil
     - Área: frontend · Responsable: Paula
     - Menú por rol en `/perfil`, un único botón "Cerrar sesión" y `/perfil` con una sola petición a `/api/me`; las pruebas de `001-foundation` siguen en verde
     - _Requisitos: 19.1–19.3, 19.7, 25.3, 25.5_
 
-- [ ] 24. Crear los componentes compartidos del CRM
-  - [ ] 24.1 Implementar los componentes compartidos y el hook de consulta
+- [x] 24. Crear los componentes compartidos del CRM
+  - [x] 24.1 Implementar los componentes compartidos y el hook de consulta
     - Área: frontend · Responsable: Paula
     - `EstadoConsulta` (carga con `role="status"`, error con `role="alert"` y "Reintentar" si `reintentable`, 403 y 404), `Campo` (marca de obligatorio, `aria-invalid` y `aria-describedby`), `Paginacion`, `DialogoConfirmacion` (`role="dialog"` y `aria-modal`), `EstadoContratoEtiqueta` y `lib/useConsulta.js`, que ignora respuestas de efectos desmontados
     - Ningún componente usa `dangerouslySetInnerHTML`
     - _Requisitos: 18.3–18.8, 20.2, 20.6, NF-06, AUTH-05_
 
-- [ ] 25. Implementar las vistas de clientes
-  - [ ] 25.1 Implementar `pages/crm/ClientesLista.jsx`
+- [x] 25. Implementar las vistas de clientes
+  - [x] 25.1 Implementar `pages/crm/ClientesLista.jsx`
     - Área: frontend · Responsable: Paula
     - Búsqueda `q` con el botón "Buscar", filtro Todos/Activos/Inactivos y paginación, con el estado en la URL (`useSearchParams`); columnas nombre, documento, ciudad, cuenta y estado; "Nuevo cliente" solo para gestor; mensaje de lista vacía
     - _Requisitos: 19.4, 20.1–20.3, CRM-01, DP-API-03_
 
-  - [ ] 25.2 Implementar `pages/crm/ClienteFormulario.jsx`
+  - [x] 25.2 Implementar `pages/crm/ClienteFormulario.jsx`
     - Área: frontend · Responsable: Paula
     - Alta y edición con selector de tipo de documento, campos obligatorios marcados y selector opcional de cuentas activas (la cuenta actual inactiva aparece como "(inactiva)"); validación local antes de enviar; "Guardando…" con el botón deshabilitado; errores 400 y 409 junto al campo sin perder lo escrito; enlace "Ver cliente" con `CLIENTE_INACTIVO_EXISTENTE`
     - _Requisitos: 10.5, 20.4–20.8, CRM-01, CRM-02, CRM-04, NF-06_
 
-  - [ ] 25.3 Implementar `pages/crm/ClienteDetalle.jsx`
+  - [x] 25.3 Implementar `pages/crm/ClienteDetalle.jsx`
     - Área: frontend · Responsable: Paula
     - Datos según la vista recibida, estado y cuenta. Para gestor: "Editar", "Desactivar"/"Reactivar" con confirmación y "Nuevo contrato" solo si el cliente está activo; si está inactivo, el texto de cliente inactivo. Tabla de contratos para gestor y OPERACIONES; con FINANZAS_RRHH no se piden contratos
     - _Requisitos: 19.4, 20.9–20.11, 21.1, 21.2, CRM-01, CRM-03_
 
-  - [ ] 25.4 Escribir `pages/crm/ClientesLista.test.jsx`
+  - [x] 25.4 Escribir `pages/crm/ClientesLista.test.jsx`
     - Área: frontend · Responsable: Paula
     - Carga, lista vacía, búsqueda, filtro, paginación y modo consulta para los roles de lectura cruzada
     - _Requisitos: 19.4, 20.1–20.3, 25.3_
 
-  - [ ] 25.5 Escribir `pages/crm/ClienteFormulario.test.jsx`
+  - [x] 25.5 Escribir `pages/crm/ClienteFormulario.test.jsx`
     - Área: frontend · Responsable: Paula
     - Validación local sin petición, botón deshabilitado durante el envío, errores 400 por campo con los valores conservados y 409 con enlace al cliente inactivo
     - _Requisitos: 20.5–20.8, 25.2_
 
-  - [ ] 25.6 Escribir `pages/crm/ClienteDetalle.test.jsx`
+  - [x] 25.6 Escribir `pages/crm/ClienteDetalle.test.jsx`
     - Área: frontend · Responsable: Paula
     - Contratos para gestor y OPERACIONES, ninguna solicitud de contratos con FINANZAS_RRHH, confirmación de la desactivación y alta oculta para un cliente inactivo
     - _Requisitos: 20.9–20.11, 21.2, 25.2, 25.3_
 
-- [ ] 26. Implementar las vistas de contratos
-  - [ ] 26.1 Implementar `pages/crm/ContratoFormulario.jsx`
+- [x] 26. Implementar las vistas de contratos
+  - [x] 26.1 Implementar `pages/crm/ContratoFormulario.jsx`
     - Área: frontend · Responsable: Paula
     - Alta desde un cliente activo y edición solo en `BORRADOR`; campos código, descripción, fechas y `valor` como texto con `inputMode="decimal"`; validación local; 409 `CONTRATO_CODIGO_DUPLICADO` junto a "Código" con los valores conservados
     - _Requisitos: 21.1, 21.3, 21.4, 21.6, 21.10, CRM-03, CRM-04_
 
-  - [ ] 26.2 Implementar `pages/crm/ContratoDetalle.jsx`
+  - [x] 26.2 Implementar `pages/crm/ContratoDetalle.jsx`
     - Área: frontend · Responsable: Paula
     - Datos, valor en COP y auditoría de estado. Para gestor: un botón por cada estado de `TRANSICIONES[estado]`, confirmación "Este cambio es irreversible." hacia los estados finales, "Editar" solo en `BORRADOR` y recarga tras un 409. OPERACIONES ve el detalle sin acciones
     - _Requisitos: 21.5, 21.7–21.10, CRM-03, DP-API-05_
 
-  - [ ] 26.3 Escribir `pages/crm/ContratoFormulario.test.jsx`
+  - [x] 26.3 Escribir `pages/crm/ContratoFormulario.test.jsx`
     - Área: frontend · Responsable: Paula
     - Fecha de fin anterior a la de inicio, valor negativo o con más de 2 decimales, `valor` enviado como texto y 409 de código junto al campo
     - _Requisitos: 21.3, 21.4, 21.6, 25.2_
 
-  - [ ] 26.4 Escribir `pages/crm/ContratoDetalle.test.jsx`
+  - [x] 26.4 Escribir `pages/crm/ContratoDetalle.test.jsx`
     - Área: frontend · Responsable: Paula
     - Transiciones ofrecidas en cada estado, confirmación irreversible, recarga tras un 409, edición solo en `BORRADOR` y OPERACIONES sin acciones
     - _Requisitos: 21.7–21.10, 25.2, 25.3_
 
-- [ ] 27. Implementar las vistas de cuentas corporativas y del resumen comercial
-  - [ ] 27.1 Implementar `CuentasLista`, `CuentaFormulario` y `CuentaDetalle` en `pages/crm/`
+- [x] 27. Implementar las vistas de cuentas corporativas y del resumen comercial
+  - [x] 27.1 Implementar `CuentasLista`, `CuentaFormulario` y `CuentaDetalle` en `pages/crm/`
     - Área: frontend · Responsable: Paula
     - Lista con búsqueda por razón social o NIT, filtro Todas/Activas/Inactivas y paginación; formulario con `nit` y `razonSocial` obligatorios, validación local y errores 400 y 409 junto al campo; detalle con "Activar"/"Desactivar" confirmado y los clientes de `GET /api/crm/clientes?cuentaCorporativaId={id}`
     - _Requisitos: 22.1–22.6, CRM-02, NF-06_
 
-  - [ ] 27.2 Implementar `pages/crm/ResumenComercial.jsx`
+  - [x] 27.2 Implementar `pages/crm/ResumenComercial.jsx`
     - Área: frontend · Responsable: Paula
     - Tarjetas con clientes activos, inactivos y total, y contratos por estado y total; indicador de carga y error con reintento
     - _Requisitos: 22.7, CRM-05, NF-06_
 
-  - [ ]* 27.3 Escribir las pruebas de las vistas de cuentas
+  - [x]* 27.3 Escribir las pruebas de las vistas de cuentas
     - Área: frontend · Responsable: Paula
     - `CuentasLista.test.jsx`, `CuentaFormulario.test.jsx` y `CuentaDetalle.test.jsx`: lista, formulario con 400 y 409, y detalle con los clientes asociados
     - _Requisitos: 22.1–22.6, 25.2_
 
-  - [ ]* 27.4 Escribir `pages/crm/ResumenComercial.test.jsx`
+  - [x]* 27.4 Escribir `pages/crm/ResumenComercial.test.jsx`
     - Área: frontend · Responsable: Paula
     - Carga, error con reintento y conteos
     - _Requisitos: 22.7_
 
-- [ ] 28. Integrar las rutas CRM en la aplicación
-  - [ ] 28.1 Registrar las rutas `/crm/*` en `App.jsx`
+- [x] 28. Integrar las rutas CRM en la aplicación
+  - [x] 28.1 Registrar las rutas `/crm/*` en `App.jsx`
     - Área: frontend · Responsable: Paula
     - Grupos de `RolRoute` del diseño: `puedeLeerClientes` (lista y detalle de clientes), `puedeLeerContratos` (detalle de contrato) y `puedeGestionarCrm` (formularios, cuentas y resumen)
     - _Requisitos: 19.5, 19.7, 20.1, 21.1, 22.1, 22.7_
 
-  - [ ] 28.2 Escribir las pruebas de integración de la navegación CRM en `App.test.jsx`
+  - [x] 28.2 Escribir las pruebas de integración de la navegación CRM en `App.test.jsx`
     - Área: frontend · Responsable: Paula
     - Menú por rol con enlaces a `/crm/*`; una ruta CRM no permitida (por ejemplo `/crm/clientes/nuevo` con FINANZAS_RRHH) muestra el mensaje sin solicitar sus datos; un 403 del backend muestra el mensaje de permisos sin cerrar sesión
     - _Requisitos: 19.5, 19.6, 25.3, 25.4_
 
-- [ ] 29. Documentar el frontend del CRM
-  - [ ] 29.1 Actualizar la documentación del frontend
+- [x] 29. Documentar el frontend del CRM
+  - [x] 29.1 Actualizar la documentación del frontend
     - Área: documentación · Responsable: Paula
     - README §11.6: vistas y rutas CRM por rol, y comandos `npm test`, `npm run build` y `npm run check:secrets`, sin variables nuevas. `structure.md`: `pages/crm`, `context/PerfilContext`, `routes/RolRoute`, `components/AppLayout` y `lib/permisos`, `validacionCrm` y `formato`. `architecture.md`: fila de la SPA con las vistas CRM. `product.md`: vistas CRM del frontend implementadas en "Estado actual"
     - _Requisitos: 29.5, 29.7, CA-01, CA-07_
 
-- [ ] 30. Checkpoint del frontend
+- [x] 30. Checkpoint del frontend
   - Área: verificación · Responsable: Paula
   - Ejecutar desde `frontend/` `npm test`, `npm run build` y `npm run check:secrets` (Requirements 25.5, 25.6). Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
+  - El 2026-11-11 pasaron las 159 pruebas de 18 archivos. Vite generó el bundle de producción y la comprobación de secretos no detectó patrones de credenciales privadas en `src/`, `.env.example` ni `dist/`.
 
 - [ ] 31. Validar el CRM de extremo a extremo con Supabase real
   - [ ] 31.1 Ejecutar la validación manual del Requirement 30
