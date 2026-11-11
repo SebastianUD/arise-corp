@@ -36,6 +36,11 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   infraestructura de IT sin credenciales de `arise-corp-dev` y `MigracionesCrmIT`, que comprueba
   tipos, restricciones con SQLState 23505/23514/23503, RLS y ausencia de privilegios. `mvn test`
   no recoge las `*IT` y `mvn verify` sí.
+- S10. Las tareas 18.1 y 18.2 crean `backend/Dockerfile` multi-etapa (`eclipse-temurin:21-jdk`
+  con `chmod +x mvnw` y caché de BuildKit para `~/.m2`; `eclipse-temurin:21-jre` con el usuario
+  `arise`, solo `app.jar`, `EXPOSE 8080`, sin `ARG` ni `ENV` de configuración) y
+  `backend/.dockerignore` con `.env`, `.env.*`, `target/`, `src/test/`, archivos de IDE, `*.log`,
+  `HELP.md` y `.gitattributes`.
 
 ## Tasks
 
@@ -48,6 +53,7 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
 | T6 | S1, S7 | inline | completada | este commit; README §10 y `tech.md` |
 | T7 | S8 | inline | completada | `.\mvnw.cmd clean test`: 66 pruebas en verde (commit previo) |
 | T16 | S9 | inline | completada | Testcontainers + Failsafe, infra `it` y `MigracionesCrmIT`: 7/7 en verde |
+| T18 | S10 | inline | completada | `docker build -t arise-backend:local backend`: OK; imagen con usuario `arise`, `8080/tcp` y sin `.env` |
 
 ## Log
 
@@ -93,3 +99,17 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   `review_due=false` (`under_budget`), asi que no se inicia revision nativa y la frontera revisada
   sigue en `ec1d359`. El primer intento salio `unassessable` por los archivos sin trackear
   (`.atl/`, `opencode.json`); se repitio con `--untracked-scope=exclude`.
+- L7 (2026-11-11): `ca4bea8` subido a `origin/feat/crm-clientes-contratos`. Tareas 18.1 y 18.2
+  completadas con el contenido exacto del diseno: `backend/Dockerfile` (multi-etapa, `chmod +x
+  mvnw`, cache de BuildKit para `~/.m2`, usuario `arise` sin privilegios, solo `app.jar`, sin
+  `ARG` ni `ENV`) y `backend/.dockerignore`. Evidencia observada: `docker build -t
+  arise-backend:local backend` termina con exit 0 en 96 s de etapa de compilacion; `docker image
+  inspect` -> `User=arise`, `Ports={"8080/tcp":{}}`, `Cmd=["java","-jar","/app/app.jar"]`;
+  `docker run --rm --entrypoint id` -> `uid=999(arise)`; `find / -name '.env*'` dentro de la imagen
+  no devuelve nada; `docker history --no-trunc` de la etapa final solo muestra `groupadd/useradd`,
+  `WORKDIR`, `COPY app.jar`, `USER`, `EXPOSE` y `ENTRYPOINT`. Queda pendiente la 18.3
+  (`docker-compose.yml`) y la 18.4 (verificacion completa con Compose).
+  RDD: `gentle-ai review assess --base-ref ec1d359 --committed-only` sobre `ec1d359..5fd61ad`
+  devuelve `medium` y `review_due=false` (`under_budget`); no se inicia revision nativa y la
+  frontera revisada sigue en `ec1d359`. Riesgo declarado del cambio: item 5 (empaquetado de
+  despliegue), mitigado con la construccion real y la inspeccion de la imagen.

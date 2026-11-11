@@ -402,12 +402,12 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - _Requisitos: 2.8, 29.10, DP-TEC-03, DP-SEG-05, NF-01_
 
 - [ ] 18. Contenerizar el backend
-  - [ ] 18.1 Crear `backend/Dockerfile`
+  - [x] 18.1 Crear `backend/Dockerfile`
     - Área: backend/Docker · Responsable: Davidson
     - Dockerfile multi-stage del diseño: etapa `eclipse-temurin:21-jdk` con `chmod +x mvnw` y `./mvnw -B -q -Dmaven.test.skip=true package` con caché de BuildKit para `~/.m2`; etapa `eclipse-temurin:21-jre` con el usuario `arise` sin privilegios, solo `app.jar`, `EXPOSE 8080` y sin `ARG` ni `ENV` de configuración
     - _Requisitos: 26.1–26.3, 26.5, 26.7, ENG-01, ENG-04, NF-01_
 
-  - [ ] 18.2 Crear `backend/.dockerignore`
+  - [x] 18.2 Crear `backend/.dockerignore`
     - Área: backend/Docker · Responsable: Davidson
     - `.dockerignore` con `.env`, `.env.*`, `target/`, `src/test/`, archivos de IDE, `*.log`, `HELP.md` y `.gitattributes`
     - _Requisitos: 26.6, NF-01_
