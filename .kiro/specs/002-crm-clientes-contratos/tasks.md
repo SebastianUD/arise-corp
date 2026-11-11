@@ -349,7 +349,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Con `OutputCaptureExtension`, crear, editar y provocar 409 y 500 con datos personales ficticios conocidos; la salida capturada no contiene el correo, el teléfono, la dirección ni el número de documento
     - _Requisitos: 6.4, 17.6, CA-06_
 
-- [ ] 15. Checkpoint del backend sin Docker
+- [x] 15. Checkpoint del backend sin Docker
   - Área: verificación · Responsable: Sebastián
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/` sin Docker, sin Supabase y sin `.env` (Requirement 23.9). Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
 
