@@ -412,7 +412,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - `.dockerignore` con `.env`, `.env.*`, `target/`, `src/test/`, archivos de IDE, `*.log`, `HELP.md` y `.gitattributes`
     - _Requisitos: 26.6, NF-01_
 
-  - [ ] 18.3 Crear `docker-compose.yml` en la raíz
+  - [x] 18.3 Crear `docker-compose.yml` en la raíz
     - Área: backend/Docker · Responsable: Davidson
     - Proyecto `arise-corp` con un único servicio `backend` construido desde `./backend`, imagen `arise-backend:local`, `env_file` con `path: ./backend/.env` y `required: true`, y puerto `127.0.0.1:8080:8080`. Sin credenciales ni base de datos local (D15)
     - _Requisitos: 27.1–27.4, ENG-01, NF-01_

@@ -40,7 +40,10 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   con `chmod +x mvnw` y caché de BuildKit para `~/.m2`; `eclipse-temurin:21-jre` con el usuario
   `arise`, solo `app.jar`, `EXPOSE 8080`, sin `ARG` ni `ENV` de configuración) y
   `backend/.dockerignore` con `.env`, `.env.*`, `target/`, `src/test/`, archivos de IDE, `*.log`,
-  `HELP.md` y `.gitattributes`.
+  `HELP.md` y `.gitattributes`. La tarea 18.3 crea `docker-compose.yml` en la raíz: proyecto
+  `arise-corp`, un único servicio `backend` desde `./backend`, imagen `arise-backend:local`,
+  `env_file` con `path: ./backend/.env` y `required: true`, puerto `127.0.0.1:8080:8080`, sin
+  credenciales ni base de datos local.
 
 ## Tasks
 
@@ -53,7 +56,7 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
 | T6 | S1, S7 | inline | completada | este commit; README §10 y `tech.md` |
 | T7 | S8 | inline | completada | `.\mvnw.cmd clean test`: 66 pruebas en verde (commit previo) |
 | T16 | S9 | inline | completada | Testcontainers + Failsafe, infra `it` y `MigracionesCrmIT`: 7/7 en verde |
-| T18 | S10 | inline | completada | `docker build -t arise-backend:local backend`: OK; imagen con usuario `arise`, `8080/tcp` y sin `.env` |
+| T18 | S10 | inline | completada | `docker build` OK; imagen con usuario `arise`, `8080/tcp` y sin `.env`; `docker compose config --services` = `backend` |
 
 ## Log
 
@@ -113,3 +116,11 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   devuelve `medium` y `review_due=false` (`under_budget`); no se inicia revision nativa y la
   frontera revisada sigue en `ec1d359`. Riesgo declarado del cambio: item 5 (empaquetado de
   despliegue), mitigado con la construccion real y la inspeccion de la imagen.
+- L8 (2026-11-11): tarea 18.3 completada. `docker-compose.yml` en la raiz con el contenido exacto
+  del diseno. Evidencia observada: `docker compose config --quiet` exit 0 (valida sin imprimir
+  valores), `docker compose config --services` -> `backend` unico servicio, `docker compose build
+  backend` reutiliza la imagen `arise-backend:local`; Docker Compose v5.1.1. Se verifico ademas
+  que `backend/.env` es compatible con los dos lectores (D15): sin `$`, sin comillas y sin espacios
+  alrededor del valor, de modo que Compose y Spring leen los mismos valores. La parte de ejecucion
+  de la 18.4 (`docker compose up backend` + `curl` -> 401) queda diferida al cierre del backend por
+  decision del usuario.
