@@ -535,33 +535,33 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Ningún componente usa `dangerouslySetInnerHTML`
     - _Requisitos: 18.3–18.8, 20.2, 20.6, NF-06, AUTH-05_
 
-- [ ] 25. Implementar las vistas de clientes
-  - [ ] 25.1 Implementar `pages/crm/ClientesLista.jsx`
+- [x] 25. Implementar las vistas de clientes
+  - [x] 25.1 Implementar `pages/crm/ClientesLista.jsx`
     - Área: frontend · Responsable: Paula
     - Búsqueda `q` con el botón "Buscar", filtro Todos/Activos/Inactivos y paginación, con el estado en la URL (`useSearchParams`); columnas nombre, documento, ciudad, cuenta y estado; "Nuevo cliente" solo para gestor; mensaje de lista vacía
     - _Requisitos: 19.4, 20.1–20.3, CRM-01, DP-API-03_
 
-  - [ ] 25.2 Implementar `pages/crm/ClienteFormulario.jsx`
+  - [x] 25.2 Implementar `pages/crm/ClienteFormulario.jsx`
     - Área: frontend · Responsable: Paula
     - Alta y edición con selector de tipo de documento, campos obligatorios marcados y selector opcional de cuentas activas (la cuenta actual inactiva aparece como "(inactiva)"); validación local antes de enviar; "Guardando…" con el botón deshabilitado; errores 400 y 409 junto al campo sin perder lo escrito; enlace "Ver cliente" con `CLIENTE_INACTIVO_EXISTENTE`
     - _Requisitos: 10.5, 20.4–20.8, CRM-01, CRM-02, CRM-04, NF-06_
 
-  - [ ] 25.3 Implementar `pages/crm/ClienteDetalle.jsx`
+  - [x] 25.3 Implementar `pages/crm/ClienteDetalle.jsx`
     - Área: frontend · Responsable: Paula
     - Datos según la vista recibida, estado y cuenta. Para gestor: "Editar", "Desactivar"/"Reactivar" con confirmación y "Nuevo contrato" solo si el cliente está activo; si está inactivo, el texto de cliente inactivo. Tabla de contratos para gestor y OPERACIONES; con FINANZAS_RRHH no se piden contratos
     - _Requisitos: 19.4, 20.9–20.11, 21.1, 21.2, CRM-01, CRM-03_
 
-  - [ ] 25.4 Escribir `pages/crm/ClientesLista.test.jsx`
+  - [x] 25.4 Escribir `pages/crm/ClientesLista.test.jsx`
     - Área: frontend · Responsable: Paula
     - Carga, lista vacía, búsqueda, filtro, paginación y modo consulta para los roles de lectura cruzada
     - _Requisitos: 19.4, 20.1–20.3, 25.3_
 
-  - [ ] 25.5 Escribir `pages/crm/ClienteFormulario.test.jsx`
+  - [x] 25.5 Escribir `pages/crm/ClienteFormulario.test.jsx`
     - Área: frontend · Responsable: Paula
     - Validación local sin petición, botón deshabilitado durante el envío, errores 400 por campo con los valores conservados y 409 con enlace al cliente inactivo
     - _Requisitos: 20.5–20.8, 25.2_
 
-  - [ ] 25.6 Escribir `pages/crm/ClienteDetalle.test.jsx`
+  - [x] 25.6 Escribir `pages/crm/ClienteDetalle.test.jsx`
     - Área: frontend · Responsable: Paula
     - Contratos para gestor y OPERACIONES, ninguna solicitud de contratos con FINANZAS_RRHH, confirmación de la desactivación y alta oculta para un cliente inactivo
     - _Requisitos: 20.9–20.11, 21.2, 25.2, 25.3_

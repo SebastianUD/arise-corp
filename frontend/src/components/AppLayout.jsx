@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import { PerfilProvider, usePerfil } from '../context/PerfilContext.jsx'
@@ -27,7 +28,9 @@ export default function AppLayout() {
     <PerfilProvider key={session.user.id}>
       <div className="flex min-h-svh flex-col bg-slate-950 text-slate-100">
         <Cabecera />
-        <div className="profile-workspace"><Outlet /></div>
+        <div className="profile-workspace">
+          <Suspense fallback={<p role="status">Cargando…</p>}><Outlet /></Suspense>
+        </div>
       </div>
     </PerfilProvider>
   )
