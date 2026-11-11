@@ -1,4 +1,4 @@
-# Feature: 002-crm-clientes-contratos — tareas 2 a 13
+# Feature: 002-crm-clientes-contratos — tareas 2 a 14.6
 
 Rama `feat/crm-clientes-contratos`. Estrategia de entrega: un unico PR al cerrar la spec
 (`ask-on-risk`). Pruebas backend: `.\mvnw.cmd test` (Surefire + H2, sin Docker).
@@ -67,6 +67,8 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
 | T13.5 | S1 | `backend/src/main/java/com/arise/corp/crm/service/ResumenComercialService.java` | completada | commit `fb7c8fc`; `obtener()` con las dos consultas agrupadas (`contarPorActivo` y `contarPorEstado`) en una transaccion de solo lectura, `EnumMap` con los cuatro estados en 0 y totales como suma de sus componentes; `mvn test` en verde |
 | T13.7 | S1 | `backend/src/test/java/com/arise/corp/crm/service/CuentaCorporativaServiceTests.java` | completada | commit `13e7e02`; 12 pruebas con Mockito y `Clock.fixed`: alta con NIT normalizado y auditoria, edicion que conserva `activa` y `creadoEn`, 404, Property 7 con 120 variantes de NIT y Property 8 con las cuatro combinaciones; la desactivacion no modifica los clientes |
 | T13.9 | S1 | `backend/src/test/java/com/arise/corp/crm/service/ResumenComercialServiceTests.java` | completada | commit `fb7c8fc`; 5 pruebas: cuatro estados en 0, conteo de clientes aunque falte un grupo, solo dos consultas, `@Transactional(readOnly = true)` y Property 13 con 120 casos de conteos generados |
+| T14.4 | S1 | `backend/src/main/java/com/arise/corp/crm/controller/CuentaCorporativaController.java` | completada | commit `PENDIENTE`; `GET`, `GET /{id}`, `POST` (201 con `Location`), `PUT /{id}` y `PATCH /{id}` en `/api/crm/cuentas-corporativas`, filtros `q` y `activa`, orden por defecto `razonSocial,asc` y actor desde `@AuthenticationPrincipal Jwt`; sin `DELETE` |
+| T14.6 | S1 | `backend/src/main/java/com/arise/corp/crm/controller/ResumenComercialController.java` | completada | commit `PENDIENTE`; `GET /api/crm/resumen` delega en `ResumenComercialService.obtener()` bajo el patron `/api/crm/**` de `SecurityConfig` |
 
 ## Log
 
@@ -264,3 +266,15 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   crea, edita, provoca 409 y 500 con datos personales ficticios conocidos y comprueba que la
   salida capturada no contiene correo, telefono, direccion ni documento. Evidencia observada:
   `.\mvnw.cmd test` -> 357 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase.
+- L17 (2026-11-11): tareas 14.4 y 14.6 completadas. `CuentaCorporativaController` expone
+  `GET`, `GET /{id}`, `POST` (201 con `Location` relativa), `PUT /{id}` y `PATCH /{id}` en
+  `/api/crm/cuentas-corporativas`; declara las restricciones de lista en los `@RequestParam`
+  (`q` de hasta 100 caracteres, `activa`, `page`, `size`, `sort` con
+  `razonSocial|nit|creadoEn` y por defecto `razonSocial,asc`) sin `@Validated` de clase (D8),
+  toma el actor de `@AuthenticationPrincipal Jwt` y no mapea `DELETE`. `ResumenComercialController`
+  expone `GET /api/crm/resumen` y delega en `ResumenComercialService.obtener()`; ambas rutas
+  quedan bajo el patron `/api/crm/**` de `SecurityConfig`. Evidencia observada:
+  `.\mvnw.cmd test` -> 357 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase (la misma cifra
+  que la linea base tras el pull, asi que no se rompio ningun contexto ni mapeo). Riesgo
+  declarado: item 6, porque las pruebas MockMvc de los dos controladores son la tarea 14.11 y
+  aun no existen; esa tarea es la verificacion pendiente de este cambio.

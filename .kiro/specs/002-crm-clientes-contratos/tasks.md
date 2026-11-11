@@ -297,7 +297,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - `GET`, `GET /{id}`, `POST` (201 con `Location` relativa), `PUT /{id}` y `PATCH /{id}` en `/api/crm/clientes`; restricciones en los `@RequestParam` sin `@Validated` a nivel de clase (D8); actor tomado de `@AuthenticationPrincipal Jwt`; sin `DELETE` mapeado, de modo que el gestor recibe 405
     - _Requisitos: 1.2, 1.3, 4.1, 5.1–5.9, 7.1, 8.1–8.7, 16.6, CRM-01_
 
-  - [ ] 14.4 Implementar `CuentaCorporativaController`
+  - [x] 14.4 Implementar `CuentaCorporativaController`
     - Área: backend · Responsable: Davidson
     - `GET`, `GET /{id}`, `POST`, `PUT /{id}` y `PATCH /{id}` en `/api/crm/cuentas-corporativas`, con sus parámetros y el orden por defecto `razonSocial,asc`
     - _Requisitos: 1.2, 1.3, 9.1–9.13, CRM-02_
@@ -307,7 +307,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - `GET`, `GET /{id}`, `POST`, `PUT /{id}` y `PATCH /{id}/estado` en `/api/crm/contratos`, con los filtros `clienteId` y `estado` y el orden por defecto `creadoEn,desc`
     - _Requisitos: 1.2, 1.3, 11.1, 12.1–12.6, 13.1, 14.1, CRM-03_
 
-  - [ ] 14.6 Implementar `ResumenComercialController`
+  - [x] 14.6 Implementar `ResumenComercialController`
     - Área: backend · Responsable: Davidson
     - `GET /api/crm/resumen`
     - _Requisitos: 1.2, 15.1, CRM-05_
