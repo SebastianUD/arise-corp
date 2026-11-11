@@ -608,13 +608,13 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Carga, error con reintento y conteos
     - _Requisitos: 22.7_
 
-- [ ] 28. Integrar las rutas CRM en la aplicación
-  - [ ] 28.1 Registrar las rutas `/crm/*` en `App.jsx`
+- [x] 28. Integrar las rutas CRM en la aplicación
+  - [x] 28.1 Registrar las rutas `/crm/*` en `App.jsx`
     - Área: frontend · Responsable: Paula
     - Grupos de `RolRoute` del diseño: `puedeLeerClientes` (lista y detalle de clientes), `puedeLeerContratos` (detalle de contrato) y `puedeGestionarCrm` (formularios, cuentas y resumen)
     - _Requisitos: 19.5, 19.7, 20.1, 21.1, 22.1, 22.7_
 
-  - [ ] 28.2 Escribir las pruebas de integración de la navegación CRM en `App.test.jsx`
+  - [x] 28.2 Escribir las pruebas de integración de la navegación CRM en `App.test.jsx`
     - Área: frontend · Responsable: Paula
     - Menú por rol con enlaces a `/crm/*`; una ruta CRM no permitida (por ejemplo `/crm/clientes/nuevo` con FINANZAS_RRHH) muestra el mensaje sin solicitar sus datos; un 403 del backend muestra el mensaje de permisos sin cerrar sesión
     - _Requisitos: 19.5, 19.6, 25.3, 25.4_

@@ -284,6 +284,13 @@ it.each([
   mount('/perfil', true)
   await screen.findByText(profile.email)
   expect(screen.getAllByRole('link').map(enlace => enlace.textContent)).toEqual(['Perfil', ...opciones])
+  const destinos = {
+    Perfil: '/perfil', Clientes: '/crm/clientes',
+    'Cuentas corporativas': '/crm/cuentas-corporativas', 'Resumen comercial': '/crm/resumen',
+  }
+  for (const nombre of ['Perfil', ...opciones]) {
+    expect(screen.getByRole('link', { name: nombre })).toHaveAttribute('href', destinos[nombre])
+  }
   expect(screen.getByRole('link', { name: 'Perfil' })).toHaveAttribute('aria-current', 'page')
   expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible()
   expect(fetch).toHaveBeenCalledTimes(1)
@@ -323,4 +330,63 @@ it.each([
     expect(screen.getByRole('alert')).toHaveTextContent('No tienes permisos para acceder a esta sección.')
     expect(consultarVista).not.toHaveBeenCalled()
   }
+})
+
+it.each([
+  ['FINANZAS_RRHH', '/crm/clientes/nuevo'],
+  ['FINANZAS_RRHH', '/crm/contratos/uno'],
+  ['OPERACIONES', '/crm/clientes/uno/editar'],
+  ['OPERACIONES', '/crm/clientes/uno/contratos/nuevo'],
+  ['OPERACIONES', '/crm/contratos/uno/editar'],
+  ['OPERACIONES', '/crm/cuentas-corporativas'],
+  ['OPERACIONES', '/crm/cuentas-corporativas/nueva'],
+  ['OPERACIONES', '/crm/cuentas-corporativas/uno'],
+  ['OPERACIONES', '/crm/cuentas-corporativas/uno/editar'],
+  ['OPERACIONES', '/crm/resumen'],
+  [null, '/crm/clientes'],
+  [null, '/crm/clientes/uno'],
+])('bloquea el acceso directo de %s a %s antes de consultar datos CRM', async (role, ruta) => {
+  store.session = session
+  fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
+  mount(ruta)
+  expect(await screen.findByRole('alert')).toHaveTextContent('No tienes permisos para acceder a esta sección.')
+  expect(fetch).toHaveBeenCalledExactlyOnceWith('http://localhost:8080/api/me', expect.anything())
+})
+
+it('abre las tres vistas desde el menú comercial compartiendo una sola consulta de perfil', async () => {
+  store.session = session
+  mount('/perfil')
+  await screen.findByText(profile.email)
+  const pagina = { content: [], page: 0, totalPages: 0 }
+  const resumen = {
+    clientes: { activos: 1, inactivos: 2, total: 3 },
+    contratos: { porEstado: { BORRADOR: 3, ACTIVO: 2, FINALIZADO: 1, CANCELADO: 0 }, total: 6 },
+  }
+  for (const [nombre, ruta, datos, texto] of [
+    ['Clientes', '/crm/clientes', pagina, 'No hay clientes para los criterios elegidos.'],
+    ['Cuentas corporativas', '/crm/cuentas-corporativas', pagina, 'No hay cuentas para los criterios elegidos.'],
+    ['Resumen comercial', '/crm/resumen', resumen, 'Finalizado'],
+  ]) {
+    fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => datos })
+    fireEvent.click(screen.getByRole('link', { name: nombre }))
+    expect(await screen.findByText(texto)).toBeVisible()
+    expect(screen.getByRole('link', { name: nombre })).toHaveAttribute('aria-current', 'page')
+    expect(fetch).toHaveBeenLastCalledWith('http://localhost:8080/api' + ruta, expect.anything())
+  }
+  expect(fetch).toHaveBeenCalledTimes(4)
+})
+
+it('muestra el 403 del backend en una vista permitida y conserva la sesión al volver al perfil', async () => {
+  store.session = session
+  const json = vi.fn()
+  fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ...profile, role: 'OPERACIONES' }) })
+    .mockResolvedValueOnce({ ok: false, status: 403, json })
+  mount('/crm/contratos/uno')
+  expect(await screen.findByRole('alert')).toHaveTextContent('No tienes permisos para consultar esta información.')
+  expect(fetch).toHaveBeenLastCalledWith('http://localhost:8080/api/crm/contratos/uno', expect.anything())
+  expect(json).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('link', { name: 'Perfil' }))
+  expect(await screen.findByText(profile.email)).toBeVisible()
+  expect(auth.signOut).not.toHaveBeenCalled()
+  expect(fetch).toHaveBeenCalledTimes(2)
 })
