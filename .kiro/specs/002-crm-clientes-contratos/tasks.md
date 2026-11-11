@@ -251,7 +251,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Dos consultas agrupadas en una transacción de solo lectura; `EnumMap` con los cuatro estados en 0 y totales calculados como suma de sus componentes
     - _Requisitos: 15.1–15.3, CRM-05, CA-04_
 
-  - [ ] 13.6 Escribir `ClienteServiceTests`
+  - [x] 13.6 Escribir `ClienteServiceTests`
     - Área: backend · Responsable: Sebastián
     - Mockito y `Clock.fixed`: creación y edición, conservación de `activo` y `creadoEn`, `actualizadoPor = sub`, desactivación sin tocar contratos y documento duplicado con variantes
     - **Property 7: Los duplicados se detectan sobre el valor normalizado** (documento) · **Validates: Requirements 4.7, 4.8**
@@ -266,7 +266,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 8: Activar y desactivar es idempotente** (cuentas) · **Validates: Requirements 9.10**
     - _Requisitos: 23.1, NF-07, CRM-02, CRM-04_
 
-  - [ ] 13.8 Escribir `ContratoServiceTests`
+  - [x] 13.8 Escribir `ContratoServiceTests`
     - Área: backend · Responsable: Sebastián
     - Creación en `BORRADOR` con auditoría, cliente inactivo, código duplicado con variantes y auditoría de estado con el `sub` del actor
     - **Property 11: Solo se aceptan las cuatro transiciones permitidas** (con cliente activo e inactivo) · **Validates: Requirements 14.1, 14.2, 14.5**

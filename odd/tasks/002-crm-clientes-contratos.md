@@ -198,3 +198,19 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   los construyen. Evidencia observada: `.\mvnw.cmd compile` sin errores y `.\mvnw.cmd test`
   -> 156 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase. `ClienteServiceTests` (13.6) y
   `ContratoServiceTests` (13.8) quedan pendientes y cubriran las Properties 7 a 12.
+- L14 (2026-11-11): tareas 13.6 y 13.8 completadas. `ClienteServiceTests` (16 pruebas) usa
+  Mockito y `Clock.fixed` para comprobar la creacion activa con cuenta, la auditoria
+  `creadoEn = actualizadoEn = ahora` y `actualizadoPor = sub`, la edicion que conserva
+  `activo` y `creadoEn`, los duplicados activo e inactivo, la vista `COMPLETA`/`REDUCIDA`,
+  los 404 y el mapeo de la pagina. Property 7 recorre 120 documentos con separadores,
+  mayusculas y minusculas; Property 8 recorre las cuatro combinaciones de estado y solo
+  cambia la auditoria cuando el valor difiere; Property 9 recorre nueve combinaciones de
+  cuenta actual y destino al editar y tres al crear, incluida la cuenta actual inactiva que
+  se conserva y la cuenta distinta inactiva que se rechaza. `ContratoServiceTests`
+  (46 pruebas) cubre el alta en `BORRADOR` con auditoria de datos y estado, el cliente
+  inactivo con 120 codigos generados, el codigo duplicado con 120 variantes de mayusculas y
+  espacios, los 404, Property 12 sobre los cuatro estados y Property 11 sobre los 16 pares
+  de estados con cliente activo e inactivo, comprobando que cambiar el estado no interactua
+  con el repositorio de clientes (Requirement 14.5). Evidencia observada:
+  `.\mvnw.cmd test -Dtest=ClienteServiceTests,ContratoServiceTests` -> 62 pruebas, 0 fallos;
+  `.\mvnw.cmd test` -> 218 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase.
