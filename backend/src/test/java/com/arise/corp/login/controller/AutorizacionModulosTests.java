@@ -1,7 +1,6 @@
 package com.arise.corp.login.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -20,8 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.arise.corp.config.PerfilJwtAuthenticationConverter;
@@ -33,15 +30,20 @@ import com.arise.corp.login.repository.PerfilUsuarioRepository;
 /**
  * Pruebas de la matriz de autorizacion por rol en {@code SecurityConfig}.
  *
- * <p>Los endpoints de modulo son dobles de prueba: permiten verificar el
- * acceso permitido y denegado sin implementar CRM, ERP ni SGA. El rol se
- * obtiene del perfil persistido mediante el converter de produccion; no se
- * usan tokens reales de Supabase.
+ * <p>Los endpoints de modulo son dobles de prueba de ERP y SGA: permiten
+ * verificar el acceso permitido y denegado sin implementar esos modulos. El CRM
+ * usa los controladores reales y su matriz se cubre en
+ * {@code CrmAutorizacionTests} (Requirement 23.8). El rol se obtiene del perfil
+ * persistido mediante el converter de produccion; no se usan tokens reales de
+ * Supabase.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(AutorizacionModulosTests.ConfiguracionEndpoints.class)
 class AutorizacionModulosTests {
+
+    private static final String RUTA_ERP = "/api/erp/proveedores";
+    private static final String RUTA_SGA = "/api/sga/paquetes";
 
     @Autowired
     private MockMvc mvc;
@@ -59,83 +61,38 @@ class AutorizacionModulosTests {
 
     @Test
     void sinTokenDevuelve401() throws Exception {
-        mvc.perform(get("/api/crm/clientes"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+        for (String ruta : new String[] {RUTA_ERP, RUTA_SGA}) {
+            mvc.perform(get(ruta))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(content().contentTypeCompatibleWith(
+                            MediaType.APPLICATION_PROBLEM_JSON));
+        }
     }
 
     @Test
     void sinPerfilActivoDevuelve403EnCualquierModulo() throws Exception {
-        mvc.perform(get("/api/crm/clientes")
-                        .with(autenticacionDe(UUID.randomUUID())))
-                .andExpect(status().isForbidden())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+        RequestPostProcessor autenticacion =
+                autenticacionDe(UUID.randomUUID());
+
+        for (String ruta : new String[] {RUTA_ERP, RUTA_SGA}) {
+            mvc.perform(get(ruta).with(autenticacion))
+                    .andExpect(status().isForbidden())
+                    .andExpect(content().contentTypeCompatibleWith(
+                            MediaType.APPLICATION_PROBLEM_JSON));
+        }
     }
 
     @Test
     void perfilInactivoDevuelve403EnCualquierModulo() throws Exception {
         UUID usuarioId = crearPerfil(RolUsuario.COMERCIAL, false);
+        RequestPostProcessor autenticacion = autenticacionDe(usuarioId);
 
-        mvc.perform(get("/api/crm/clientes")
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isForbidden())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
-    }
-
-    @Test
-    void comercialAccedeACrm() throws Exception {
-        UUID usuarioId = crearPerfil(RolUsuario.COMERCIAL, true);
-
-        mvc.perform(get("/api/crm/clientes")
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isOk());
-
-        mvc.perform(post("/api/crm/clientes")
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void finanzasPuedeLeerClientesDeCrmPeroNoEscribir() throws Exception {
-        UUID usuarioId = crearPerfil(RolUsuario.FINANZAS_RRHH, true);
-
-        mvc.perform(get("/api/crm/clientes")
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isOk());
-
-        mvc.perform(get("/api/crm/clientes/{id}", UUID.randomUUID())
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isOk());
-
-        mvc.perform(post("/api/crm/clientes")
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void finanzasNoPuedeLeerContratosDeCrm() throws Exception {
-        UUID usuarioId = crearPerfil(RolUsuario.FINANZAS_RRHH, true);
-
-        mvc.perform(get("/api/crm/contratos/{id}", UUID.randomUUID())
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void operacionesPuedeLeerClientesYContratosDeCrmPeroNoEscribir() throws Exception {
-        UUID usuarioId = crearPerfil(RolUsuario.OPERACIONES, true);
-
-        mvc.perform(get("/api/crm/clientes")
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isOk());
-
-        mvc.perform(get("/api/crm/contratos/{id}", UUID.randomUUID())
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isOk());
-
-        mvc.perform(post("/api/crm/clientes")
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isForbidden());
+        for (String ruta : new String[] {RUTA_ERP, RUTA_SGA}) {
+            mvc.perform(get(ruta).with(autenticacion))
+                    .andExpect(status().isForbidden())
+                    .andExpect(content().contentTypeCompatibleWith(
+                            MediaType.APPLICATION_PROBLEM_JSON));
+        }
     }
 
     @Test
@@ -143,12 +100,10 @@ class AutorizacionModulosTests {
         UUID finanzasId = crearPerfil(RolUsuario.FINANZAS_RRHH, true);
         UUID operacionesId = crearPerfil(RolUsuario.OPERACIONES, true);
 
-        mvc.perform(get("/api/erp/proveedores")
-                        .with(autenticacionDe(finanzasId)))
+        mvc.perform(get(RUTA_ERP).with(autenticacionDe(finanzasId)))
                 .andExpect(status().isOk());
 
-        mvc.perform(get("/api/erp/proveedores")
-                        .with(autenticacionDe(operacionesId)))
+        mvc.perform(get(RUTA_ERP).with(autenticacionDe(operacionesId)))
                 .andExpect(status().isForbidden());
     }
 
@@ -157,43 +112,33 @@ class AutorizacionModulosTests {
         UUID operacionesId = crearPerfil(RolUsuario.OPERACIONES, true);
         UUID finanzasId = crearPerfil(RolUsuario.FINANZAS_RRHH, true);
 
-        mvc.perform(get("/api/sga/paquetes")
-                        .with(autenticacionDe(operacionesId)))
+        mvc.perform(get(RUTA_SGA).with(autenticacionDe(operacionesId)))
                 .andExpect(status().isOk());
 
-        mvc.perform(get("/api/sga/paquetes")
-                        .with(autenticacionDe(finanzasId)))
+        mvc.perform(get(RUTA_SGA).with(autenticacionDe(finanzasId)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void comercialNoAccedeAErpNiSga() throws Exception {
         UUID usuarioId = crearPerfil(RolUsuario.COMERCIAL, true);
+        RequestPostProcessor autenticacion = autenticacionDe(usuarioId);
 
-        mvc.perform(get("/api/erp/proveedores")
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isForbidden());
-
-        mvc.perform(get("/api/sga/paquetes")
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isForbidden());
+        for (String ruta : new String[] {RUTA_ERP, RUTA_SGA}) {
+            mvc.perform(get(ruta).with(autenticacion))
+                    .andExpect(status().isForbidden());
+        }
     }
 
     @Test
     void administradorAccedeATodosLosModulos() throws Exception {
         UUID usuarioId = crearPerfil(RolUsuario.ADMINISTRADOR, true);
+        RequestPostProcessor autenticacion = autenticacionDe(usuarioId);
 
-        mvc.perform(get("/api/crm/clientes")
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isOk());
-
-        mvc.perform(get("/api/erp/proveedores")
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isOk());
-
-        mvc.perform(get("/api/sga/paquetes")
-                        .with(autenticacionDe(usuarioId)))
-                .andExpect(status().isOk());
+        for (String ruta : new String[] {RUTA_ERP, RUTA_SGA}) {
+            mvc.perform(get(ruta).with(autenticacion))
+                    .andExpect(status().isOk());
+        }
     }
 
     private UUID crearPerfil(RolUsuario rol, boolean activo) {
@@ -225,32 +170,12 @@ class AutorizacionModulosTests {
     @RestController
     static class EndpointsModulos {
 
-        @GetMapping("/api/crm/clientes")
-        String listarClientes() {
-            return "clientes";
-        }
-
-        @GetMapping("/api/crm/clientes/{id}")
-        String obtenerCliente(@PathVariable String id) {
-            return "cliente";
-        }
-
-        @PostMapping("/api/crm/clientes")
-        String crearCliente() {
-            return "creado";
-        }
-
-        @GetMapping("/api/crm/contratos/{id}")
-        String obtenerContrato(@PathVariable String id) {
-            return "contrato";
-        }
-
-        @GetMapping("/api/erp/proveedores")
+        @GetMapping(RUTA_ERP)
         String listarProveedores() {
             return "proveedores";
         }
 
-        @GetMapping("/api/sga/paquetes")
+        @GetMapping(RUTA_SGA)
         String listarPaquetes() {
             return "paquetes";
         }

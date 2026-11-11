@@ -280,19 +280,19 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - _Requisitos: 15.1–15.3, NF-07_
 
 - [ ] 14. Implementar los controladores del CRM y sus pruebas MockMvc
-  - [ ] 14.1 Retirar los dobles CRM de `AutorizacionModulosTests`
+  - [x] 14.1 Retirar los dobles CRM de `AutorizacionModulosTests`
     - Área: backend · Responsable: Sebastián
     - Eliminar los endpoints de prueba `GET /api/crm/clientes`, `GET /api/crm/clientes/{id}`, `POST /api/crm/clientes` y `GET /api/crm/contratos/{id}`; conservar `GET /api/erp/proveedores` y `GET /api/sga/paquetes`
     - Reasignar `sinTokenDevuelve401`, `sinPerfilActivoDevuelve403EnCualquierModulo` y `perfilInactivoDevuelve403EnCualquierModulo` a ERP y SGA; `administradorAccedeATodosLosModulos` conserva ERP y SGA; los casos CRM pasan a `CrmAutorizacionTests` (14.8)
     - Confirmar este cambio en el mismo commit que los controladores 14.3–14.6: si los dobles y los controladores reales conviven, el contexto falla por mapeo ambiguo
     - _Requisitos: 23.8, CA-03_
 
-  - [ ] 14.2 Implementar `VistaClienteResolver`
+  - [x] 14.2 Implementar `VistaClienteResolver`
     - Área: backend · Responsable: Sebastián
     - `desde(Authentication)` devuelve `COMPLETA` solo con `ROLE_ADMINISTRADOR` o `ROLE_COMERCIAL` (construidas con `PerfilJwtAuthenticationConverter.PREFIJO_ROL` y `RolUsuario`) y `REDUCIDA` en cualquier otro caso; no lee parámetros de la petición (D6)
     - _Requisitos: 6.1–6.3, NF-02, DP-PRO-01_
 
-  - [ ] 14.3 Implementar `ClienteController`
+  - [x] 14.3 Implementar `ClienteController`
     - Área: backend · Responsable: Sebastián
     - `GET`, `GET /{id}`, `POST` (201 con `Location` relativa), `PUT /{id}` y `PATCH /{id}` en `/api/crm/clientes`; restricciones en los `@RequestParam` sin `@Validated` a nivel de clase (D8); actor tomado de `@AuthenticationPrincipal Jwt`; sin `DELETE` mapeado, de modo que el gestor recibe 405
     - _Requisitos: 1.2, 1.3, 4.1, 5.1–5.9, 7.1, 8.1–8.7, 16.6, CRM-01_
@@ -302,7 +302,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - `GET`, `GET /{id}`, `POST`, `PUT /{id}` y `PATCH /{id}` en `/api/crm/cuentas-corporativas`, con sus parámetros y el orden por defecto `razonSocial,asc`
     - _Requisitos: 1.2, 1.3, 9.1–9.13, CRM-02_
 
-  - [ ] 14.5 Implementar `ContratoController`
+  - [x] 14.5 Implementar `ContratoController`
     - Área: backend · Responsable: Sebastián
     - `GET`, `GET /{id}`, `POST`, `PUT /{id}` y `PATCH /{id}/estado` en `/api/crm/contratos`, con los filtros `clienteId` y `estado` y el orden por defecto `creadoEn,desc`
     - _Requisitos: 1.2, 1.3, 11.1, 12.1–12.6, 13.1, 14.1, CRM-03_
@@ -312,7 +312,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - `GET /api/crm/resumen`
     - _Requisitos: 1.2, 15.1, CRM-05_
 
-  - [ ] 14.7 Crear `CrmDatosPrueba`
+  - [x] 14.7 Crear `CrmDatosPrueba`
     - Área: backend · Responsable: Sebastián
     - `CrmDatosPrueba` (paquete de prueba `com.arise.corp.crm`) crea perfiles, cuentas, clientes y contratos ficticios y limpia los repositorios en `@BeforeEach`. La autenticación usa `AutenticacionPerfilTestSupport.como(...)` con el `PerfilJwtAuthenticationConverter` real sobre perfiles persistidos en H2, sin tokens reales de Supabase
     - _Requisitos: 16.1–16.5, 23.4–23.6, NF-07_
@@ -323,7 +323,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 16: La matriz de acceso se aplica a todos los endpoints** · **Validates: Requirements 16.1, 16.2, 16.3, 16.4, 16.5, 23.4, 23.6**
     - _Requisitos: 8.6, 16.1–16.5, 23.4–23.6, CA-02, CA-03, NF-02, NF-07_
 
-  - [ ] 14.9 Escribir `ClienteControllerTests` y `VistaClienteResolverTests`
+  - [x] 14.9 Escribir `ClienteControllerTests` y `VistaClienteResolverTests`
     - Área: backend · Responsable: Sebastián
     - 201 con `Location`, 200, 400 por cada regla, 404 del cliente y de `cuentaCorporativaId` (con `campo`), 409 por cada conflicto con su `conflicto` y `campo`, y 405 de `DELETE`. `VistaClienteResolverTests` exhaustivo para cada authority, sin authorities y con varias
     - **Property 10: La vista del cliente depende solo del rol** · **Validates: Requirements 6.1, 6.2, 6.3, 10.6**
@@ -331,7 +331,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 14: Los parámetros de lista se aceptan o rechazan según DP-API-03** · **Validates: Requirements 5.2, 5.6**
     - _Requisitos: 4.1–4.9, 5.1–5.9, 7.1–7.6, 8.1–8.7, 10.3, 10.4, 23.7, NF-07_
 
-  - [ ] 14.10 Escribir `ContratoControllerTests`
+  - [x] 14.10 Escribir `ContratoControllerTests`
     - Área: backend · Responsable: Sebastián
     - 201 con `Location`, 200, 400 por cada regla (código, descripción, fechas, valor y `estado` desconocido), 404 de la ruta y de `clienteId`, y 409 `CLIENTE_INACTIVO_SIN_CONTRATOS`, `CONTRATO_CODIGO_DUPLICADO`, `CONTRATO_NO_EDITABLE` y `TRANSICION_NO_PERMITIDA`; `valor` serializado con dos decimales; `clienteId` y `estado` ignorados en `PUT`
     - **Property 6: Los campos controlados por el servidor no se toman del cuerpo** · **Validates: Requirements 11.1, 11.12, 13.4**
@@ -344,7 +344,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 14: Los parámetros de lista se aceptan o rechazan según DP-API-03** · **Validates: Requirements 9.7**
     - _Requisitos: 9.1–9.13, 15.1–15.3, 23.7, NF-07_
 
-  - [ ] 14.12 Escribir `CrmLogsTests`
+  - [x] 14.12 Escribir `CrmLogsTests`
     - Área: backend · Responsable: Sebastián
     - Con `OutputCaptureExtension`, crear, editar y provocar 409 y 500 con datos personales ficticios conocidos; la salida capturada no contiene el correo, el teléfono, la dirección ni el número de documento
     - _Requisitos: 6.4, 17.6, CA-06_

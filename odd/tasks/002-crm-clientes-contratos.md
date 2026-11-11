@@ -235,3 +235,32 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   `.\mvnw.cmd test` -> 235 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase.
   Riesgo declarado: item 6 (el resumen nuevo no tenia pruebas propias hasta esta misma entrega,
   que las anade); sin cambios en contratos, datos ni concurrencia.
+- L16 (2026-11-11): tareas 14.1, 14.2, 14.3, 14.5, 14.7, 14.9, 14.10 y 14.12 completadas;
+  14.4, 14.6, 14.8 y 14.11 quedan pendientes porque dependen de los controladores de cuentas
+  y resumen de Davidson. `VistaClienteResolver` devuelve `COMPLETA` solo con
+  `ROLE_ADMINISTRADOR` o `ROLE_COMERCIAL` y nunca lee parametros de la peticion.
+  `ClienteController` expone `GET`, `GET /{id}`, `POST` (201 con `Location` relativa), `PUT` y
+  `PATCH` en `/api/crm/clientes`, con el actor tomado de `@AuthenticationPrincipal Jwt` y las
+  restricciones de lista en los `@RequestParam` sin `@Validated`; no mapea `DELETE`.
+  `ContratoController` expone `GET`, `GET /{id}`, `POST`, `PUT` y `PATCH /{id}/estado` en
+  `/api/crm/contratos` con filtros `clienteId` y `estado` y orden por defecto `creadoEn,desc`.
+  Se retiraron los cuatro dobles CRM de `AutorizacionModulosTests`; sus casos de 401, 403,
+  perfiles inactivos y Administrador usan ahora ERP y SGA, y las pruebas de los controladores
+  reales conviven en el mismo contexto sin mapeo ambiguo. `CrmDatosPrueba` crea perfiles,
+  cuentas, clientes y contratos ficticios, limpia las tablas en orden de dependencias y
+  autentica con `AutenticacionPerfilTestSupport.como` sobre perfiles H2. `ClienteControllerTests`
+  (62 pruebas) cubre 201 con `Location`, 200, las 14 reglas de validacion en `POST` y `PUT`,
+  404 de la ruta y de `cuentaCorporativaId`, los tres conflictos de alta y los de edicion,
+  `PATCH` idempotente que no toca contratos, 405 de `DELETE` con `Allow` y el cliente
+  conservado, Property 6 (campos del servidor ignorados), Property 10 (vista completa o
+  reducida por rol) y Property 14 con 17 combinaciones de parametros.
+  `VistaClienteResolverTests` (8 pruebas) recorre los cuatro roles, las authorities sin
+  prefijo, sin authorities, sin autenticacion y con varias. `ContratoControllerTests`
+  (55 pruebas) cubre 201 con `Location` y `BORRADOR`, 200 con filtros, las reglas de codigo,
+  descripcion, fechas, valor y estado desconocido, 404 de ruta y de `clienteId`, los cuatro
+  conflictos (`CLIENTE_INACTIVO_SIN_CONTRATOS`, `CONTRATO_CODIGO_DUPLICADO`,
+  `CONTRATO_NO_EDITABLE`, `TRANSICION_NO_PERMITIDA`), `valor` con dos decimales,
+  `clienteId` y `estado` ignorados en `PUT`, Property 6 y Property 14. `CrmLogsTests`
+  crea, edita, provoca 409 y 500 con datos personales ficticios conocidos y comprueba que la
+  salida capturada no contiene correo, telefono, direccion ni documento. Evidencia observada:
+  `.\mvnw.cmd test` -> 357 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase.
