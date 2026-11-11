@@ -442,29 +442,29 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
   - Área: verificación · Responsable: Davidson
   - Ejecutar desde `backend/` `.\mvnw.cmd clean test` y, con Docker en ejecución, `.\mvnw.cmd verify` (Requirement 24.11); desde la raíz, `docker compose build backend`. Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
 
-- [ ] 21. Ampliar el cliente HTTP del frontend
-  - [ ] 21.1 Ampliar `services/apiClient.js`
+- [x] 21. Ampliar el cliente HTTP del frontend
+  - [x] 21.1 Ampliar `services/apiClient.js`
     - Área: frontend · Responsable: Paula
     - `apiRequest(path, { method = 'GET', body } = {})`, compatible con las llamadas actuales: Bearer vigente; `Content-Type: application/json` y `JSON.stringify(body)` solo cuando hay cuerpo; 204 → `null`
     - `ApiError` conserva `status`, `problem`, `title`, `detail` y `errors`, y añade `kind`, `conflicto`, `campo` y `reintentable` según la tabla del diseño. 401 sin cambios; 403 sin leer el cuerpo ni cerrar sesión, con mensaje propio para escrituras; 5xx sin leer el cuerpo
     - _Requisitos: 18.1–18.9, AUTH-03, AUTH-05_
 
-  - [ ] 21.2 Ampliar `services/apiClient.test.js`
+  - [x] 21.2 Ampliar `services/apiClient.test.js`
     - Área: frontend · Responsable: Paula
     - Métodos, cuerpo JSON y `Content-Type`, 400, 401, 403 en lectura y en escritura, 404, 409, 5xx y tiempo agotado. Las pruebas existentes se conservan sin cambios
     - _Requisitos: 18.1–18.9, 25.1, ENG-02_
 
-  - [ ]* 21.3 Escribir la prueba de propiedad del cliente HTTP
+  - [x]* 21.3 Escribir la prueba de propiedad del cliente HTTP
     - Área: frontend · Responsable: Paula
     - **Property 18: El cliente HTTP clasifica cada respuesta de forma uniforme** (métodos × estados de 200 a 599) · **Validates: Requirements 18.1, 18.2, 18.3, 18.4, 18.5, 18.7, 18.8, 25.1**
     - _Requisitos: 25.1, NF-07_
 
-  - [ ] 21.4 Crear `services/crmApi.js`
+  - [x] 21.4 Crear `services/crmApi.js`
     - Área: frontend · Responsable: Paula
     - Las 16 funciones del diseño, con consultas construidas con `URLSearchParams` que omiten los parámetros vacíos, y `valor` enviado como texto
     - _Requisitos: 18.1, 18.2, 21.4, DP-API-04_
 
-  - [ ]* 21.5 Escribir `services/crmApi.test.js`
+  - [x]* 21.5 Escribir `services/crmApi.test.js`
     - Área: frontend · Responsable: Paula
     - Rutas, métodos y consultas sin parámetros vacíos
     - **Property 5: El valor del contrato viaja como texto sin perder precisión** (lado frontend) · **Validates: Requirements 21.4**

@@ -129,3 +129,65 @@ it('nunca lee el cuerpo interno de errores 5xx', async () => {
   })
   expect(json).not.toHaveBeenCalled()
 })
+
+it.each([
+  [400, 'validacion'], [404, 'no-encontrado'], [409, 'conflicto'],
+])('entrega los detalles de un %i al formulario', async (status, kind) => {
+  const problem = {
+    title: 'Solicitud rechazada', detail: 'Revisa el documento.', campo: 'documento',
+    errors: [{ field: 'documento', message: 'inválido' }],
+    ...(status === 409 && { conflicto: 'CLIENTE_INACTIVO_EXISTENTE', clienteId: '123' }),
+  }
+  fetch.mockResolvedValue({ ok: false, status, json: async () => problem })
+  await expect(apiRequest('/api/crm/clientes', { method: 'POST' })).rejects.toMatchObject({
+    status, kind, problem, campo: problem.campo, conflicto: problem.conflicto,
+    detail: problem.detail, title: problem.title, errors: problem.errors, reintentable: false,
+  })
+})
+
+it.each([
+  [403, 'No tienes permisos para realizar esta operación.'],
+  [503, 'No pudimos completar la operación. Intenta nuevamente.'],
+])('muestra el mensaje de escritura para %i', async (status, message) => {
+  fetch.mockResolvedValue({ status, ok: false })
+  await expect(apiRequest('/api/crm/clientes', { method: 'POST' })).rejects.toMatchObject({ message })
+})
+
+it('clasifica el tiempo agotado como error de red reintentable', async () => {
+  vi.useFakeTimers()
+  fetch.mockImplementationOnce(() => new Promise(() => {}))
+  const fallo = expect(apiRequest('/api/me')).rejects.toMatchObject({ kind: 'red', reintentable: true })
+  await vi.advanceTimersByTimeAsync(30_001)
+  await fallo
+})
+
+// Property 18: métodos × estados HTTP 200–599.
+it.each(['GET', 'POST', 'PUT', 'PATCH'])('clasifica las respuestas de %s', async method => {
+  const tipos = { 400: 'validacion', 401: 'sesion', 403: 'sin-permiso', 404: 'no-encontrado', 409: 'conflicto' }
+  for (let status = 200; status <= 599; status++) {
+    const caso = `${method} HTTP ${status}`
+    const ok = status < 300
+    const json = vi.fn().mockResolvedValue({ id: '123' })
+    fetch.mockResolvedValue({ status, ok, json })
+    signOut.mockClear()
+    const body = method !== 'GET' && status % 2 === 0 ? { activo: false } : undefined
+    const peticion = apiRequest('/api/crm/clientes', { method, body })
+    if (ok) {
+      await expect(peticion, caso).resolves.toEqual(status === 204 ? null : { id: '123' })
+    } else {
+      await expect(peticion, caso).rejects.toMatchObject({
+        status, kind: tipos[status] ?? (status >= 500 ? 'servidor' : 'cliente'),
+        reintentable: status >= 500,
+      })
+    }
+    const opciones = fetch.mock.lastCall[1]
+    expect(opciones.method, caso).toBe(method)
+    expect(opciones.headers, caso).toEqual({
+      Authorization: 'Bearer fake-token', ...(body && { 'Content-Type': 'application/json' }),
+    })
+    expect(opciones.body, caso).toBe(JSON.stringify(body))
+    const leeProblema = status >= 400 && status < 500 && ![401, 403].includes(status)
+    expect(json, caso).toHaveBeenCalledTimes((ok && status !== 204) || leeProblema ? 1 : 0)
+    expect(signOut, caso).toHaveBeenCalledTimes(status === 401 ? 1 : 0)
+  }
+})
