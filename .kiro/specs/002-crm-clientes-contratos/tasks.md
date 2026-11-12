@@ -651,21 +651,22 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
   - Evidencia (2026-11-12): backend con 520 pruebas de Surefire y 16 de Failsafe en verde; frontend con 159 pruebas de 18 archivos, bundle de producción generado y `check:secrets` sin patrones de credenciales; `docker compose build backend` construyó la imagen.
 
 - [ ] 33. Verificar y entregar la spec
-  - [ ] 33.1 Verificar CI, secretos, documentación y trazabilidad
+  - [x] 33.1 Verificar CI, secretos, documentación y trazabilidad
     - Área: integración/documentación · Responsable: Davidson
     - Una ejecución verde de `backend-ci`, `integration-tests` y `frontend-ci` en la rama; ningún `.env` rastreado (`git ls-files`); contratos de `design.md` coherentes con el código; trazabilidad requisito–tarea revisada; `product.md` indica que `002-crm-clientes-contratos` queda cerrada al integrar el PR
     - _Requisitos: 28.1–28.11, 29.1, 29.5, CA-01, CA-07, NF-01, ENG-04_
-    - Evidencia parcial (2026-11-12): `git ls-files` no contiene ningún `.env` (solo los dos `.env.example`); los endpoints de los controladores coinciden con el contrato de `design.md`; la trazabilidad requisito–tarea se revisó y `product.md` registra el cierre al integrar el PR. En GitHub, la rama tenía `backend-ci`, `integration-tests` y `frontend-ci` en verde para el último commit publicado (`0a9477f`). Falta la ejecución verde de los commits nuevos de esta sesión, que requiere publicarlos.
+    - Evidencia (2026-11-12): `git ls-files` no contiene ningún `.env` (solo los dos `.env.example`); los endpoints de los controladores coinciden con el contrato de `design.md`; la trazabilidad requisito–tarea se revisó y `product.md` registra el cierre al integrar el PR. En GitHub, `backend-ci`, `integration-tests` y `frontend-ci` terminaron en verde para el commit `9b4e308` de la rama y del PR #3.
 
   - [ ] 33.2 Configurar los checks obligatorios en la protección de `main`
     - Área: CI · Responsable: Davidson
     - PR obligatorio con una aprobación de otro integrante, *squash merge*, rama actualizada antes de integrar y `backend-ci`, `integration-tests` y `frontend-ci` como checks obligatorios
     - _Requisitos: 29.9, DP-SDD-05_
 
-  - [ ] 33.3 Abrir el Pull Request único hacia `main`
+  - [x] 33.3 Abrir el Pull Request único hacia `main`
     - Área: integración · Responsable: Davidson
     - PR desde `feat/crm-clientes-contratos` con enlace a la spec, requisitos y tareas, instrucciones de prueba, resultados de las suites, construcción Docker, CI en verde y la lista de comprobación de `sdd-workflow.md`; revisión de un integrante distinto del autor de cada cambio; sin secretos en la descripción ni en las capturas
     - _Requisitos: 29.8, CA-07, DP-SDD-04, DP-SDD-05_
+    - Evidencia (2026-11-12): PR #3 abierto en https://github.com/SebastianUD/arise-corp/pull/3, con el commit `9b4e308` como cabeza y los tres checks en verde. La aprobación de otro integrante y el squash merge se completan en GitHub.
 
 ## Notes
 

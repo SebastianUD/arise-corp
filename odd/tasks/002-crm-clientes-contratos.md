@@ -326,3 +326,10 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   `review-ae2452289044f36a`, 4 lentes, riesgo alto por `.kiro/steering/security.md`). Hallazgos
   informativos: ninguno bloqueante. Se corrige en un commit posterior el registro L19, que habia
   quedado con caracteres de escape corruptos, y el arbol del README.
+- L21 (2026-11-12): entrega de la spec. Se publicaron los commits `db673f7`, `20492d7` y `9b4e308`
+  en `origin/feat/crm-clientes-contratos` y se abrio el PR #3
+  (https://github.com/SebastianUD/arise-corp/pull/3). Evidencia observada via API de GitHub:
+  el PR esta `open`, sin draft, con cabeza `9b4e308`; `backend-ci`, `integration-tests` y
+  `frontend-ci` terminaron en `success` para ese commit. El usuario confirmo que todos los tests
+  del CI pasaron. Queda pendiente la tarea 33.2 (proteccion de `main`), la aprobacion de otro
+  integrante y el squash merge; 31.1 sigue como validacion manual E2E.
