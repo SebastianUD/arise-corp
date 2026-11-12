@@ -141,8 +141,9 @@ arise-corp/
 │       │   └── resources/
 │       │       └── application.properties
 │       └── test/
-│           ├── java/com/arise/corp/           # *Tests con Surefire y H2
-│           └── java/com/arise/corp/integration/ # *IT con Failsafe y Testcontainers
+│           └── java/com/arise/corp/
+│               ├── *Tests                     # Surefire y H2
+│               └── integration/               # *IT con Failsafe y Testcontainers
 │
 ├── frontend/
 │   ├── package.json                   # React/Vite y herramientas de prueba
