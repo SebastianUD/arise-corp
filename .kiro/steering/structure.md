@@ -12,24 +12,35 @@ arise-corp/
 │   ├── .mvn/wrapper/                        # configuración del Maven Wrapper
 │   ├── HELP.md                              # enlaces de referencia generados por Spring Initializr
 │   ├── pom.xml, mvnw, mvnw.cmd
-│   ├── Dockerfile                            # imagen multi-stage del backend [Aprobado; por crear]
-│   ├── .dockerignore                        # excluye secretos y archivos innecesarios [Aprobado; por crear]
+│   ├── Dockerfile                            # imagen multi-stage del backend [Implementado]
+│   ├── .dockerignore                        # excluye secretos y archivos innecesarios [Implementado]
 │   ├── target/                              # salida del build; ignorado por Git
 │   └── src/
 │       ├── main/java/com/arise/corp/
 │       │   ├── AriseBackendApplication.java     # clase principal (@SpringBootApplication)
 │       │   ├── config/
 │       │   │   ├── SecurityConfig.java          # cadena de filtros, matriz de roles y CORS
-│       │   │   └── PerfilJwtAuthenticationConverter.java # JWT → ROLE_<ROL> del perfil activo
-│       │   └── login/                           # perfil y rol del usuario autenticado
-│       │       ├── controller/
-│       │       │   ├── AuthController.java      # GET /api/me
-│       │       │   └── AdminPerfilController.java # PUT/PATCH /api/admin/usuarios/{id}
-│       │       ├── entity/                      # PerfilUsuario y RolUsuario
-│       │       ├── repository/                  # PerfilUsuarioRepository y UsuarioAuthRepository
-│       │       ├── service/                     # PerfilUsuarioService y ResultadoPerfil
-│       │       └── dto/                         # MeResponse, PerfilRequest, EstadoPerfilRequest, PerfilUsuarioResponse
-│       └── shared/error/                        # Problem Details y handlers comunes
+│       │   │   ├── PerfilJwtAuthenticationConverter.java # JWT → ROLE_<ROL> del perfil activo
+│       │   │   └── ClockConfig.java             # Clock inyectable para auditoría
+│       │   ├── login/                           # perfil y rol del usuario autenticado
+│       │   │   ├── controller/
+│       │   │   │   ├── AuthController.java      # GET /api/me
+│       │   │   │   └── AdminPerfilController.java # PUT/PATCH /api/admin/usuarios/{id}
+│       │   │   ├── entity/                      # PerfilUsuario y RolUsuario
+│       │   │   ├── repository/                  # PerfilUsuarioRepository y UsuarioAuthRepository
+│       │   │   ├── service/                     # PerfilUsuarioService y ResultadoPerfil
+│       │   │   └── dto/                         # MeResponse, PerfilRequest, EstadoPerfilRequest, PerfilUsuarioResponse
+│       │   ├── crm/                             # clientes, contratos y cuentas corporativas
+│       │   │   ├── controller/                  # Cliente, Contrato, CuentaCorporativa y ResumenComercial
+│       │   │   ├── service/                     # reglas, transacciones y auditoría de estado
+│       │   │   ├── repository/                  # repositorios JPA y especificaciones de filtros
+│       │   │   ├── entity/                      # Cliente, Contrato, CuentaCorporativa y enums
+│       │   │   └── dto/                         # requests, responses y vistas por rol
+│       │   └── shared/
+│       │       ├── error/                       # Problem Details y handlers comunes
+│       │       ├── normalizacion/               # NormalizadorTexto
+│       │       ├── paginacion/                  # PaginaResponse y validación de parámetros
+│       │       └── validacion/                  # validadores compartidos
 │       ├── main/resources/
 │       │   ├── application.properties
 │       │   ├── static/                          # vacío; no se usa
@@ -41,12 +52,14 @@ arise-corp/
 │           ├── crm/                          # pruebas *Tests en el paquete de la clase probada
 │           └── integration/                  # pruebas PostgreSQL *IT (Failsafe)
 ├── frontend/                                # SPA React con acceso, perfil y vistas CRM
-├── supabase/migrations/                     # migración app.perfiles_usuario           [Implementado]
-├── .github/workflows/                       # workflows CI de GitHub Actions           [Aprobado; por crear]
-│   ├── backend-ci.yml                       # CI backend y build de Docker (propuesto)
-│   ├── frontend-ci.yml                      # CI frontend (propuesto)
-│   └── integration-tests.yml                # pruebas de integración (propuesto)
-├── docker-compose.yml                       # ejecución local de servicios del proyecto [Aprobado; por crear]
+├── supabase/migrations/                     # migraciones de perfiles y CRM                [Implementado]
+│   ├── 20261108000000_app_perfiles_usuario.sql
+│   └── 20261111120000_app_crm_clientes_contratos.sql
+├── .github/workflows/                       # workflows CI de GitHub Actions           [Implementado]
+│   ├── backend-ci.yml                       # CI backend y build de Docker
+│   ├── frontend-ci.yml                      # CI frontend
+│   └── integration-tests.yml                # pruebas de integración con PostgreSQL efímero
+├── docker-compose.yml                       # ejecución local del backend               [Implementado]
 ├── docs/def_MVP/MVP_Arise_Corp.md           # definición del MVP
 ├── .kiro/steering/                          # reglas permanentes (estos archivos)
 ├── .kiro/specs/                             # especificaciones SDD versionadas
@@ -59,7 +72,7 @@ arise-corp/
 
 ## Backend
 ### Organización de paquetes
-- Actual [Implementado]: `com.arise.corp.config` para seguridad transversal y el módulo `com.arise.corp.login` con capas `controller`, `entity`, `repository`, `service` y `dto`.
+- Actual [Implementado]: `com.arise.corp.config` para seguridad transversal, `com.arise.corp.login` con capas `controller`, `entity`, `repository`, `service` y `dto`, `com.arise.corp.crm` con la misma separación y `com.arise.corp.shared` para error, normalización, paginación y validación.
 - Objetivo [Aprobado, MVP §9 y NF-04]: monolito modular con los módulos `login`, `crm`, `erp` y `sga`, y separación Controller → Service → Repository dentro de cada módulo.
 - Distribución adoptada (DP-EST-01):
 
@@ -118,10 +131,10 @@ frontend/
         └── formato.js             # importes en COP, fechas e instantes en es-CO
 ```
 
-## Docker e infraestructura de entrega
-- `backend/Dockerfile`: construcción multi-stage y ejecución de Spring Boot en un contenedor.
-- `backend/.dockerignore`: excluye `.env`, `.env.*`, `target/`, archivos del IDE y otros elementos que no deben incorporarse a la imagen.
-- `docker-compose.yml`: orquestación local del backend; Supabase PostgreSQL sigue siendo externo y administrado.
+## Docker e infraestructura de entrega [Implementado]
+- `backend/Dockerfile`: construcción multi-stage (`eclipse-temurin:21-jdk` → `eclipse-temurin:21-jre`), usuario `arise` sin privilegios, solo `app.jar`, `EXPOSE 8080` y sin `ARG` ni `ENV` de configuración.
+- `backend/.dockerignore`: excluye `.env`, `.env.*`, `target/`, `src/test/`, archivos del IDE, `*.log`, `HELP.md` y `.gitattributes`.
+- `docker-compose.yml`: proyecto `arise-corp` con el servicio `backend` desde `./backend`, imagen `arise-backend:local`, `env_file` obligatorio con `./backend/.env` y puerto `127.0.0.1:8080:8080`; Supabase PostgreSQL sigue siendo externo y administrado.
 - `.github/workflows/`: workflows de GitHub Actions para CI de backend/frontend, pruebas de integración y comprobación de la construcción de imagen. El proyecto se ejecuta en local; no hay CD.
 - No incluir archivos `.env` ni secretos dentro de la imagen Docker, del contexto de construcción ni en archivos YAML versionados.
 

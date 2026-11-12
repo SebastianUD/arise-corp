@@ -353,7 +353,7 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
   - Área: verificación · Responsable: Sebastián
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/` sin Docker, sin Supabase y sin `.env` (Requirement 23.9). Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
 
-- [ ] 16. Implementar las pruebas de integración con PostgreSQL efímero
+- [x] 16. Implementar las pruebas de integración con PostgreSQL efímero
   - [x] 16.1 Añadir Testcontainers y Failsafe a `backend/pom.xml`
     - Área: backend · Responsable: Davidson
     - Dependencias de alcance `test` `org.springframework.boot:spring-boot-testcontainers` y `org.testcontainers:testcontainers-postgresql`, sin versión; `maven-failsafe-plugin` con la inclusión `**/integration/**/*IT.java`, la propiedad `arise.migraciones.dir=${project.basedir}/../supabase/migrations` y los objetivos `integration-test` y `verify`
@@ -388,20 +388,22 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - **Property 15: Filtros, búsqueda y orden coinciden con un modelo en memoria** · **Validates: Requirements 5.1, 5.3, 5.4, 5.5, 9.6, 12.1, 24.7**
     - _Requisitos: 24.7, CRM-01, ENG-03_
 
-  - [ ]* 16.7 Escribir `ResumenComercialIT`
+  - [x]* 16.7 Escribir `ResumenComercialIT`
     - Área: backend · Responsable: Davidson
     - **Property 13: El resumen comercial es consistente** (contra PostgreSQL) · **Validates: Requirements 15.1, 15.2, 15.3, 24.7**
     - _Requisitos: 24.7, CRM-05_
+    - Evidencia (2026-11-12): `ResumenComercialIT` siembra 100 escenarios generados con semilla fija, compara contra conteos de JDBC y verifica los cuatro estados, la coherencia de totales y el caso sin datos. `.\mvnw.cmd verify` pasó 520 pruebas de Surefire y 16 de Failsafe.
 
-- [ ] 17. Aplicar la migración del CRM en `arise-corp-dev`
-  - [ ] 17.1 Aplicar la migración revisada de forma controlada
+- [x] 17. Aplicar la migración del CRM en `arise-corp-dev`
+  - [x] 17.1 Aplicar la migración revisada de forma controlada
     - Área: base de datos · Responsable: Davidson
     - Requisitos previos: revisión 8.1 aprobada y `MigracionesCrmIT` en verde. Aplicar con el mismo procedimiento controlado de la tarea 20 de `001-foundation` (D18)
     - Ejecutar las consultas de verificación del diseño (RLS y privilegios de `anon` y `authenticated`) y confirmar en Supabase que `app` sigue fuera de los esquemas expuestos de la Data API
     - Registrar en este `tasks.md` solo resultado, fecha y entorno, sin UUID, credenciales ni datos personales. Desde aquí la migración no se edita; un cambio de esquema llega en una migración nueva
     - _Requisitos: 2.8, 29.10, DP-TEC-03, DP-SEG-05, NF-01_
+    - Evidencia (2026-11-12, entorno `arise-corp-dev`): la migración ya estaba aplicada el 2026-11-11 (historial remoto con el nombre `app_crm_clientes_contratos`). Verificación: las columnas y los tipos de `app.clientes`, `app.contratos` y `app.cuentas_corporativas` coinciden con el archivo; las tres tienen RLS activo y `anon` y `authenticated` no tienen privilegios `select` ni `insert`; `app` no figura entre los esquemas por defecto de la Data API (`public` y `graphql_public`). No se edita la migración.
 
-- [ ] 18. Contenerizar el backend
+- [x] 18. Contenerizar el backend
   - [x] 18.1 Crear `backend/Dockerfile`
     - Área: backend/Docker · Responsable: Davidson
     - Dockerfile multi-stage del diseño: etapa `eclipse-temurin:21-jdk` con `chmod +x mvnw` y `./mvnw -B -q -Dmaven.test.skip=true package` con caché de BuildKit para `~/.m2`; etapa `eclipse-temurin:21-jre` con el usuario `arise` sin privilegios, solo `app.jar`, `EXPOSE 8080` y sin `ARG` ni `ENV` de configuración
@@ -417,30 +419,34 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Proyecto `arise-corp` con un único servicio `backend` construido desde `./backend`, imagen `arise-backend:local`, `env_file` con `path: ./backend/.env` y `required: true`, y puerto `127.0.0.1:8080:8080`. Sin credenciales ni base de datos local (D15)
     - _Requisitos: 27.1–27.4, ENG-01, NF-01_
 
-  - [ ] 18.4 Verificar la imagen y Compose
+  - [x] 18.4 Verificar la imagen y Compose
     - Área: backend/Docker · Responsable: Davidson
     - `docker build -t arise-backend:local backend` sin credenciales ni conexión a Supabase; `docker run --rm --entrypoint id arise-backend:local` muestra `arise`; `docker image inspect` muestra `8080/tcp`; la búsqueda de `.env*` dentro de la imagen no devuelve nada y `docker history --no-trunc` no muestra valores de configuración
     - `docker compose config --services` devuelve solo `backend`. Con un `backend/.env` válido y la migración aplicada (17.1, necesaria por `ddl-auto=validate`), `docker compose up backend` y `curl -i http://localhost:8080/api/me` → 401 con `WWW-Authenticate`
     - _Requisitos: 26.2, 26.3, 26.5, 26.7, 27.1, 27.5, CA-01, CA-02_
+    - Evidencia (2026-11-12): `docker build` y `docker compose build backend` construyeron `arise-backend:local` con el código actual; `docker run --entrypoint id` devolvió `uid=999(arise)`; la imagen expone `8080/tcp`; `find / -name '.env*'` no encontró archivos; `docker history --no-trunc` no muestra variables de configuración; `docker compose config --services` devuelve solo `backend`. Con `backend/.env` y la migración aplicada, la misma imagen y `env_file` respondieron 401 con `WWW-Authenticate` en `/api/me` (puerto de host 18080, porque el 8080 estaba ocupado por un proceso Java local; el mapeo y el comando de Compose no cambian).
 
-- [ ] 19. Documentar el backend, Docker y las reglas del proyecto
-  - [ ] 19.1 Actualizar el README del backend y de Docker
+- [x] 19. Documentar el backend, Docker y las reglas del proyecto
+  - [x] 19.1 Actualizar el README del backend y de Docker
     - Área: documentación · Responsable: Davidson
     - §4 y §5: estado y estructura con `crm/`, `shared/`, `Dockerfile`, `docker-compose.yml` y `.github/workflows/`. §8 y §11.5: `.\mvnw.cmd test` (Surefire, H2, sin Docker) frente a `.\mvnw.cmd verify` (Failsafe y Testcontainers, requiere Docker en ejecución)
     - §9: `docker compose build backend`, `docker compose up backend`, `docker build -t arise-backend:local backend`, `env_file` en tiempo de ejecución, Docker Compose 2.24 o posterior, `backend/.env` sin comillas ni `$`, y comprobación con `curl -i http://localhost:8080/api/me`
     - Confirmar que no hay variables de entorno nuevas y que los `.env.example` no cambian
     - _Requisitos: 29.2, 29.4, 29.7, CA-01, ENG-01, ENG-03_
+    - Evidencia (2026-11-12): README §4, §5, §8, §9 y §11.5 actualizados con `crm/`, `shared/`, Dockerfile, Compose, workflows, la diferencia `test`/`verify` y el procedimiento Docker. No hay variables nuevas ni cambios en los `.env.example`.
 
-  - [ ] 19.2 Actualizar los steering del backend
+  - [x] 19.2 Actualizar los steering del backend
     - Área: documentación · Responsable: Davidson
     - `tech.md`: dependencias de prueba, Failsafe, comando `verify`, Docker [Implementado] y nota sobre `$` en `.env`. `structure.md`: árbol de `crm/`, `shared/normalizacion`, `shared/paginacion`, `shared/validacion` y `config/ClockConfig`; Dockerfile, `.dockerignore`, Compose y workflows [Implementado]
     - `api-conventions.md`: endpoints CRM, extensiones `conflicto` y `campo`, `campo` en 404, y 405 y 415 en español. `security.md`: vista reducida implementada y DTO sin datos personales en logs. `architecture.md`: fila de la API con CRM, contenedor y CI. `product.md`: CRM-01 a CRM-05 en backend, Docker, Testcontainers y CI implementados
     - El ajuste de DP-TEC-03 ya está registrado en `tech.md` (se verificó en la tarea 1.2); los de validación de parámetros y de DP-EST-05 quedaron registrados en la tarea 1.2. Aquí solo se comprueba que el código los cumple
     - _Requisitos: 6.4, 29.5, CA-07, NF-05_
+    - Evidencia (2026-11-12): `tech.md` (dependencias de prueba, Failsafe, `verify`, Docker [Implementado], `$` en `.env`), `structure.md` (árbol de `crm/` y `shared/`, Docker y CI implementados), `api-conventions.md` (endpoints CRM, `conflicto` y `campo`, 405 y 415), `security.md` (vista reducida y logs sin datos personales), `architecture.md` (API con CRM, contenedor y CI) y `product.md` (CRM-01 a CRM-05, Docker, Testcontainers y CI) actualizados.
 
-- [ ] 20. Checkpoint del backend completo
+- [x] 20. Checkpoint del backend completo
   - Área: verificación · Responsable: Davidson
   - Ejecutar desde `backend/` `.\mvnw.cmd clean test` y, con Docker en ejecución, `.\mvnw.cmd verify` (Requirement 24.11); desde la raíz, `docker compose build backend`. Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
+  - Evidencia (2026-11-12): `.\mvnw.cmd clean test` pasó 520 pruebas de Surefire; `.\mvnw.cmd clean verify` pasó las 520 de Surefire y las 16 de Failsafe (incluida `ResumenComercialIT`); `docker compose build backend` construyó `arise-backend:local`.
 
 - [x] 21. Ampliar el cliente HTTP del frontend
   - [x] 21.1 Ampliar `services/apiClient.js`
@@ -639,15 +645,17 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - Registrar en este `tasks.md` fecha, pasos y resultado sin credenciales, tokens, UUID ni datos personales reales; desactivar los datos ficticios creados
     - _Requisitos: 30.1–30.4, AUTH-05, CA-03, CA-04, CA-05, NF-02_
 
-- [ ] 32. Checkpoint final
+- [x] 32. Checkpoint final
   - Área: verificación · Responsable: Davidson
   - Ejecutar `.\mvnw.cmd clean test` y `.\mvnw.cmd verify` desde `backend/`; `npm test`, `npm run build` y `npm run check:secrets` desde `frontend/`; y `docker compose build backend` desde la raíz. Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
+  - Evidencia (2026-11-12): backend con 520 pruebas de Surefire y 16 de Failsafe en verde; frontend con 159 pruebas de 18 archivos, bundle de producción generado y `check:secrets` sin patrones de credenciales; `docker compose build backend` construyó la imagen.
 
 - [ ] 33. Verificar y entregar la spec
   - [ ] 33.1 Verificar CI, secretos, documentación y trazabilidad
     - Área: integración/documentación · Responsable: Davidson
     - Una ejecución verde de `backend-ci`, `integration-tests` y `frontend-ci` en la rama; ningún `.env` rastreado (`git ls-files`); contratos de `design.md` coherentes con el código; trazabilidad requisito–tarea revisada; `product.md` indica que `002-crm-clientes-contratos` queda cerrada al integrar el PR
     - _Requisitos: 28.1–28.11, 29.1, 29.5, CA-01, CA-07, NF-01, ENG-04_
+    - Evidencia parcial (2026-11-12): `git ls-files` no contiene ningún `.env` (solo los dos `.env.example`); los endpoints de los controladores coinciden con el contrato de `design.md`; la trazabilidad requisito–tarea se revisó y `product.md` registra el cierre al integrar el PR. En GitHub, la rama tenía `backend-ci`, `integration-tests` y `frontend-ci` en verde para el último commit publicado (`0a9477f`). Falta la ejecución verde de los commits nuevos de esta sesión, que requiere publicarlos.
 
   - [ ] 33.2 Configurar los checks obligatorios en la protección de `main`
     - Área: CI · Responsable: Davidson

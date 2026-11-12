@@ -16,8 +16,10 @@ Etiquetas de estado: ver `product.md`. El diagrama general de componentes está 
 |---|---|---|---|
 | SPA React (Vite, Tailwind CSS, React Router) | Gestiona la sesión, comparte el perfil de `GET /api/me`, presenta las vistas según el rol y envía las consultas y escrituras del CRM a Spring Boot con el token vigente | Acceder directamente a tablas de negocio, decidir la autorización definitiva o ejecutar reglas de negocio del servidor | [Implementado] Acceso, perfil, clientes, contratos, cuentas corporativas y resumen comercial |
 | Supabase Auth | Inicio y cierre de sesión, emisión y renovación de JWT (ES256), publicación de las claves públicas (JWKS) | Almacenar datos de negocio | [Implementado] e integrado; flujo validado manualmente en `arise-corp-dev` |
-| API Spring Boot | Validar JWT, autorizar por rol, validar entradas, reglas de negocio, transacciones y persistencia | Renderizar vistas; delegar permisos al frontend | JWT, `/api/me`, perfil, autorización por rol, administración de perfiles y Problem Details implementados (tareas 15–18) |
-| Supabase PostgreSQL | Persistencia e integridad relacional | Ser modificado por Hibernate; exponer tablas de negocio al frontend | [Implementada] la conexión y `app.perfiles_usuario`; tablas de negocio pendientes |
+| API Spring Boot | Validar JWT, autorizar por rol, validar entradas, reglas de negocio, transacciones y persistencia | Renderizar vistas; delegar permisos al frontend | JWT, `/api/me`, perfil, autorización por rol, administración de perfiles, Problem Details y CRM implementados (clientes, contratos, cuentas corporativas y resumen) |
+| Supabase PostgreSQL | Persistencia e integridad relacional | Ser modificado por Hibernate; exponer tablas de negocio al frontend | [Implementado] `app.perfiles_usuario` y las tablas de CRM (`clientes`, `contratos`, `cuentas_corporativas`) |
+| Imagen Docker del backend | Empaquetar y ejecutar Spring Boot con configuración inyectada en ejecución | Incluir `.env`, credenciales o archivos locales | [Implementado] Dockerfile multi-stage y `docker-compose.yml` |
+| GitHub Actions (CI) | Ejecutar pruebas backend/frontend, la suite de integración y el build de la imagen | Publicar imágenes o desplegar | [Implementado] `backend-ci`, `integration-tests` y `frontend-ci` |
 
 ## Flujo de una petición autenticada
 ```mermaid
@@ -41,7 +43,7 @@ sequenceDiagram
     API-->>FE: Respuesta JSON y código HTTP
 ```
 
-- Estado: [Implementado] el login/perfil frontend (incluido el rol), la validación JWT hasta `GET /api/me`, el perfil empresarial, la autorización por rol, la administración de perfiles y Problem Details. `001-foundation` está cerrada (tareas 1–21); los datos de negocio se construyen en specs posteriores.
+- Estado: [Implementado] el login/perfil frontend (incluido el rol), la validación JWT hasta `GET /api/me`, el perfil empresarial, la autorización por rol, la administración de perfiles, Problem Details y los endpoints del CRM. `001-foundation` está cerrada (tareas 1–21); `002-crm-clientes-contratos` implementa el primer módulo de negocio.
 - El backend no guarda sesión (`SessionCreationPolicy.STATELESS`): cada petición se autentica solo con su JWT.
 
 ## Capas del backend [Aprobado, MVP §9]
@@ -84,7 +86,7 @@ Todos los módulos dependen de la autorización por rol. ERP y SGA consultan CRM
 - El esquema se crea y modifica solo con migraciones (ver `tech.md`).
 - Los cambios de estado del paquete generan un registro de historial (SGA-04). Las cantidades de inventario cambian solo mediante operaciones controladas (SGA-03).
 
-## Contenedorización y entrega [Aprobado]
+## Contenedorización y entrega [Implementado]
 - La unidad contenedorizada inicial es el backend Spring Boot. La imagen se construye desde `backend/Dockerfile`; el proceso y las variables de entorno se describen en `tech.md`.
 - El contenedor no incluye `.env`, credenciales, claves privadas ni archivos locales de configuración. Los secretos se inyectan en tiempo de ejecución.
 - `docker-compose.yml` facilita la ejecución local del backend. No debe iniciar una base local como sustituto de Supabase, salvo que una especificación de pruebas defina explícitamente una PostgreSQL efímera o aislada.

@@ -298,3 +298,30 @@ y el contrato de la migracion, las entidades, los repositorios y el CI.
   `-Dtest=CuentaCorporativaControllerTests,ResumenComercialControllerTests` -> 41 + 3, 0 fallos;
   `.\mvnw.cmd test` -> 520 pruebas, 0 fallos, 0 errores, sin Docker ni Supabase.
   Riesgo declarado: none (solo pruebas nuevas; no cambia codigo de produccion ni datos).
+
+- L19 (2026-11-12): tareas 16.7, 17.1, 18.4, 19.1, 19.2, 20 y 32 completadas; 33.1 verificada en local.
+  - 16.7: \ResumenComercialIT\ siembra 100 escenarios generados con semilla fija, compara el
+    resumen contra conteos de JDBC (sin repositorios) y comprueba los cuatro estados, la coherencia
+    de totales y el caso sin datos. \.\mvnw.cmd verify\ -> Surefire 520 y Failsafe 16, 0 fallos.
+  - 17.1: la migracion ya estaba aplicada (L5, version remota \20261111061432\). Se verifico hoy
+    en \rise-corp-dev\: columnas y tipos coinciden con el archivo; \elrowsecurity = true\ y
+    \non\/\uthenticated\ sin privilegios \select\/\insert\ en las tres tablas; \pp\ no es
+    un esquema expuesto por defecto de la Data API. La migracion no se edito.
+  - 18.4: la imagen construida con el codigo actual corre con el usuario \rise\, expone
+    \8080/tcp\, no contiene \.env*\ y \docker history --no-trunc\ no muestra configuracion;
+    \docker compose config --services\ -> \ackend\. La misma imagen y \env_file\ respondieron
+    401 con \WWW-Authenticate\ en \/api/me\ sobre el puerto 18080: el 8080 del host estaba ocupado
+    por un proceso Java local y no se detuvo. El Dockerfile y Compose no necesitaron cambios: ya
+    copian \src/main\ completo y construyen el codigo actual.
+  - 19.1 y 19.2: README §4, §5, §8, §9 y §11.5; steering \	ech\, \structure\,
+    \pi-conventions\, \security\, \rchitecture\ y \product\.
+  - 20 y 32: \.\mvnw.cmd clean test\ (520), \.\mvnw.cmd clean verify\ (520 + 16),
+    \docker compose build backend\, \
+pm test\ (159 de 18 archivos), \
+pm run build\ y
+    \
+pm run check:secrets\, todos en verde.
+  - 33.1: sin \.env\ rastreado, endpoints coherentes con el diseno y CI en verde en el ultimo
+    commit publicado (\ a9477f\). Pendiente: push y ejecucion verde de los commits nuevos.
+  - Sigue pendiente por depender de acciones externas o manuales: 31.1 (validacion E2E con Supabase
+    real), 33.2 (proteccion de \main\), 33.3 (PR unico).

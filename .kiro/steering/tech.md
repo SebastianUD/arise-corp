@@ -9,13 +9,13 @@ Etiquetas de estado: ver `product.md`. Las reglas de seguridad están en `securi
 | Framework backend | Spring Boot | 4.1.2 (`spring-boot-starter-parent`) | [Implementado] |
 | Build | Maven Wrapper | wrapper 3.3.4, Maven 3.10.0 (`backend/.mvn/wrapper/maven-wrapper.properties`) | [Implementado] |
 | API | Spring Web MVC | gestionada por Spring Boot | [Implementado] |
-| Persistencia | Spring Data JPA / Hibernate | gestionada por Spring Boot | Dependencia [Implementado: entidad de perfil empresarial] |
+| Persistencia | Spring Data JPA / Hibernate | gestionada por Spring Boot | [Implementado: perfil, clientes, contratos y cuentas corporativas] |
 | Seguridad | Spring Security + OAuth2 Resource Server | gestionada por Spring Boot | [Implementado] |
-| Validación | Bean Validation (`spring-boot-starter-validation`) | gestionada por Spring Boot | Dependencia [Implementado]; aún sin uso |
+| Validación | Bean Validation (`spring-boot-starter-validation`) | gestionada por Spring Boot | [Implementado] en DTO de login y CRM |
 | Base de datos | Supabase PostgreSQL vía JDBC y Session pooler | proyecto Supabase `arise-corp-dev` | [Implementado] |
 | Autenticación | Supabase Auth (JWT firmados con ES256) | — | [Implementado] en backend y frontend |
-| Frontend | React, Vite, Tailwind CSS, React Router, `@supabase/supabase-js` | versiones fijadas en `frontend/package.json` y `package-lock.json` (DP-TEC-01) | [Implementado: autenticación y perfil] |
-| Contenedores | Docker y Docker Compose para empaquetar/ejecutar el backend | versiones por fijar en el proyecto | [Aprobado; implementación pendiente] |
+| Frontend | React, Vite, Tailwind CSS, React Router, `@supabase/supabase-js` | versiones fijadas en `frontend/package.json` y `package-lock.json` (DP-TEC-01) | [Implementado: autenticación, perfil y vistas CRM] |
+| Contenedores | Docker y Docker Compose para empaquetar/ejecutar el backend | Docker Engine/Desktop; Docker Compose 2.24 o posterior (`env_file` con `path` y `required`) | [Implementado] |
 | CI | GitHub Actions | `backend-ci.yml`, `integration-tests.yml` y `frontend-ci.yml`; `actions/checkout@v7`, `actions/setup-java@v6` y `actions/setup-node@v7` | [Implementado] |
 | Herramientas | Kiro, Git, GitHub (`SebastianUD/arise-corp`) | — | [Implementado] |
 
@@ -29,9 +29,11 @@ Producción:
 - `spring-boot-devtools` (runtime, opcional): recarga en desarrollo.
 - `org.postgresql:postgresql` (runtime): driver JDBC.
 
-Pruebas (scope `test`): `spring-boot-starter-webmvc-test`, `spring-boot-starter-data-jpa-test`, `spring-boot-starter-security-test`, `spring-boot-starter-security-oauth2-resource-server-test`, `spring-boot-starter-validation-test` y `com.h2database:h2`.
+Pruebas (scope `test`): `spring-boot-starter-webmvc-test`, `spring-boot-starter-data-jpa-test`, `spring-boot-starter-security-test`, `spring-boot-starter-security-oauth2-resource-server-test`, `spring-boot-starter-validation-test`, `org.springframework.boot:spring-boot-testcontainers`, `org.testcontainers:testcontainers-postgresql` y `com.h2database:h2`.
 
-Plugin de build: `spring-boot-maven-plugin`.
+No se añade `org.testcontainers:testcontainers-junit-jupiter`: el contenedor PostgreSQL se declara como `@Bean @ServiceConnection` y el ciclo de vida lo gestiona el contexto de Spring (D12 de `002-crm-clientes-contratos`).
+
+Plugins de build: `spring-boot-maven-plugin` y `maven-failsafe-plugin` (incluye `**/integration/**/*IT.java`, fija `arise.migraciones.dir=${project.basedir}/../supabase/migrations` y enlaza `integration-test` y `verify`). Surefire no se configura: sus inclusiones por defecto no recogen `*IT`.
 
 ### Reglas sobre dependencias
 - Usar solo las dependencias declaradas. Toda dependencia nueva se justifica en el `design.md` de una especificación. Testcontainers está adoptado en DP-TEC-04 para las pruebas PostgreSQL; las demás dependencias no incluidas en el stack requieren decisión documentada antes de agregarse.
@@ -56,6 +58,8 @@ Spring Boot 4 trae Spring Framework 7, Spring Security 7, Hibernate 7 y Jackson 
 
 ### Variables de entorno del backend
 Plantilla versionada: `backend/.env.example`. Formato `CLAVE=valor`, sin comillas y sin `export`.
+
+`backend/.env` lo leen Spring Boot (como `.properties`) y Docker Compose (`env_file`). Compose interpola `$` y Spring no, así que el archivo no debe usar comillas ni contener `$`; si la contraseña de la base lo incluye, se restablece en Supabase con una que no lo contenga. El README §9 lo documenta.
 
 | Variable | Uso |
 |---|---|
@@ -84,6 +88,8 @@ Toda variable nueva se agrega a `.env.example` con un valor ficticio/default y s
 - No ejecutar pruebas destructivas sobre la base compartida `arise-corp-dev`, ni utilizar sus credenciales en CI.
 - La estrategia aprobada DP-TEC-02 mantiene un perfil de pruebas aislado con H2 para pruebas de contexto/rápidas. H2 no reemplaza las pruebas de integración contra PostgreSQL real.
 - Las pruebas de integración automatizadas usan PostgreSQL efímero con Testcontainers; H2 se mantiene para pruebas rápidas/contexto y no sustituye PostgreSQL (DP-TEC-04).
+- `.\mvnw.cmd test` ejecuta solo Surefire (H2, sin Docker). `.\mvnw.cmd verify` ejecuta Surefire y después Failsafe con las `*IT`, que requieren Docker en ejecución. El workflow `integration-tests` ejecuta `verify` en CI.
+- Las IT viven en `com.arise.corp.integration`, comparten `PostgresIntegracionBase` (`@SpringBootTest`, `@AutoConfigureMockMvc`, perfil `it`), aplican las migraciones de `supabase/migrations` con JDBC y truncan las tablas en `@BeforeEach`. El perfil `it` usa `ddl-auto=validate` y `default_schema=app`.
 
 ### Frontend
 - Deben existir pruebas unitarias de componentes, hooks, validaciones y servicios según corresponda.
@@ -101,13 +107,13 @@ Toda variable nueva se agrega a `.env.example` con un valor ficticio/default y s
 - H2 está declarado en alcance `test`; `backend/src/test/resources/application.properties` reemplaza la configuración principal sin importar `.env`. Las pruebas de contexto y `/api/me` se ejecutan con datos ficticios (DP-TEC-02).
 - La cobertura unitaria e integración de los módulos aún está pendiente.
 
-## Docker del backend [Aprobado; implementación pendiente]
-- El backend debe distribuirse como una imagen Docker.
-- Recomendación de construcción: Dockerfile multi-stage; compilar con Maven/JDK 21 y ejecutar el JAR con una imagen JRE 21.
-- El contenedor ejecuta Spring Boot en el puerto 8080 y recibe la configuración de Supabase en tiempo de ejecución mediante variables de entorno.
-- `backend/.env` no se copia a la imagen ni se incorpora al contexto Docker; excluirlo en `.dockerignore`. No pasar secretos como `ARG` ni escribirlos en capas.
-- `docker-compose.yml` se utilizará para facilitar el arranque local del backend. Supabase PostgreSQL permanece como servicio administrado externo; no se dockeriza la base de datos de desarrollo.
-- Sebastián es responsable del Dockerfile, `.dockerignore` y configuración Compose del backend.
+## Docker del backend [Implementado]
+- El backend se distribuye como imagen Docker multi-stage: `eclipse-temurin:21-jdk` compila con `./mvnw -B -q -Dmaven.test.skip=true package` y `eclipse-temurin:21-jre` ejecuta solo `app.jar` con el usuario `arise` sin privilegios, `EXPOSE 8080` y sin `ARG` ni `ENV` de configuración.
+- La construcción usa la caché de BuildKit para `~/.m2` y ejecuta `chmod +x mvnw` porque el bit ejecutable no se conserva al construir desde Windows.
+- El contenedor recibe la configuración de Supabase en tiempo de ejecución mediante `env_file` de Compose. `backend/.env` no se copia a la imagen ni al contexto; `.dockerignore` excluye `.env`, `.env.*`, `target/`, `src/test/`, archivos de IDE, `*.log`, `HELP.md` y `.gitattributes`. No se pasan secretos como `ARG` ni se escriben en capas.
+- `docker-compose.yml` define el proyecto `arise-corp`, un único servicio `backend` desde `./backend`, la imagen `arise-backend:local`, `env_file` con `path: ./backend/.env` y `required: true`, y el puerto `127.0.0.1:8080:8080`. Supabase PostgreSQL permanece como servicio administrado externo; no se dockeriza la base de datos de desarrollo.
+- Compose 2.24 o posterior es obligatorio por la forma larga de `env_file`. Para que Compose y Spring lean el mismo valor, `backend/.env` no debe usar comillas ni contener `$`; si la contraseña lo contiene, se restablece en Supabase con una que no lo contenga.
+- Davidson es responsable del Dockerfile, `.dockerignore` y configuración Compose del backend.
 
 ## GitHub Actions y CI [Implementado]
 - Davidson es responsable principal de crear y mantener los workflows de GitHub Actions.
@@ -122,7 +128,8 @@ Toda variable nueva se agrega a `.env.example` con un valor ficticio/default y s
 ## Comandos
 Backend, en PowerShell y desde `backend/`:
 ```powershell
-.\mvnw.cmd test                              # compila y ejecuta todas las pruebas
+.\mvnw.cmd test                              # Surefire: unitarias, contexto y seguridad con H2; sin Docker
+.\mvnw.cmd verify                            # añade Failsafe y las *IT con Testcontainers; requiere Docker
 .\mvnw.cmd -Dtest=NombreDeLaClaseTests test  # ejecuta una sola clase de prueba
 .\mvnw.cmd clean package                     # genera el jar en backend/target/ (también ejecuta las pruebas)
 .\mvnw.cmd spring-boot:run                   # inicia la API en http://localhost:8080
@@ -131,10 +138,12 @@ Backend, en PowerShell y desde `backend/`:
 - En macOS/Linux se usa `./mvnw` con los mismos argumentos.
 - `backend/.gitattributes` fija LF para `mvnw` y CRLF para `*.cmd`; no cambiar esos finales de línea.
 
-Docker, desde la raíz del repositorio (cuando existan los archivos):
+Docker, desde la raíz del repositorio (Docker Compose 2.24 o posterior y `backend/.env` creado):
 ```powershell
 docker compose build backend
 docker compose up backend
+docker build -t arise-backend:local backend
+curl -i http://localhost:8080/api/me   # 401 con WWW-Authenticate
 ```
 
 Frontend, desde `frontend/` (Node.js 24 LTS >=24.14.0 y <25, npm 11): `npm ci`, `npm run dev` (puerto 5173 estricto), `npm test`, `npm run build`, `npm run check:secrets` y `npm run preview`. Detalle y variables públicas en README §11.6.

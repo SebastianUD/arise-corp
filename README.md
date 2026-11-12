@@ -2,7 +2,7 @@
 
 Plataforma web de gestión empresarial para centralizar los procesos comerciales, administrativos y operativos de Arise Corp., empresa colombiana orientada al transporte y entrega de paquetes mediante drones.
 
-> **Estado del proyecto:** `001-foundation` está completada. El resumen vigente y las próximas funcionalidades están en `.kiro/steering/product.md`.
+> **Estado del proyecto:** `001-foundation` está completada y `002-crm-clientes-contratos` tiene el backend, el frontend, la migración, Docker y CI implementados; quedan la validación extremo a extremo y la entrega del PR. El resumen vigente y las próximas funcionalidades están en `.kiro/steering/product.md`.
 
 ## 1. Objetivo del proyecto
 
@@ -100,42 +100,33 @@ Las versiones y dependencias adicionales que aún no estén aprobadas se definir
 
 ## 4. Estado actual del desarrollo
 
-El estado implementado y las próximas funcionalidades se mantienen en `.kiro/steering/product.md`. La spec `001-foundation` está cerrada; sus tareas y evidencias de verificación se conservan en `.kiro/specs/001-foundation/tasks.md`. Este README concentra instalación y uso.
+El estado implementado y las próximas funcionalidades se mantienen en `.kiro/steering/product.md`. La spec `001-foundation` está cerrada y `002-crm-clientes-contratos` tiene implementados el backend, el frontend, la migración, Docker y CI; sus tareas pendientes son la validación extremo a extremo con Supabase real, los checkpoints finales y la entrega del PR. Las tareas y evidencias de verificación se conservan en `.kiro/specs/`. Este README concentra instalación y uso.
 
-El proyecto se ejecuta localmente (`localhost`); no incluye CD, publicación de imágenes ni entornos remotos.
+El proyecto se ejecuta localmente (`localhost`) con el backend en Docker Compose o con Maven, y el frontend con Vite. No incluye CD, publicación de imágenes ni entornos remotos.
 
 ## 5. Estructura del repositorio
 
-Estructura actual y objetivo a medida que se incorporen las etapas de desarrollo:
+Estructura actual:
 
 ```text
 arise-corp/
 ├── .github/
 │   └── workflows/
-│       ├── backend-ci.yml              # Planificado
-│       ├── frontend-ci.yml             # Planificado
-│       └── integration-tests.yml       # Planificado
+│       ├── backend-ci.yml              # Pruebas con H2 y build de la imagen
+│       ├── frontend-ci.yml             # Vitest, build y comprobación de secretos
+│       └── integration-tests.yml       # Maven verify con PostgreSQL efímero
 │
 ├── .kiro/
-│   ├── steering/
-│   │   ├── product.md
-│   │   ├── tech.md
-│   │   ├── structure.md
-│   │   ├── architecture.md
-│   │   ├── api-conventions.md
-│   │   ├── security.md
-│   │   └── sdd-workflow.md
+│   ├── steering/                       # Reglas permanentes del proyecto
 │   └── specs/
-│       └── 001-foundation/             # Primera especificación por desarrollar
-│           ├── requirements.md
-│           ├── design.md
-│           └── tasks.md
+│       ├── 001-foundation/             # Autenticación, perfil y errores (cerrada)
+│       └── 002-crm-clientes-contratos/ # CRM de clientes, cuentas y contratos
 │
 ├── backend/
 │   ├── .env                            # Local; no versionar
 │   ├── .env.example                    # Plantilla versionada
-│   ├── Dockerfile                      # Planificado
-│   ├── .dockerignore                   # Planificado
+│   ├── Dockerfile                      # Imagen multi-stage del backend
+│   ├── .dockerignore                   # Excluye secretos y archivos innecesarios
 │   ├── pom.xml
 │   ├── mvnw
 │   ├── mvnw.cmd
@@ -143,33 +134,35 @@ arise-corp/
 │       ├── main/
 │       │   ├── java/com/arise/corp/
 │       │   │   ├── AriseBackendApplication.java
-│       │   │   ├── config/                    # SecurityConfig y converter JWT de rol
-│       │   │   ├── login/                     # Controllers, entity, repository, service y DTO
-│       │   │   └── shared/error/              # Problem Details y handlers comunes
+│       │   │   ├── config/                    # SecurityConfig, CORS y converter JWT de rol
+│       │   │   ├── login/                     # Perfil y administración de usuarios
+│       │   │   ├── crm/                       # clientes, contratos y cuentas corporativas
+│       │   │   └── shared/                    # error, normalizacion, paginacion y validacion
 │       │   └── resources/
 │       │       └── application.properties
 │       └── test/
-│           └── java/com/arise/corp/
-│               └── AriseBackendApplicationTests.java
+│           ├── java/com/arise/corp/           # *Tests con Surefire y H2
+│           └── java/com/arise/corp/integration/ # *IT con Failsafe y Testcontainers
 │
 ├── frontend/
 │   ├── package.json                   # React/Vite y herramientas de prueba
-│   └── src/                            # login, perfil, sesión, rutas y cliente API
+│   └── src/                            # login, perfil, sesión y vistas CRM
 │
 ├── supabase/
 │   └── migrations/
-│       └── 20261108000000_app_perfiles_usuario.sql
+│       ├── 20261108000000_app_perfiles_usuario.sql
+│       └── 20261111120000_app_crm_clientes_contratos.sql
 │
 ├── docs/
 │   └── def_MVP/
 │       └── MVP_Arise_Corp.md
 │
-├── docker-compose.yml                 # Planificado
+├── docker-compose.yml                 # Servicio backend para ejecución local
 ├── .gitignore
 └── README.md
 ```
 
-Los archivos marcados como **Planificado** representan la estructura objetivo, no componentes que ya estén implementados. Los Steering Files de `.kiro/steering/` contienen las reglas permanentes del proyecto; las especificaciones funcionales se desarrollan en `.kiro/specs/`.
+Los Steering Files de `.kiro/steering/` contienen las reglas permanentes del proyecto; las especificaciones funcionales se desarrollan en `.kiro/specs/`.
 
 ## 6. Equipo y responsabilidades
 
@@ -187,20 +180,25 @@ El roadmap y el avance detallado viven en `.kiro/steering/architecture.md` y `.k
 
 ## 8. Estrategia de pruebas
 
-Los comandos locales están en §11.6; decisiones y responsabilidades por tipo de prueba están en `.kiro/steering/tech.md`. Las suites unitarias/contexto no dependen de Supabase; las pruebas PostgreSQL usan Testcontainers efímero y nunca escriben en `arise-corp-dev`. La validación manual de Supabase se realiza por separado y no utiliza credenciales en CI.
+Los comandos locales están en §11.5 y §11.6; decisiones y responsabilidades por tipo de prueba están en `.kiro/steering/tech.md`.
+
+- `.\mvnw.cmd test` ejecuta Surefire: pruebas unitarias, de contexto y de seguridad con H2. No necesita Docker ni Supabase.
+- `.\mvnw.cmd verify` ejecuta además Failsafe: pruebas de integración `*IT` contra PostgreSQL efímero con Testcontainers. Requiere Docker en ejecución y nunca escribe en `arise-corp-dev`.
+- El workflow `integration-tests` ejecuta `verify` en CI usando el Docker del runner. Ninguna suite recibe credenciales de Supabase.
+
+La validación manual con Supabase real se realiza por separado y no utiliza credenciales en CI.
 
 ## 9. Docker y ejecución del backend
 
-El backend se empaquetará mediante un Dockerfile multi-stage:
+El backend se empaqueta mediante un Dockerfile multi-stage:
 
-- Etapa de construcción: Maven y JDK 21.
-- Etapa de ejecución: imagen de runtime Java 21.
-- Las credenciales se inyectan al iniciar el contenedor.
-- El archivo `.env` no debe copiarse a la imagen.
-- Docker Compose permitirá iniciar el backend localmente.
-- Supabase PostgreSQL continuará siendo un servicio externo administrado; no se dockerizará la base de datos de Supabase.
+- Etapa de construcción: Maven y JDK 21. Compila con `./mvnw -Dmaven.test.skip=true` y reutiliza la caché de BuildKit para `~/.m2`.
+- Etapa de ejecución: `eclipse-temurin:21-jre` con un usuario `arise` sin privilegios, solo el JAR, `EXPOSE 8080` y sin variables de configuración.
+- Las credenciales se inyectan al iniciar el contenedor mediante `env_file`.
+- El archivo `.env` no se copia a la imagen; `.dockerignore` lo excluye junto con `src/test/`, `target/` y archivos de IDE.
+- Supabase PostgreSQL sigue siendo un servicio externo administrado; no se dockeriza.
 
-Los archivos previstos son:
+Los archivos son:
 
 ```text
 backend/
@@ -210,7 +208,25 @@ backend/
 docker-compose.yml
 ```
 
-Estos archivos se incorporarán durante la etapa de integración y entrega local.
+Comandos, desde la raíz del repositorio (requiere Docker Compose 2.24 o posterior):
+
+```powershell
+docker compose build backend
+docker compose up backend
+docker build -t arise-backend:local backend
+```
+
+- `docker compose up backend` lee `backend/.env` en tiempo de ejecución con `env_file` (`required: true`). Sin ese archivo Compose no arranca el servicio.
+- `docker build -t arise-backend:local backend` no necesita credenciales ni conexión a Supabase; la imagen solo contiene el JAR.
+- `backend/.env` se lee a la vez por Compose y por Spring Boot. Para que ambos obtengan el mismo valor, el archivo no debe usar comillas ni contener `$`; si la contraseña de la base lo contiene, se restablece en Supabase con una que no lo contenga.
+- La aplicación usa `ddl-auto=validate`, así que la migración del CRM debe estar aplicada en `arise-corp-dev` antes de arrancar el contenedor.
+- Comprobación con el contenedor en ejecución:
+
+```powershell
+curl -i http://localhost:8080/api/me
+```
+
+Debe responder `401` con el encabezado `WWW-Authenticate`. El puerto se publica solo en `127.0.0.1`, de modo que la API no se expone a la red local.
 
 ## 10. Integración continua (GitHub Actions)
 
@@ -224,7 +240,7 @@ El CI está implementado en `.github/workflows/` con tres workflows independient
 
 Todos los workflows usan solo acciones oficiales (`actions/checkout@v7`, `actions/setup-java@v6`, `actions/setup-node@v7`), con `persist-credentials: false`. No usan GitHub Secrets ni credenciales de `arise-corp-dev`, no inician sesión en registros, no publican imágenes ni despliegan: el proyecto se ejecuta en local (`localhost`) y el alcance es únicamente CI.
 
-En la protección de `main` los checks `backend-ci`, `integration-tests` y `frontend-ci` son obligatorios (Requirement 29.9). Mientras no exista `backend/Dockerfile` (tarea 18.1), el último paso de `backend-ci` falla; el estado de las pruebas se lee en el paso `./mvnw -B test`.
+En la protección de `main` los checks `backend-ci`, `integration-tests` y `frontend-ci` son obligatorios (Requirement 29.9). El Dockerfile ya existe, por lo que el paso `docker build` de `backend-ci` construye la imagen sin credenciales ni conexión a Supabase.
 
 **Diferencia de comandos:** `.\mvnw.cmd test` no necesita Docker ni Supabase; `.\mvnw.cmd verify` sí necesita Docker, porque ejecuta las pruebas de integración con Testcontainers.
 
@@ -309,9 +325,12 @@ En PowerShell:
 
 ```powershell
 cd backend
-.\mvnw.cmd test
+.\mvnw.cmd test        # Surefire: unitarias, contexto y seguridad con H2; sin Docker
+.\mvnw.cmd verify      # añade Failsafe y las *IT con Testcontainers; requiere Docker
 .\mvnw.cmd spring-boot:run
 ```
+
+`.\mvnw.cmd test` no necesita Docker ni Supabase y es la suite rápida de trabajo diario. `.\mvnw.cmd verify` levanta un PostgreSQL efímero con Testcontainers para las pruebas de integración `*IT` y nunca usa `arise-corp-dev`. Si Docker no está en ejecución, use `test` y ejecute `verify` antes de integrar.
 
 La API se ejecuta por defecto en:
 

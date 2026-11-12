@@ -104,11 +104,15 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - Errores API y de seguridad en formato RFC 9457 Problem Details; 401 conserva `WWW-Authenticate`.
 - Validación manual con Supabase real: cuenta Administrador, `/api/me` con identidad y rol, y 403 seguro para cuenta sin perfil (tarea 20 de `001-foundation`).
 - Primera fase `001-foundation` cerrada: tareas 1–21 completadas; backend/frontend, build, secretos, migración y documentación verificados (tarea 21).
+- CRM backend completo (CRM-01 a CRM-05): migración `app.clientes`, `app.contratos` y `app.cuentas_corporativas`; entidades, repositorios, servicios, controladores, DTO, normalización, paginación, máquina de estados de contratos, resumen comercial y pruebas unitarias, MockMvc y de integración con PostgreSQL efímero.
+- Pruebas de integración con Testcontainers (`.\mvnw.cmd verify`, Failsafe) y workflow `integration-tests`.
+- Dockerfile multi-stage, `.dockerignore` y `docker-compose.yml` para ejecutar el backend en local con la configuración inyectada en tiempo de ejecución.
+- CI de GitHub Actions con `backend-ci`, `integration-tests` y `frontend-ci`.
+- `002-crm-clientes-contratos` queda cerrada al integrar su Pull Request; hasta entonces permanecen abiertas la validación manual extremo a extremo, los checkpoints finales y la entrega.
 
 [Aprobado, pendiente de implementar]
-- Migraciones de negocio para CRM, ERP y SGA.
-- Trabajo pendiente del backend CRM según `.kiro/specs/002-crm-clientes-contratos/tasks.md`. Módulos ERP y SGA y sus interfaces.
-- Dockerfile, Docker Compose y automatización CI.
+- Migraciones de negocio para ERP y SGA.
+- Módulos ERP y SGA, sus interfaces y sus tareas de `.kiro/specs/`.
 
 ## Idioma
 - Documentación, especificaciones y steering files: español (práctica de todo el repositorio).
