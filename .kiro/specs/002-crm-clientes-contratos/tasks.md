@@ -657,10 +657,11 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
     - _Requisitos: 28.1–28.11, 29.1, 29.5, CA-01, CA-07, NF-01, ENG-04_
     - Evidencia (2026-11-12): `git ls-files` no contiene ningún `.env` (solo los dos `.env.example`); los endpoints de los controladores coinciden con el contrato de `design.md`; la trazabilidad requisito–tarea se revisó y `product.md` registra el cierre al integrar el PR. En GitHub, `backend-ci`, `integration-tests` y `frontend-ci` terminaron en verde para el commit `9b4e308` de la rama y del PR #3.
 
-  - [ ] 33.2 Configurar los checks obligatorios en la protección de `main`
-    - Área: CI · Responsable: Davidson
+  - [x] 33.2 Configurar los checks obligatorios en la protección de `main`
+    - Área: CI · Responsable: Sebastian
     - PR obligatorio con una aprobación de otro integrante, *squash merge*, rama actualizada antes de integrar y `backend-ci`, `integration-tests` y `frontend-ci` como checks obligatorios
     - _Requisitos: 29.9, DP-SDD-05_
+    - Evidencia (2026-11-12): protección de `main` activa con `backend-ci`, `integration-tests` y `frontend-ci` como checks obligatorios y *Require branches to be up to date before merging*; PR obligatorio con una aprobación, conversaciones resueltas y reglas aplicadas también a administradores. Solo queda disponible el *squash merge* (`allow_merge_commit` y `allow_rebase_merge` desactivados) y el título del commit fusionado toma el título del PR. Sin *force push* ni borrado de la rama. Configuración aplicada desde la sesión local; no se guardaron tokens, credenciales ni UUID en el repositorio.
 
   - [x] 33.3 Abrir el Pull Request único hacia `main`
     - Área: integración · Responsable: Davidson
