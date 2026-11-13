@@ -37,7 +37,7 @@ export default function Login() {
 
   if (loading) return <p role="status" className="access-loading">Comprobando sesión…</p>
   if (session && (!session.expires_at || session.expires_at * 1000 > Date.now())) {
-    return <Navigate to="/perfil" replace />
+    return <Navigate to="/panel" replace />
   }
 
   return (

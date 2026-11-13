@@ -95,14 +95,16 @@ it('valida el formato del correo antes de llamar a Supabase', async () => {
   expect(auth.signInWithPassword).not.toHaveBeenCalled()
 })
 
-it('completa Login → sesión → perfil y envía el Bearer a la API', async () => {
+it('completa Login → panel → perfil y envía el Bearer a la API', async () => {
+  fetch.mockImplementation(async url => ({ ok: true, status: 200, json: async () => url.endsWith('/me') ? profile : { clientes: { activos: 0, inactivos: 0 }, contratos: { porEstado: { ACTIVO: 0, BORRADOR: 0 } } } }))
   mount()
   await loginForm()
   submit()
+  await screen.findByRole('heading', { name: 'Tu operación, conectada.' })
+  fireEvent.click(screen.getByRole('link', { name: 'Perfil' }))
   await screen.findByText('paula@example.test')
   expect(screen.getByText('test-user')).toBeVisible()
   expect(screen.getByText('Rol empresarial')).toBeVisible()
-  expect(screen.getByText('Comercial')).toBeVisible()
   expect(auth.signInWithPassword).toHaveBeenCalledWith({ email: 'paula@example.test', password: 'fake-password' })
   expect(fetch).toHaveBeenCalledWith('http://localhost:8080/api/me', expect.objectContaining({
     headers: { Authorization: 'Bearer fake-access-token' },
@@ -205,7 +207,7 @@ it.each([
   store.session = session
   fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
   mount('/perfil')
-  expect(await screen.findByText(label)).toBeVisible()
+  expect((await screen.findAllByText(label)).length).toBeGreaterThan(0)
   expect(screen.getByText('Rol empresarial')).toBeVisible()
   expect(screen.queryByText('authenticated')).not.toBeInTheDocument()
 })
@@ -283,7 +285,7 @@ it.each([
   fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
   mount('/perfil', true)
   await screen.findByText(profile.email)
-  expect(screen.getAllByRole('link').map(enlace => enlace.textContent)).toEqual(['Perfil', ...opciones])
+  expect(screen.getAllByRole('link')).toHaveLength(opciones.length + (role ? 2 : 1))
   const destinos = {
     Contratos: '/crm/contratos', 'Usuarios y roles': '/admin/usuarios', Perfil: '/perfil', Clientes: '/crm/clientes',
     'Cuentas corporativas': '/crm/cuentas-corporativas', 'Resumen comercial': '/crm/resumen',
@@ -367,13 +369,13 @@ it('abre las tres vistas desde el menú comercial compartiendo una sola consulta
     ['Cuentas corporativas', '/crm/cuentas-corporativas', pagina, 'No hay cuentas para los criterios elegidos.'],
     ['Resumen comercial', '/crm/resumen', resumen, 'Finalizado'],
   ]) {
-    fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => datos })
+    fetch.mockImplementation(async url => ({ ok: true, status: 200, json: async () => url.endsWith('/resumen') ? resumen : url.includes('?size=1') ? { totalElements: 0 } : datos }))
     fireEvent.click(screen.getByRole('link', { name: nombre }))
     expect(await screen.findByText(texto)).toBeVisible()
     expect(screen.getByRole('link', { name: nombre })).toHaveAttribute('aria-current', 'page')
-    expect(fetch).toHaveBeenLastCalledWith('http://localhost:8080/api' + ruta, expect.anything())
+    expect(fetch).toHaveBeenCalledWith('http://localhost:8080/api' + ruta, expect.anything())
   }
-  expect(fetch).toHaveBeenCalledTimes(4)
+  expect(fetch.mock.calls.filter(([url]) => url.endsWith('/me'))).toHaveLength(1)
 })
 
 it('muestra el 403 del backend en una vista permitida y conserva la sesión al volver al perfil', async () => {

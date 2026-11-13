@@ -5,6 +5,7 @@ import { usePerfil } from '../../context/PerfilContext.jsx'
 import { listarClientes } from '../../services/crmApi.js'
 import ClientesLista from './ClientesLista.jsx'
 
+vi.mock('../../components/IndicadoresCrm.jsx', () => ({ default: () => null }))
 vi.mock('../../context/PerfilContext.jsx', () => ({ usePerfil: vi.fn() }))
 vi.mock('../../services/crmApi.js', () => ({ listarClientes: vi.fn() }))
 const cliente = { id: 'uno', nombre: 'Cliente Demo', tipoDocumento: 'CC', numeroDocumento: '123', activo: true }

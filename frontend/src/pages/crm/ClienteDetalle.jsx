@@ -65,7 +65,8 @@ function Detalle({ inicial, rol }) {
   }
   return <>
     <header className="crm-cabecera"><h1>{cliente.nombre}</h1><Link to="/crm/clientes">Volver a clientes</Link></header>
-    <dl className="grid gap-4 sm:grid-cols-2">{filas.map(([titulo, valor]) =>
+    <div className="detail-grid"><section className="surface"><h2>Información del cliente</h2>
+    <dl className="profile-summary">{filas.map(([titulo, valor]) =>
       <div key={titulo}><dt className="text-sm text-slate-600">{titulo}</dt><dd>{valor || '—'}</dd></div>)}</dl>
     {gestor && <>
       <div className="flex flex-wrap items-center gap-4">
@@ -78,7 +79,7 @@ function Detalle({ inicial, rol }) {
         texto={`¿Quieres ${accion.toLowerCase()} a ${cliente.nombre}?`} onConfirmar={confirmar} onCancelar={() => setConfirmando(false)} />}
     </>}
     {!cliente.activo && <p>Un cliente inactivo no admite contratos nuevos.</p>}
-    {puedeLeerContratos(rol) && <Contratos clienteId={cliente.id} />}
+    </section>{puedeLeerContratos(rol) && <div className="surface"><Contratos clienteId={cliente.id} /></div>}</div>
   </>
 }
 

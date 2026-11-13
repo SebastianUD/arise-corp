@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import EstadoConsulta from '../../components/EstadoConsulta.jsx'
+import { FormularioCuenta } from './CuentaFormulario.jsx'
 import Paginacion from '../../components/Paginacion.jsx'
 import { useConsulta } from '../../lib/useConsulta.js'
 import { listarCuentas } from '../../services/crmApi.js'
@@ -20,7 +21,8 @@ export default function CuentasLista() {
   }
 
   return <section className="crm-panel">
-    <header className="crm-cabecera"><h1>Cuentas corporativas</h1><Link className="button" to="nueva">Nueva cuenta</Link></header>
+    <header><h1>Cuentas corporativas</h1><p>Agrupa clientes y contratos de una misma organización.</p></header>
+    <div className="split-view"><div className="list-stack">
     <form className="crm-filtros" onSubmit={evento => {
       evento.preventDefault()
       cambiar('q', new FormData(evento.currentTarget).get('q').trim())
@@ -41,5 +43,6 @@ export default function CuentasLista() {
         </table></div>}
       <Paginacion pagina={pagina} onCambiar={page => cambiar('page', page)} />
     </>}</EstadoConsulta>
+    </div><section className="surface side-form"><h2>Nueva cuenta corporativa</h2><FormularioCuenta integrado /></section></div>
   </section>
 }

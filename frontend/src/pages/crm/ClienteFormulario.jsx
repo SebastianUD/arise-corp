@@ -85,6 +85,8 @@ function Formulario({ cliente, cuentas }) {
   }
 
   return <form noValidate onSubmit={guardar} aria-label="Datos del cliente">
+    <h2>Información del cliente</h2>
+    <p className="field-help">Los campos con * son obligatorios.</p>
     <fieldset disabled={guardando} className="grid gap-4 sm:grid-cols-2">
       <Campo etiqueta="Tipo de documento" obligatorio error={errores.tipoDocumento}>
         <select {...control('tipoDocumento')}>{['CC', 'CE', 'NIT', 'PASAPORTE'].map(t => <option key={t}>{t}</option>)}</select>

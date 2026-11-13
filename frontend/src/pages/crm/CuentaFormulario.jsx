@@ -17,16 +17,16 @@ export default function CuentaFormulario() {
   const { id } = useParams()
   return <section className="crm-panel">
     <h1>{id ? 'Editar cuenta' : 'Nueva cuenta'}</h1>
-    {id ? <Edicion key={id} id={id} /> : <Formulario />}
+    {id ? <Edicion key={id} id={id} /> : <FormularioCuenta />}
   </section>
 }
 
 function Edicion({ id }) {
   const consulta = useConsulta(useCallback(() => obtenerCuenta(id), [id]))
-  return <EstadoConsulta {...consulta}>{consulta.datos && <Formulario cuenta={consulta.datos} />}</EstadoConsulta>
+  return <EstadoConsulta {...consulta}>{consulta.datos && <FormularioCuenta cuenta={consulta.datos} />}</EstadoConsulta>
 }
 
-function Formulario({ cuenta }) {
+export function FormularioCuenta({ cuenta, integrado = false }) {
   const navegar = useNavigate()
   const [errores, setErrores] = useState({})
   const [mensaje, setMensaje] = useState(null)
@@ -72,7 +72,8 @@ function Formulario({ cuenta }) {
     {mensaje && <p role="alert" className="message mt-4">{mensaje}</p>}
     <div className="mt-6 flex items-center gap-4">
       <button className="button" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar'}</button>
-      <Link to={cuenta ? ruta + '/' + cuenta.id : ruta}>Cancelar</Link>
+      {integrado ? <button type="reset" className="secondary" disabled={guardando} onClick={() => { setErrores({}); setMensaje(null) }}>Limpiar</button> :
+        <Link to={cuenta ? ruta + '/' + cuenta.id : ruta}>Cancelar</Link>}
     </div>
   </form>
 }

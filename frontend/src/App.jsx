@@ -8,6 +8,7 @@ import Perfil from './pages/Perfil.jsx'
 import RolRoute from './routes/RolRoute.jsx'
 import { puedeAdministrarUsuarios, puedeGestionarCrm, puedeLeerClientes, puedeLeerContratos } from './lib/permisos.js'
 
+const Panel = lazy(() => import('./pages/Panel.jsx'))
 const UsuariosRoles = lazy(() => import('./pages/UsuariosRoles.jsx'))
 const ClientesLista = lazy(() => import('./pages/crm/ClientesLista.jsx'))
 const ClienteFormulario = lazy(() => import('./pages/crm/ClienteFormulario.jsx'))
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
+              <Route path="/panel" element={<Panel />} />
               <Route path="/perfil" element={<Perfil />} />
               <Route element={<RolRoute permite={puedeAdministrarUsuarios} />}>
                 <Route path="/admin/usuarios" element={<UsuariosRoles />} />

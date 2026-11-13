@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import EstadoConsulta from '../../components/EstadoConsulta.jsx'
+import IndicadoresCrm from '../../components/IndicadoresCrm.jsx'
 import Paginacion from '../../components/Paginacion.jsx'
 import { usePerfil } from '../../context/PerfilContext.jsx'
 import { puedeGestionarCrm } from '../../lib/permisos.js'
@@ -25,18 +26,18 @@ export default function ClientesLista() {
 
   return (
     <section className="crm-panel">
-      <header className="crm-cabecera"><h1>Clientes</h1>
-        {puedeGestionarCrm(rol) && <Link className="button" to="nuevo">Nuevo cliente</Link>}
-      </header>
+      <header><h1>Clientes</h1><p>Consulta los clientes y sus cuentas corporativas.</p></header>
+      {puedeGestionarCrm(rol) && <IndicadoresCrm vista="clientes" />}
       <form className="crm-filtros" onSubmit={evento => {
         evento.preventDefault()
         cambiar('q', new FormData(evento.currentTarget).get('q').trim())
       }}>
-        <label>Nombre o documento<input key={q} name="q" type="search" defaultValue={q} maxLength={100} /></label>
-        <button className="button">Buscar</button>
+        <label className="list-search"><span className="sr-only">Nombre o documento</span><input placeholder="Buscar por nombre o identificación" key={q} name="q" type="search" defaultValue={q} maxLength={100} /></label>
+        <button className="secondary">Buscar</button>
         <label>Estado<select value={activo} onChange={evento => cambiar('activo', evento.target.value)}>
           <option value="">Todos</option><option value="true">Activos</option><option value="false">Inactivos</option>
         </select></label>
+        {puedeGestionarCrm(rol) && <Link className="button push-right" to="nuevo">Nuevo cliente</Link>}
       </form>
       <EstadoConsulta {...consulta}>
         {pagina && <>
@@ -46,7 +47,7 @@ export default function ClientesLista() {
             </tr></thead><tbody>{pagina.content.map(cliente => <tr key={cliente.id}>
               <td><Link to={cliente.id}>{cliente.nombre}</Link></td>
               <td>{cliente.tipoDocumento} {cliente.numeroDocumento}</td><td>{cliente.ciudad || '—'}</td>
-              <td>{cliente.cuentaCorporativa?.razonSocial || 'Sin cuenta'}</td><td>{cliente.activo ? 'Activo' : 'Inactivo'}</td>
+              <td>{cliente.cuentaCorporativa?.razonSocial || 'Sin cuenta'}</td><td><span className={cliente.activo ? 'badge activo' : 'badge inactivo'}>{cliente.activo ? 'Activo' : 'Inactivo'}</span></td>
             </tr>)}</tbody></table></div>}
           <Paginacion pagina={pagina} onCambiar={page => cambiar('page', page)} />
         </>}

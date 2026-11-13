@@ -16,13 +16,13 @@ export default function ContratoFormulario() {
     <h1>{id ? 'Editar contrato' : 'Nuevo contrato'}</h1>
     <EstadoConsulta {...consulta}>{recurso && (
       (id ? recurso.estado === 'BORRADOR' : recurso.activo)
-        ? <Formulario contrato={id ? recurso : null} cliente={id ? recurso.cliente : recurso} volver={volver} />
+        ? <FormularioContrato contrato={id ? recurso : null} cliente={id ? recurso.cliente : recurso} volver={volver} />
         : <><p role="alert">{bloqueo}</p><Link to={volver}>Volver al detalle</Link></>
     )}</EstadoConsulta>
   </section>
 }
 
-function Formulario({ contrato, cliente, volver }) {
+export function FormularioContrato({ contrato, cliente, volver }) {
   const navegar = useNavigate()
   const [datos, setDatos] = useState(() => ({
     codigo: contrato?.codigo ?? '', descripcion: contrato?.descripcion ?? '',
