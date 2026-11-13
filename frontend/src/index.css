@@ -188,6 +188,26 @@
 .side-form fieldset { grid-template-columns: 1fr; }
 .profile-summary { display: grid; gap: 6px; overflow-wrap: anywhere; }
 .profile-summary dt { margin-top: 12px; }
+.account-card { width: 100%; max-width: 880px; padding: 0; overflow: hidden; }
+.account-cover {
+  height: clamp(80px, 9vw, 120px);
+  background-color: var(--access-brand);
+  background-image: linear-gradient(125deg, transparent 58%, #175577 58% 72%, transparent 72%),
+    linear-gradient(125deg, transparent 79%, #1265a0 79%);
+}
+.account-content { padding: 0 clamp(18px, 3vw, 36px) 28px; }
+.account-avatar {
+  position: relative; display: grid; place-items: center; width: 64px; height: 64px;
+  margin: -28px 0 14px; border: 4px solid var(--panel); border-radius: 18px;
+  background: var(--active); color: var(--link); font-size: 27px; font-weight: 600;
+}
+.account-details { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+.account-details dt { margin-bottom: 6px; color: var(--muted); font-size: 13px; }
+.account-details dd { overflow-wrap: anywhere; }
+.account-role { display: inline-block; padding: 4px 10px; border-radius: 6px; background: var(--active); color: var(--link); font-weight: 500; }
+.account-id { grid-column: 1 / -1; padding-top: 18px; border-top: 1px solid var(--line); }
+.account-id dd { font-family: ui-monospace, monospace; font-size: 13px; }
+@media (max-width: 540px) { .account-details { grid-template-columns: minmax(0, 1fr); } }
 .permissions th,.permissions td { padding: 12px 0; }
 .permissions th { background: var(--panel); }
 .admin-form { gap: 16px; }
