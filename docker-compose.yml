@@ -1,0 +1,12 @@
+name: arise-corp
+
+services:
+  backend:
+    build:
+      context: ./backend
+    image: arise-backend:local
+    env_file:
+      - path: ./backend/.env
+        required: true
+    ports:
+      - "127.0.0.1:8080:8080"

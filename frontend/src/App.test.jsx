@@ -1,8 +1,11 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import App from './App.jsx'
+import { PerfilProvider } from './context/PerfilContext.jsx'
+import { puedeGestionarCrm } from './lib/permisos.js'
+import RolRoute from './routes/RolRoute.jsx'
 
 const { auth, store } = vi.hoisted(() => ({
   auth: { getSession: vi.fn(), signInWithPassword: vi.fn(), signOut: vi.fn(), onAuthStateChange: vi.fn() },
@@ -92,14 +95,16 @@ it('valida el formato del correo antes de llamar a Supabase', async () => {
   expect(auth.signInWithPassword).not.toHaveBeenCalled()
 })
 
-it('completa Login → sesión → perfil y envía el Bearer a la API', async () => {
+it('completa Login → panel → perfil y envía el Bearer a la API', async () => {
+  fetch.mockImplementation(async url => ({ ok: true, status: 200, json: async () => url.endsWith('/me') ? profile : { clientes: { activos: 0, inactivos: 0 }, contratos: { porEstado: { ACTIVO: 0, BORRADOR: 0 } } } }))
   mount()
   await loginForm()
   submit()
+  await screen.findByRole('heading', { name: 'Tu operación, conectada.' })
+  fireEvent.click(screen.getByRole('link', { name: 'Perfil' }))
   await screen.findByText('paula@example.test')
   expect(screen.getByText('test-user')).toBeVisible()
   expect(screen.getByText('Rol empresarial')).toBeVisible()
-  expect(screen.getByText('Comercial')).toBeVisible()
   expect(auth.signInWithPassword).toHaveBeenCalledWith({ email: 'paula@example.test', password: 'fake-password' })
   expect(fetch).toHaveBeenCalledWith('http://localhost:8080/api/me', expect.objectContaining({
     headers: { Authorization: 'Bearer fake-access-token' },
@@ -202,7 +207,7 @@ it.each([
   store.session = session
   fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
   mount('/perfil')
-  expect(await screen.findByText(label)).toBeVisible()
+  expect((await screen.findAllByText(label)).length).toBeGreaterThan(0)
   expect(screen.getByText('Rol empresarial')).toBeVisible()
   expect(screen.queryByText('authenticated')).not.toBeInTheDocument()
 })
@@ -267,4 +272,146 @@ it('retira la suscripción de autenticación al desmontar', async () => {
   await screen.findByRole('heading', { name: 'Bienvenido de nuevo' })
   view.unmount()
   expect(store.unsubscribe).toHaveBeenCalledTimes(1)
+})
+
+it.each([
+  ['ADMINISTRADOR', ['Clientes', 'Cuentas corporativas', 'Resumen comercial', 'Contratos', 'Usuarios y roles']],
+  ['COMERCIAL', ['Clientes', 'Cuentas corporativas', 'Resumen comercial', 'Contratos']],
+  ['OPERACIONES', ['Clientes', 'Contratos']],
+  ['FINANZAS_RRHH', ['Clientes']],
+  [null, []],
+])('comparte el perfil con el menú de %s bajo StrictMode', async (role, opciones) => {
+  store.session = session
+  fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
+  mount('/perfil', true)
+  await screen.findByText(profile.email)
+  expect(screen.getAllByRole('link')).toHaveLength(opciones.length + (role ? 2 : 1))
+  const destinos = {
+    Contratos: '/crm/contratos', 'Usuarios y roles': '/admin/usuarios', Perfil: '/perfil', Clientes: '/crm/clientes',
+    'Cuentas corporativas': '/crm/cuentas-corporativas', 'Resumen comercial': '/crm/resumen',
+  }
+  for (const nombre of ['Perfil', ...opciones]) {
+    expect(screen.getByRole('link', { name: nombre })).toHaveAttribute('href', destinos[nombre])
+  }
+  expect(screen.getByRole('link', { name: 'Perfil' })).toHaveAttribute('aria-current', 'page')
+  expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible()
+  expect(fetch).toHaveBeenCalledTimes(1)
+  expect(fetch).toHaveBeenCalledWith('http://localhost:8080/api/me', expect.anything())
+})
+
+it.each([
+  ['OPERACIONES', false], [null, false], ['COMERCIAL', true],
+])('al abrir una ruta directamente espera al perfil y aplica el permiso de %s', async (role, permitido) => {
+  store.session = session
+  let responder
+  fetch.mockImplementationOnce(() => new Promise(resolve => { responder = resolve }))
+  const consultarVista = vi.fn()
+  function Vista() {
+    useEffect(() => { consultarVista() }, [])
+    return <h1>Resumen comercial</h1>
+  }
+  render(
+    <MemoryRouter initialEntries={['/crm/resumen']}>
+      <PerfilProvider>
+        <Routes>
+          <Route element={<RolRoute permite={puedeGestionarCrm} />}>
+            <Route path="/crm/resumen" element={<Vista />} />
+          </Route>
+        </Routes>
+      </PerfilProvider>
+    </MemoryRouter>,
+  )
+  expect(screen.getByRole('status')).toHaveTextContent('Cargando…')
+  expect(consultarVista).not.toHaveBeenCalled()
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+  await act(async () => responder({ ok: true, status: 200, json: async () => ({ ...profile, role }) }))
+  if (permitido) {
+    expect(screen.getByRole('heading', { name: 'Resumen comercial' })).toBeVisible()
+    expect(consultarVista).toHaveBeenCalledTimes(1)
+  } else {
+    expect(screen.getByRole('alert')).toHaveTextContent('No tienes permisos para acceder a esta sección.')
+    expect(consultarVista).not.toHaveBeenCalled()
+  }
+})
+
+it.each([
+  ['FINANZAS_RRHH', '/crm/clientes/nuevo'],
+  ['FINANZAS_RRHH', '/crm/contratos/uno'],
+  ['OPERACIONES', '/crm/clientes/uno/editar'],
+  ['OPERACIONES', '/crm/clientes/uno/contratos/nuevo'],
+  ['OPERACIONES', '/crm/contratos/uno/editar'],
+  ['OPERACIONES', '/crm/cuentas-corporativas'],
+  ['OPERACIONES', '/crm/cuentas-corporativas/nueva'],
+  ['OPERACIONES', '/crm/cuentas-corporativas/uno'],
+  ['OPERACIONES', '/crm/cuentas-corporativas/uno/editar'],
+  ['OPERACIONES', '/crm/resumen'],
+  [null, '/crm/clientes'],
+  [null, '/crm/clientes/uno'],
+])('bloquea el acceso directo de %s a %s antes de consultar datos CRM', async (role, ruta) => {
+  store.session = session
+  fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
+  mount(ruta)
+  expect(await screen.findByRole('alert')).toHaveTextContent('No tienes permisos para acceder a esta sección.')
+  expect(fetch).toHaveBeenCalledExactlyOnceWith('http://localhost:8080/api/me', expect.anything())
+})
+
+it('abre las tres vistas desde el menú comercial compartiendo una sola consulta de perfil', async () => {
+  store.session = session
+  mount('/perfil')
+  await screen.findByText(profile.email)
+  const pagina = { content: [], page: 0, totalPages: 0 }
+  const resumen = {
+    clientes: { activos: 1, inactivos: 2, total: 3 },
+    contratos: { porEstado: { BORRADOR: 3, ACTIVO: 2, FINALIZADO: 1, CANCELADO: 0 }, total: 6 },
+  }
+  for (const [nombre, ruta, datos, texto] of [
+    ['Clientes', '/crm/clientes', pagina, 'No hay clientes para los criterios elegidos.'],
+    ['Cuentas corporativas', '/crm/cuentas-corporativas', pagina, 'No hay cuentas para los criterios elegidos.'],
+    ['Resumen comercial', '/crm/resumen', resumen, 'Finalizado'],
+  ]) {
+    fetch.mockImplementation(async url => ({ ok: true, status: 200, json: async () => url.endsWith('/resumen') ? resumen : url.includes('?size=1') ? { totalElements: 0 } : datos }))
+    fireEvent.click(screen.getByRole('link', { name: nombre }))
+    expect(await screen.findByText(texto)).toBeVisible()
+    expect(screen.getByRole('link', { name: nombre })).toHaveAttribute('aria-current', 'page')
+    expect(fetch).toHaveBeenCalledWith('http://localhost:8080/api' + ruta, expect.anything())
+  }
+  expect(fetch.mock.calls.filter(([url]) => url.endsWith('/me'))).toHaveLength(1)
+})
+
+it('muestra el 403 del backend en una vista permitida y conserva la sesión al volver al perfil', async () => {
+  store.session = session
+  const json = vi.fn()
+  fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ...profile, role: 'OPERACIONES' }) })
+    .mockResolvedValueOnce({ ok: false, status: 403, json })
+  mount('/crm/contratos/uno')
+  expect(await screen.findByRole('alert')).toHaveTextContent('No tienes permisos para consultar esta información.')
+  expect(fetch).toHaveBeenLastCalledWith('http://localhost:8080/api/crm/contratos/uno', expect.anything())
+  expect(json).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('link', { name: 'Perfil' }))
+  expect(await screen.findByText(profile.email)).toBeVisible()
+  expect(auth.signOut).not.toHaveBeenCalled()
+  expect(fetch).toHaveBeenCalledTimes(2)
+})
+
+it('guarda el perfil y el rol desde la cuenta de administrador', async () => {
+  const id = '00000000-0000-4000-8000-000000000002'
+  store.session = session
+  fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ...profile, role: 'ADMINISTRADOR' }) })
+  fetch.mockResolvedValueOnce({ ok: true, status: 201, json: async () => ({ usuarioId: id, rol: 'OPERACIONES', activo: true }) })
+  mount('/admin/usuarios')
+  fireEvent.change(await screen.findByLabelText(/Identificador del usuario/), { target: { value: id } })
+  fireEvent.change(screen.getByLabelText(/Rol empresarial/), { target: { value: 'OPERACIONES' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar rol' }))
+  await screen.findByText(/Rol guardado/)
+  expect(fetch).toHaveBeenLastCalledWith('http://localhost:8080/api/admin/usuarios/' + id + '/perfil', expect.objectContaining({
+    method: 'PUT', body: JSON.stringify({ rol: 'OPERACIONES' }),
+  }))
+})
+
+it('deniega el acceso directo a usuarios y roles para una cuenta comercial', async () => {
+  store.session = session
+  mount('/admin/usuarios')
+  expect(await screen.findByRole('alert')).toHaveTextContent('No tienes permisos')
+  expect(screen.queryByRole('button', { name: 'Guardar rol' })).toBeNull()
+  expect(fetch).toHaveBeenCalledTimes(1)
 })

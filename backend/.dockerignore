@@ -1,0 +1,14 @@
+.env
+.env.*
+target/
+src/test/
+.idea/
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+*.iml
+*.log
+HELP.md
+.gitattributes

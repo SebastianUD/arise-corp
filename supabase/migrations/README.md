@@ -5,10 +5,13 @@ CLI y siguen el nombre `<timestamp>_<nombre>.sql` (DP-TEC-03).
 
 ## Reglas (DP-TEC-03, sdd-workflow.md)
 
-- Las migraciones se **revisan en PR** por un integrante distinto del autor
-  antes de aplicarse.
-- Davidson prepara y aplica las migraciones de forma controlada en
-  `arise-corp-dev` **tras el merge**.
+- Otro integrante distinto del autor **revisa** la migración antes de aplicarla
+  (en la rama o en el PR).
+- Davidson **prepara** las migraciones y las aplica de forma controlada en
+  `arise-corp-dev`. Como regla general, después del merge; también antes del PR
+  final cuando la validación extremo a extremo de la spec necesita la migración
+  y la migración es aditiva (solo crea objetos nuevos y ajusta la seguridad de
+  esos objetos), una vez revisada y validada en PostgreSQL efímero (DP-TEC-03).
 - **Nunca** se edita una migración ya aplicada: ante un cambio, se crea una
   migracion nueva.
 - Ninguna migracion contiene secretos, UUID personales ni datos reales (NF-01).
@@ -18,6 +21,7 @@ CLI y siguen el nombre `<timestamp>_<nombre>.sql` (DP-TEC-03).
 | Archivo | Descripcion | Spec |
 |---|---|---|
 | `20261108000000_app_perfiles_usuario.sql` | Esquema privado `app` y tabla `perfiles_usuario` (perfil empresarial, RLS, revocacion de grants a `anon`/`authenticated`). | 001-foundation, tarea 15 |
+| `20261111120000_app_crm_clientes_contratos.sql` | Tablas `cuentas_corporativas`, `clientes` y `contratos` del CRM (PK UUID, `UNIQUE`, `CHECK`, FK, indices, auditoria, RLS y revocacion de grants a `anon`/`authenticated`). | 002-crm-clientes-contratos |
 
 ## Aprovisionamiento del primer Administrador
 

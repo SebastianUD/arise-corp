@@ -8,12 +8,24 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 | GET | `/api/me` | JWT obligatorio | `{ "id": "<sub>", "email": "<email>", "role": "<role>" }` |
 | PUT | `/api/admin/usuarios/{id}/perfil` | JWT de Administrador | 201 al crear (con `Location`) o 200 al actualizar el rol |
 | PATCH | `/api/admin/usuarios/{id}/estado` | JWT de Administrador | 200 al activar/desactivar un perfil existente |
+| GET | `/api/crm/clientes`, `/api/crm/clientes/{id}` | JWT de Administrador, Comercial, Finanzas/RRHH u Operaciones | 200 con la vista completa (gestores) o reducida (lectura cruzada) |
+| POST, PUT, PATCH | `/api/crm/clientes`, `/api/crm/clientes/{id}` | JWT de Administrador o Comercial | 201 con `Location` o 200 con la vista completa |
+| GET | `/api/crm/cuentas-corporativas`, `/api/crm/cuentas-corporativas/{id}` | JWT de Administrador o Comercial | 200 con la lista paginada o la cuenta |
+| POST, PUT, PATCH | `/api/crm/cuentas-corporativas`, `/api/crm/cuentas-corporativas/{id}` | JWT de Administrador o Comercial | 201 con `Location` o 200 |
+| GET | `/api/crm/contratos`, `/api/crm/contratos/{id}` | JWT de Administrador, Comercial u Operaciones | 200 con la lista paginada o el contrato |
+| POST, PUT | `/api/crm/contratos`, `/api/crm/contratos/{id}` | JWT de Administrador o Comercial | 201 con `Location` o 200 |
+| PATCH | `/api/crm/contratos/{id}/estado` | JWT de Administrador o Comercial | 200 con el estado y su auditoría actualizados |
+| GET | `/api/crm/resumen` | JWT de Administrador o Comercial | 200 con los conteos de clientes y contratos |
 
 - Sin token, o con un token inválido o vencido, el backend responde 401 Problem Details con el encabezado `WWW-Authenticate` (DP-API-02).
 - El campo `role` de `/api/me` refleja el rol empresarial del perfil activo en `app.perfiles_usuario`; un perfil ausente o inactivo produce 403. El claim técnico `role` de Supabase no autoriza operaciones (tarea 16 de `001-foundation`).
 - `PUT` recibe `{ "rol": "<ROL>" }`; `PATCH` recibe `{ "activo": true|false }`. El identificador de ruta es el UUID de Supabase Auth y los campos de auditoría los asigna el servidor. Respuestas: 201/200 según corresponda, 400 por cuerpo inválido, 403 si el actor no es Administrador o no tiene perfil activo, 404 si el perfil o la identidad de Auth no existe.
 - No existen endpoints públicos. La ruta `/api/public/**` está reservada para ellos en `SecurityConfig`.
-- El manejo global de errores está implementado en `shared.error`: todos los 400/401/403/404/405/409/500 usan el mismo formato Problem Details (tarea 18 de `001-foundation`).
+- El manejo global de errores está implementado en `shared.error`: todos los 400/401/403/404/405/409/415/500 usan el mismo formato Problem Details (tarea 18 de `001-foundation`, ampliado en `002-crm-clientes-contratos`).
+- Los 409 del CRM incluyen la extensión `conflicto` (por ejemplo `CLIENTE_DUPLICADO`, `CLIENTE_INACTIVO_EXISTENTE`, `CUENTA_INACTIVA`, `CUENTA_NIT_DUPLICADO`, `CONTRATO_CODIGO_DUPLICADO`, `CONTRATO_NO_EDITABLE`, `TRANSICION_NO_PERMITIDA`) y, cuando corresponde, `campo` (`documento`, `nit`, `codigo`) o datos adicionales como `clienteId`, `estadoActual` y `estadoSolicitado`.
+- Un 404 de recurso referenciado incluye `campo` con el nombre del campo del cuerpo que lo originó (`cuentaCorporativaId`, `clienteId`); un `{id}` de ruta no UUID responde 400 con `errors[0].field = "id"`.
+- `DELETE /api/crm/clientes/{id}` responde 405 con `Allow` para los gestores; el mensaje es "La operación no está disponible para este recurso.". Un `Content-Type` distinto de `application/json` responde 415 con mensaje en español.
+- Los 400 de validación mantienen la extensión `errors` con `field` y `message`; los mensajes son comprensibles para el usuario y no exponen SQL ni trazas.
 
 ## Rutas
 - [Implementado] Todas las rutas cuelgan de `/api`. Las rutas sin autenticación van exclusivamente bajo `/api/public/**`.
@@ -64,7 +76,7 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 - Las listas usan `page` desde 0 (por defecto 0), `size` por defecto 20 y máximo 100, y `sort=campo,asc|desc`. La respuesta usa `{ "content": [], "page": 0, "size": 20, "totalElements": 0, "totalPages": 0 }`; no se serializa directamente `Page` de Spring Data (DP-API-03).
 
 ## Validaciones
-- Los DTO de entrada se validan con Bean Validation: `@Valid` en el `@RequestBody` y anotaciones como `@NotNull`, `@NotBlank`, `@Size`, `@Email` o `@Positive` en los campos. Los parámetros de ruta y de consulta se validan con `@Validated` en el controlador.
+- Los DTO de entrada se validan con Bean Validation: `@Valid` en el `@RequestBody` y anotaciones como `@NotNull`, `@NotBlank`, `@Size`, `@Email` o `@Positive` en los campos. Los parámetros de ruta y de consulta se validan con la validación de métodos integrada de Spring MVC, con las restricciones (`@Min`, `@Max`, `@Pattern`, etc.) directamente en los `@RequestParam` y `@PathVariable`, sin `@Validated` a nivel de clase (D8).
 - Las reglas que dependen de datos (duplicados, existencia y estado de los recursos referenciados, transiciones válidas, existencias de inventario) se comprueban en el servicio y producen 404 o 409.
 - No confiar en identificadores enviados por el cliente: comprobar que el recurso referenciado existe y está activo antes de usarlo (por ejemplo, el cliente al que se asocia un paquete).
 - Las restricciones de PostgreSQL son la última defensa (NF-03). Una `DataIntegrityViolationException` se traduce a 409 sin exponer el mensaje de la base.

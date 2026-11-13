@@ -51,6 +51,7 @@ Referencia: [JWT Claims Reference de Supabase](https://supabase.com/docs/guides/
   - `PerfilJwtAuthenticationConverter` convierte el `Jwt` validado en `JwtAuthenticationToken` con una authority `ROLE_<ROL>` tomada del perfil activo. No usa el claim técnico `role` de Supabase.
   - `SecurityConfig` aplica la matriz con `hasRole`/`hasAnyRole` por módulo y método; `anyRequest().authenticated()` mantiene la denegación por defecto para lo no declarado.
   - Lecturas cruzadas mínimas (ERP-05, SGA-05): Finanzas/RRHH y Operaciones pueden `GET` clientes del CRM; Operaciones también `GET` contratos. Las escrituras de CRM siguen restringidas a Comercial y Administrador.
+  - Vista reducida implementada: Administrador y Comercial reciben la vista completa del cliente; Finanzas/RRHH y Operaciones reciben `ClienteResumenResponse`, sin `correo`, `telefono`, `direccion` ni auditoría. La elección se resuelve en el controlador de clientes a partir de las authorities.
   - Solo el Administrador accede a `/api/admin/**`, que expone la gestión de perfiles.
 - Reglas para cualquier opción:
   - Denegar por defecto: un usuario sin perfil, sin rol o con el perfil desactivado recibe 403, aunque su JWT sea válido.
@@ -131,7 +132,7 @@ Referencia: [Securing your API, documentación de Supabase](https://supabase.com
 - Los campos controlados por el servidor (identificador, fechas, estado actual, totales, usuario que opera) nunca se toman del cuerpo de la solicitud.
 - Antes de usar un identificador recibido, comprobar que el recurso existe y que el usuario puede usarlo (por ejemplo, el cliente o contrato asociado a un paquete).
 - Estados de contratos y paquetes, y cantidades de inventario: solo cambian mediante las operaciones definidas en la especificación, que validan la transición (SGA-03, SGA-04).
-- Datos personales de clientes y empleados: devolver solo los campos que cada rol necesita y no escribirlos en logs.
+- Datos personales de clientes y empleados: devolver solo los campos que cada rol necesita y no escribirlos en logs. En el CRM, los DTO no llevan datos personales a los mensajes de log y `CrmLogsTests` verifica que crear, editar y provocar 409 o 500 no escribe nombre, documento, correo ni teléfono en la salida.
 - Los errores no revelan si un recurso existe para usuarios sin permiso sobre el módulo, ni muestran trazas, SQL ni datos internos (CA-06).
 - Auditoría de cambios: DP-SEG-06.
 

@@ -96,6 +96,7 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - `.env` local, plantilla `backend/.env.example` y reglas de `.gitignore`.
 - Spring Security como OAuth2 Resource Server que valida JWT de Supabase Auth (ES256, JWKS, issuer y audiencia).
 - Frontend React con login, sesión, rutas protegidas, cliente HTTP y perfil; cobertura automática de 35 pruebas frontend y 58 backend documentada en `001-foundation/tasks.md`.
+- Vistas CRM del frontend disponibles para Administración y Comercial: gestión de clientes y cuentas corporativas, creación de contratos desde clientes activos, edición de borradores, cambios de estado y resumen comercial. Finanzas/RR. HH. consulta clientes y Operaciones consulta clientes y contratos.
 - Endpoint protegido `GET /api/me` con identidad y rol empresarial del perfil activo.
 - Autorización por rol en backend: `PerfilJwtAuthenticationConverter` deriva `ROLE_<ROL>` del perfil activo y `SecurityConfig` aplica la matriz de módulos y las lecturas cruzadas mínimas de ERP-05/SGA-05 (tarea 17).
 - Administración de perfiles por el rol Administrador mediante `PUT /api/admin/usuarios/{id}/perfil` y `PATCH /api/admin/usuarios/{id}/estado`.
@@ -103,11 +104,15 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - Errores API y de seguridad en formato RFC 9457 Problem Details; 401 conserva `WWW-Authenticate`.
 - Validación manual con Supabase real: cuenta Administrador, `/api/me` con identidad y rol, y 403 seguro para cuenta sin perfil (tarea 20 de `001-foundation`).
 - Primera fase `001-foundation` cerrada: tareas 1–21 completadas; backend/frontend, build, secretos, migración y documentación verificados (tarea 21).
+- CRM backend completo (CRM-01 a CRM-05): migración `app.clientes`, `app.contratos` y `app.cuentas_corporativas`; entidades, repositorios, servicios, controladores, DTO, normalización, paginación, máquina de estados de contratos, resumen comercial y pruebas unitarias, MockMvc y de integración con PostgreSQL efímero.
+- Pruebas de integración con Testcontainers (`.\mvnw.cmd verify`, Failsafe) y workflow `integration-tests`.
+- Dockerfile multi-stage, `.dockerignore` y `docker-compose.yml` para ejecutar el backend en local con la configuración inyectada en tiempo de ejecución.
+- CI de GitHub Actions con `backend-ci`, `integration-tests` y `frontend-ci`.
+- `002-crm-clientes-contratos` queda cerrada al integrar su Pull Request; hasta entonces permanecen abiertas la validación manual extremo a extremo, los checkpoints finales y la entrega.
 
 [Aprobado, pendiente de implementar]
-- Migraciones de negocio para CRM, ERP y SGA.
-- Módulos CRM, ERP y SGA y sus interfaces.
-- Dockerfile, Docker Compose y automatización CI.
+- Migraciones de negocio para ERP y SGA.
+- Módulos ERP y SGA, sus interfaces y sus tareas de `.kiro/specs/`.
 
 ## Idioma
 - Documentación, especificaciones y steering files: español (práctica de todo el repositorio).

@@ -37,13 +37,12 @@ export default function Login() {
 
   if (loading) return <p role="status" className="access-loading">Comprobando sesión…</p>
   if (session && (!session.expires_at || session.expires_at * 1000 > Date.now())) {
-    return <Navigate to="/perfil" replace />
+    return <Navigate to="/panel" replace />
   }
 
   return (
     <AccessLayout>
     <section className="access-card" aria-labelledby="login-title">
-      <p className="access-eyebrow">PLATAFORMA DE GESTIÓN</p>
       <h1 id="login-title" className="access-title">Bienvenido de nuevo</h1>
       <p className="access-subtitle">Ingresa con tu cuenta corporativa.</p>
       <form noValidate onSubmit={handleSubmit} className="access-form" aria-label="Inicio de sesión">
@@ -75,7 +74,6 @@ export default function Login() {
         {submitting && <p role="status">Comprobando tus credenciales…</p>}
       </form>
       <p className="access-help">¿Necesitas acceso? Contacta al administrador.</p>
-      <p className="access-security">Acceso seguro · Permisos según tu rol</p>
     </section>
     </AccessLayout>
   )
