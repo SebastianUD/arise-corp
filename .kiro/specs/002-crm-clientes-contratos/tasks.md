@@ -636,21 +636,22 @@ Cada tarea indica **área**, **responsable** y **requisitos** (`requirements.md`
   - Ejecutar desde `frontend/` `npm test`, `npm run build` y `npm run check:secrets` (Requirements 25.5, 25.6). Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
   - El 2026-11-11 pasaron las 159 pruebas de 18 archivos. Vite generó el bundle de producción y la comprobación de secretos no detectó patrones de credenciales privadas en `src/`, `.env.example` ni `dist/`.
 
-- [ ] 31. Validar el CRM de extremo a extremo con Supabase real
-  - [ ] 31.1 Ejecutar la validación manual del Requirement 30
-    - Área: integración/documentación · Responsable: Davidson
+- [x] 31. Validar el CRM de extremo a extremo con Supabase real
+  - [x] 31.1 Ejecutar la validación manual del Requirement 30
+    - Área: integración/documentación · Responsable: Sebastian
     - Precondiciones: migración aplicada (17.1); cuentas de prueba con perfiles COMERCIAL, FINANZAS_RRHH y OPERACIONES creados con `PUT /api/admin/usuarios/{id}/perfil`; backend con `docker compose up backend` y frontend con `npm run dev`
     - Con COMERCIAL: cuenta → cliente asociado → búsqueda por documento escrito con puntos → edición del teléfono → contrato → `ACTIVO` → recarga con los datos persistidos. Con FINANZAS_RRHH y OPERACIONES: vista reducida, modo consulta y mensaje de permisos en `/crm/clientes/nuevo`
     - Escritura denegada sin copiar tokens: con el formulario de edición abierto, el Administrador cambia el rol del usuario a FINANZAS_RRHH; el envío recibe 403, el cliente no cambia y la interfaz muestra el mensaje sin cerrar sesión; al terminar se restablece el rol
     - Registrar en este `tasks.md` fecha, pasos y resultado sin credenciales, tokens, UUID ni datos personales reales; desactivar los datos ficticios creados
     - _Requisitos: 30.1–30.4, AUTH-05, CA-03, CA-04, CA-05, NF-02_
+    - Evidencia (2026-11-13): backend en Compose contra `arise-corp-dev` (esquema validado al arrancar) y frontend en local. Con el perfil COMERCIAL se creó la cuenta, el cliente asociado, se encontró el cliente escribiendo el documento con puntos, se editó el teléfono, se creó el contrato y se pasó a `ACTIVO`; tras recargar, los datos persistieron. Con FINANZAS_RRHH y OPERACIONES la vista fue reducida, en modo consulta, y `/crm/clientes/nuevo` mostró el mensaje de permisos. El cambio de rol a FINANZAS_RRHH con el formulario abierto produjo 403: la fila del cliente conservó su marca de auditoría y su actor, y la sesión siguió activa; el rol se restableció a COMERCIAL. Al terminar se canceló el contrato y se desactivaron el cliente y la cuenta ficticios, y la base quedó sin cuentas ni clientes activos.
 
 - [x] 32. Checkpoint final
   - Área: verificación · Responsable: Davidson
   - Ejecutar `.\mvnw.cmd clean test` y `.\mvnw.cmd verify` desde `backend/`; `npm test`, `npm run build` y `npm run check:secrets` desde `frontend/`; y `docker compose build backend` desde la raíz. Asegurar que todas las pruebas pasan; consultar al usuario si surgen dudas.
   - Evidencia (2026-11-12): backend con 520 pruebas de Surefire y 16 de Failsafe en verde; frontend con 159 pruebas de 18 archivos, bundle de producción generado y `check:secrets` sin patrones de credenciales; `docker compose build backend` construyó la imagen.
 
-- [ ] 33. Verificar y entregar la spec
+- [x] 33. Verificar y entregar la spec
   - [x] 33.1 Verificar CI, secretos, documentación y trazabilidad
     - Área: integración/documentación · Responsable: Davidson
     - Una ejecución verde de `backend-ci`, `integration-tests` y `frontend-ci` en la rama; ningún `.env` rastreado (`git ls-files`); contratos de `design.md` coherentes con el código; trazabilidad requisito–tarea revisada; `product.md` indica que `002-crm-clientes-contratos` queda cerrada al integrar el PR
