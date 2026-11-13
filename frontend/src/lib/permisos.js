@@ -1,3 +1,11 @@
+export const etiquetasRol = {
+  ADMINISTRADOR: 'Administrador',
+  COMERCIAL: 'Comercial',
+  FINANZAS_RRHH: 'Finanzas / RR. HH.',
+  OPERACIONES: 'Operaciones',
+}
+
+export const puedeAdministrarUsuarios = rol => rol === 'ADMINISTRADOR'
 export const puedeGestionarCrm = rol => rol === 'ADMINISTRADOR' || rol === 'COMERCIAL'
 export const puedeLeerClientes = rol => puedeGestionarCrm(rol) || rol === 'FINANZAS_RRHH' || rol === 'OPERACIONES'
 export const puedeLeerContratos = rol => puedeGestionarCrm(rol) || rol === 'OPERACIONES'
@@ -20,5 +28,7 @@ export function opcionesMenu(rol) {
       { texto: 'Resumen comercial', ruta: '/crm/resumen' },
     )
   }
+  if (puedeLeerContratos(rol)) opciones.push({ texto: 'Contratos', ruta: '/crm/contratos' })
+  if (puedeAdministrarUsuarios(rol)) opciones.push({ texto: 'Usuarios y roles', ruta: '/admin/usuarios' })
   return opciones
 }

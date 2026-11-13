@@ -4,21 +4,24 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { PerfilProvider, usePerfil } from '../context/PerfilContext.jsx'
 import { opcionesMenu } from '../lib/permisos.js'
 
-function Cabecera() {
+function Navegacion() {
   const { rol } = usePerfil()
   const { signOut } = useAuth()
   const enlaces = [{ texto: 'Perfil', ruta: '/perfil' }, ...opcionesMenu(rol)]
   return (
-    <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-700 px-6 py-4">
-      <nav aria-label="Navegación principal" className="flex flex-wrap gap-4">
+    <aside className="app-sidebar">
+      <img className="sidebar-logo" src="/assets/arise-logo.png" alt="Arise Corp." width="176" height="68" />
+      <nav aria-label="Navegación principal" className="app-nav">
         {enlaces.map(({ texto, ruta }) => (
-          <NavLink key={ruta} to={ruta} className="hover:underline aria-[current=page]:underline">
+          <NavLink key={ruta} to={ruta} className="nav-item">
+            {ruta === '/perfil' && <img src="/assets/inicio.svg" alt="" />}
+            {ruta === '/admin/usuarios' && <img src="/assets/usuarios.svg" alt="" />}
             {texto}
           </NavLink>
         ))}
       </nav>
-      <button className="button" onClick={() => void signOut()}>Cerrar sesión</button>
-    </header>
+      <button className="sign-out" onClick={() => void signOut()}><img src="/assets/logout.svg" alt="" />Cerrar sesión</button>
+    </aside>
   )
 }
 
@@ -26,8 +29,8 @@ export default function AppLayout() {
   const { session } = useAuth()
   return (
     <PerfilProvider key={session.user.id}>
-      <div className="flex min-h-svh flex-col bg-slate-950 text-slate-100">
-        <Cabecera />
+      <div className="app-shell">
+        <Navegacion />
         <div className="profile-workspace">
           <Suspense fallback={<p role="status">Cargando…</p>}><Outlet /></Suspense>
         </div>

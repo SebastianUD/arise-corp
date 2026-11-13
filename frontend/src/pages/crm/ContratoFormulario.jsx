@@ -72,7 +72,7 @@ function Formulario({ contrato, cliente, volver }) {
     <fieldset disabled={guardando} className="grid gap-4 sm:grid-cols-2">
       <Campo etiqueta="Código" obligatorio error={errores.codigo}><input {...control('codigo')} /></Campo>
       <Campo etiqueta="Descripción" obligatorio error={errores.descripcion}>
-        <textarea className="rounded-lg border border-slate-600 bg-slate-950 p-3" {...control('descripcion')} />
+        <textarea className="rounded-lg border border-slate-300 bg-white p-3" {...control('descripcion')} />
       </Campo>
       <Campo etiqueta="Fecha de inicio" obligatorio error={errores.fechaInicio}><input type="date" {...control('fechaInicio')} /></Campo>
       <Campo etiqueta="Fecha de fin" error={errores.fechaFin}><input type="date" {...control('fechaFin')} /></Campo>

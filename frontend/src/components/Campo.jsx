@@ -13,7 +13,7 @@ export default function Campo({ etiqueta, obligatorio, error, children }) {
       {cloneElement(control, {
         id, required: requerido, 'aria-invalid': Boolean(error), 'aria-describedby': descripcion || undefined,
       })}
-      {error && <p id={idError} className="text-sm text-rose-200">{error}</p>}
+      {error && <p id={idError} className="text-sm text-rose-700">{error}</p>}
     </div>
   )
 }

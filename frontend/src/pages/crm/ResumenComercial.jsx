@@ -6,8 +6,8 @@ function Conteos({ titulo, filas }) {
   return <section aria-label={titulo} className="grid gap-3">
     <h2>{titulo}</h2>
     <dl className="grid gap-3 sm:grid-cols-3">{filas.map(([etiqueta, valor]) =>
-      <div key={etiqueta} className="rounded-xl border border-slate-700 bg-slate-950 p-4">
-        <dt className="text-sm text-slate-300">{etiqueta}</dt><dd className="mt-1 text-2xl font-semibold tabular-nums">{valor}</dd>
+      <div key={etiqueta} className="rounded-xl border border-slate-200 bg-white p-4">
+        <dt className="text-sm text-slate-600">{etiqueta}</dt><dd className="mt-1 text-2xl font-semibold tabular-nums">{valor}</dd>
       </div>)}</dl>
   </section>
 }

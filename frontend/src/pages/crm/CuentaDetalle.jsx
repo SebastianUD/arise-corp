@@ -64,7 +64,7 @@ function Detalle({ inicial }) {
   return <>
     <header className="crm-cabecera"><h1>{cuenta.razonSocial}</h1><Link to="/crm/cuentas-corporativas">Volver a cuentas</Link></header>
     <dl className="grid gap-4 sm:grid-cols-2">{filas.map(([etiqueta, valor]) =>
-      <div key={etiqueta}><dt className="text-sm text-slate-400">{etiqueta}</dt><dd>{valor || '—'}</dd></div>)}</dl>
+      <div key={etiqueta}><dt className="text-sm text-slate-600">{etiqueta}</dt><dd>{valor || '—'}</dd></div>)}</dl>
     <div className="flex items-center gap-4">
       <Link to="editar">Editar</Link>
       <button type="button" className="button" disabled={guardando} onClick={() => setConfirmando(true)}>{accion}</button>

@@ -12,14 +12,15 @@ it.each([
 })
 
 const clientes = { texto: 'Clientes', ruta: '/crm/clientes' }
+const contratos = { texto: 'Contratos', ruta: '/crm/contratos' }
 const menuGestor = [clientes,
   { texto: 'Cuentas corporativas', ruta: '/crm/cuentas-corporativas' },
-  { texto: 'Resumen comercial', ruta: '/crm/resumen' },
+  { texto: 'Resumen comercial', ruta: '/crm/resumen' }, contratos,
 ]
 it.each([
-  ['ADMINISTRADOR', true, true, true, menuGestor],
+  ['ADMINISTRADOR', true, true, true, [...menuGestor, { texto: 'Usuarios y roles', ruta: '/admin/usuarios' }]],
   ['COMERCIAL', true, true, true, menuGestor],
-  ['OPERACIONES', false, true, true, [clientes]],
+  ['OPERACIONES', false, true, true, [clientes, contratos]],
   ['FINANZAS_RRHH', false, true, false, [clientes]],
   [null, false, false, false, []],
   ['DESCONOCIDO', false, false, false, []],

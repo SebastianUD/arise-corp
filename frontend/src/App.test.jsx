@@ -273,9 +273,9 @@ it('retira la suscripción de autenticación al desmontar', async () => {
 })
 
 it.each([
-  ['ADMINISTRADOR', ['Clientes', 'Cuentas corporativas', 'Resumen comercial']],
-  ['COMERCIAL', ['Clientes', 'Cuentas corporativas', 'Resumen comercial']],
-  ['OPERACIONES', ['Clientes']],
+  ['ADMINISTRADOR', ['Clientes', 'Cuentas corporativas', 'Resumen comercial', 'Contratos', 'Usuarios y roles']],
+  ['COMERCIAL', ['Clientes', 'Cuentas corporativas', 'Resumen comercial', 'Contratos']],
+  ['OPERACIONES', ['Clientes', 'Contratos']],
   ['FINANZAS_RRHH', ['Clientes']],
   [null, []],
 ])('comparte el perfil con el menú de %s bajo StrictMode', async (role, opciones) => {
@@ -285,7 +285,7 @@ it.each([
   await screen.findByText(profile.email)
   expect(screen.getAllByRole('link').map(enlace => enlace.textContent)).toEqual(['Perfil', ...opciones])
   const destinos = {
-    Perfil: '/perfil', Clientes: '/crm/clientes',
+    Contratos: '/crm/contratos', 'Usuarios y roles': '/admin/usuarios', Perfil: '/perfil', Clientes: '/crm/clientes',
     'Cuentas corporativas': '/crm/cuentas-corporativas', 'Resumen comercial': '/crm/resumen',
   }
   for (const nombre of ['Perfil', ...opciones]) {
@@ -389,4 +389,27 @@ it('muestra el 403 del backend en una vista permitida y conserva la sesión al v
   expect(await screen.findByText(profile.email)).toBeVisible()
   expect(auth.signOut).not.toHaveBeenCalled()
   expect(fetch).toHaveBeenCalledTimes(2)
+})
+
+it('guarda el perfil y el rol desde la cuenta de administrador', async () => {
+  const id = '00000000-0000-4000-8000-000000000002'
+  store.session = session
+  fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ...profile, role: 'ADMINISTRADOR' }) })
+  fetch.mockResolvedValueOnce({ ok: true, status: 201, json: async () => ({ usuarioId: id, rol: 'OPERACIONES', activo: true }) })
+  mount('/admin/usuarios')
+  fireEvent.change(await screen.findByLabelText(/Identificador del usuario/), { target: { value: id } })
+  fireEvent.change(screen.getByLabelText(/Rol empresarial/), { target: { value: 'OPERACIONES' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar rol' }))
+  await screen.findByText(/Rol guardado/)
+  expect(fetch).toHaveBeenLastCalledWith('http://localhost:8080/api/admin/usuarios/' + id + '/perfil', expect.objectContaining({
+    method: 'PUT', body: JSON.stringify({ rol: 'OPERACIONES' }),
+  }))
+})
+
+it('deniega el acceso directo a usuarios y roles para una cuenta comercial', async () => {
+  store.session = session
+  mount('/admin/usuarios')
+  expect(await screen.findByRole('alert')).toHaveTextContent('No tienes permisos')
+  expect(screen.queryByRole('button', { name: 'Guardar rol' })).toBeNull()
+  expect(fetch).toHaveBeenCalledTimes(1)
 })

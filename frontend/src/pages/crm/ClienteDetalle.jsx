@@ -66,7 +66,7 @@ function Detalle({ inicial, rol }) {
   return <>
     <header className="crm-cabecera"><h1>{cliente.nombre}</h1><Link to="/crm/clientes">Volver a clientes</Link></header>
     <dl className="grid gap-4 sm:grid-cols-2">{filas.map(([titulo, valor]) =>
-      <div key={titulo}><dt className="text-sm text-slate-400">{titulo}</dt><dd>{valor || '—'}</dd></div>)}</dl>
+      <div key={titulo}><dt className="text-sm text-slate-600">{titulo}</dt><dd>{valor || '—'}</dd></div>)}</dl>
     {gestor && <>
       <div className="flex flex-wrap items-center gap-4">
         <Link to="editar">Editar</Link>
