@@ -799,3 +799,33 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
   ]
 }
 ```
+
+## Verificación de las tareas realizadas
+
+Fecha: 2026-11-16 · Rama: `feat/erp-empleados-proveedores-finanzas`
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 3.1 | `shared/error/ParametroInvalidoException` y su `@ExceptionHandler` en `GlobalExceptionHandler` | `ErroresApiTests.parametroInvalidoDelErpDevuelve400ConCampoYMensaje`: 400, `application/problem+json`, `title` "Solicitud inválida", `detail` "Los parámetros de la solicitud no son válidos.", `errors[0].field = "hasta"` y el mensaje recibido. Los demás handlers no cambiaron |
+| 3.2 | Caso de la Property 19 en `ErroresApiTests` | La misma prueba comprueba una sola entrada en `errors` y que el cuerpo no contiene `Exception` ni detalles internos. Las pruebas existentes no se modificaron |
+| 3.3 | `shared/validacion/ValorCopPositivo` | Compila y replica el contrato de D6: `@ReportAsSingleViolation`, `@DecimalMin(value = "0.00", inclusive = false)`, `@Digits(integer = 13, fraction = 2)`, acepta `null` y el mensaje acordado. Su comportamiento se ejercita en las pruebas de DTO de la tarea 10.2 |
+| 3.6 | `com.arise.corp.erp.GeneradoresErp` | Verificación temporal con 300 a 2.000 casos por generador: valores positivos dentro de 13 dígitos y 2 decimales; cobertura de 0, negativos, 3 decimales y 14 dígitos enteros; relojes con fechas UTC-Bogotá distintas e iguales; rangos ordenados; referencias y conceptos válidos e inválidos; y `conjuntoMovimientos` con tipo, estado y valor válidos (7/7). La prueba temporal se retiró para no ampliar el alcance de la tarea |
+| 4.1 | `crm/dto/ClienteReferencia` y `crm/service/ClienteReferenciaService` | `ClienteReferenciaServiceTests`: `buscar` con cliente activo, inactivo e inexistente; `buscarTodos` con colección vacía sin consultar el repositorio, ids mezclados, repetidos e inexistentes; `buscarParaAsociar` dentro de `TransactionTemplate` y `IllegalTransactionStateException` fuera de transacción |
+| 4.2 | `crm/service/ClienteReferenciaServiceTests` | 7 pruebas con `@SpringBootTest`, H2 y `CrmDatosPrueba`, todas en verde |
+
+Comando ejecutado desde `backend/`:
+
+```text
+.\mvnw.cmd -B test
+```
+
+Resultado: 528 pruebas, 0 fallos, 0 errores, 0 omitidas · `BUILD SUCCESS`.
+
+Alcance respetado:
+
+- `ClienteService`, los controladores y los endpoints del CRM no cambiaron; el CRM no importa nada de `erp`.
+- No se crearon ni modificaron las enumeraciones, entidades, repositorios o migraciones de las tareas de Davidson (2.1 y bloque 5).
+- `GeneradoresErp.movimiento` representa `tipo` y `estado` con los nombres de las constantes como texto para no depender de 5.1; las pruebas que lo consuman los convierten con `valueOf`.
+- Sin credenciales, tokens, UUID ni datos personales en este registro.
+
+Commits: `f1a4d64` (3.1, 3.2, 3.3, 4.1 y 4.2) y `1c2040a` (3.6).
