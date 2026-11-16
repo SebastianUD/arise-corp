@@ -102,7 +102,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - En `config.ClockConfig`, `@Bean ValidationConfigurationCustomizer relojDeValidacion(Clock clock)` que devuelve `configuracion -> configuracion.clockProvider(() -> clock)`. Comprobar el paquete de `ValidationConfigurationCustomizer` en Spring Boot 4.1.2 (`org.springframework.boot.validation.autoconfigure`); no se añade ninguna dependencia (D7, D21)
     - _Requisitos: 4.7, 29.5, DP-API-04_
 
-  - [ ] 3.6 Crear `GeneradoresErp` en el paquete de prueba `com.arise.corp.erp`
+  - [x] 3.6 Crear `GeneradoresErp` en el paquete de prueba `com.arise.corp.erp`
     - Área: backend · Responsable: Sebastián
     - `SEMILLA = 20261113L` y `nuevoRandom()`; reutiliza los generadores de `GeneradoresCrm` (`texto`, `cadena`, `documentoBase`, `varianteDocumento`, `documentoDeCualquierForma`, `correoDeCualquierForma`, `telefonoDeCualquierForma`, `textoDeLongitudVariable`, `fecha`) y añade `referenciaDeCualquierForma`, `varianteReferencia`, `conceptoDeCualquierForma`, `valorPositivoValido`, `valorDeCualquierForma` (incluye 0, negativos, 3 decimales y 14 dígitos enteros), `relojAleatorio` (instantes en que UTC y Bogotá tienen fechas distintas), `fechaAlrededorDe(LocalDate)`, `movimiento`, `conjuntoMovimientos(n)` y `rango` (límites presentes o ausentes, ordenados) (D15)
     - Solo datos ficticios
