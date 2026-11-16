@@ -38,7 +38,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
 ## Tasks
 
 - [ ] 1. Preparar la rama y las reglas de la spec
-  - [ ] 1.1 Crear la rama `feat/erp-empleados-proveedores-finanzas` desde `main`
+  - [x] 1.1 Crear la rama `feat/erp-empleados-proveedores-finanzas` desde `main`
     - Área: integración/Git · Responsable: Paula
     - Actualizar `main` (`git switch main` y `git pull`), crear la rama con `git switch -c feat/erp-empleados-proveedores-finanzas` y publicarla con `git push -u origin feat/erp-empleados-proveedores-finanzas`
     - Confirmar en la rama `requirements.md`, `design.md`, `tasks.md` y `.config.kiro` de `.kiro/specs/003-erp-empleados-proveedores-finanzas/` con `docs(erp): agregar spec 003-erp-empleados-proveedores-finanzas`
@@ -75,19 +75,19 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - _Requisitos: 2.1–2.9, 29.7, DP-TEC-03, DP-SEG-05_
 
 - [ ] 3. Ampliar los componentes compartidos del backend
-  - [ ] 3.1 Crear `shared.error.ParametroInvalidoException` y su handler
+  - [x] 3.1 Crear `shared.error.ParametroInvalidoException` y su handler
     - Área: backend · Responsable: Sebastián
     - `ParametroInvalidoException(String parametro, String mensaje)` con `getParametro()` (D9)
     - Nuevo `@ExceptionHandler` en `GlobalExceptionHandler`: 400, `title` "Solicitud inválida", `detail` "Los parámetros de la solicitud no son válidos." y `errors: [{ field: parametro, message: mensaje }]`, sin registrar nada en el log. El resto de handlers no cambia
     - _Requisitos: 15.7, 18.5, 20.1, 20.2, CA-06, DP-API-02_
 
-  - [ ] 3.2 Ampliar `ErroresApiTests`
+  - [x] 3.2 Ampliar `ErroresApiTests`
     - Área: backend · Responsable: Sebastián
     - Caso con un endpoint de prueba que lanza `ParametroInvalidoException("hasta", ...)`: 400 con `application/problem+json`, `errors[0].field = "hasta"` y el mensaje recibido. Las pruebas existentes no cambian
     - **Property 19: Los errores del ERP no exponen información interna ni datos personales** (respuesta de `ParametroInvalidoException`) · **Validates: Requirements 20.1, 20.8**
     - _Requisitos: 15.7, 18.5, 20.8, NF-07_
 
-  - [ ] 3.3 Crear `@ValorCopPositivo` en `shared.validacion`
+  - [x] 3.3 Crear `@ValorCopPositivo` en `shared.validacion`
     - Área: backend · Responsable: Sebastián
     - Restricción compuesta con `@ReportAsSingleViolation`, `@DecimalMin(value = "0.00", inclusive = false)` y `@Digits(integer = 13, fraction = 2)`; acepta `null`; mensaje "debe ser mayor que 0, con hasta 13 dígitos enteros y 2 decimales" (D6). `@ValorCop` del CRM no cambia
     - _Requisitos: 13.7, DP-API-04_
@@ -114,15 +114,15 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 3: Las validaciones de formato coinciden con la regla de referencia** (fecha de ingreso con `relojAleatorio` y `fechaAlrededorDe`) · **Validates: Requirements 4.7**
     - _Requisitos: 4.7, 25.1, NF-07_
 
-- [ ] 4. Ofrecer la lectura de clientes del CRM a otros módulos
-  - [ ] 4.1 Crear `crm.dto.ClienteReferencia` y `crm.service.ClienteReferenciaService`
+- [x] 4. Ofrecer la lectura de clientes del CRM a otros módulos
+  - [x] 4.1 Crear `crm.dto.ClienteReferencia` y `crm.service.ClienteReferenciaService`
     - Área: backend · Responsable: Sebastián
     - `record ClienteReferencia(UUID id, String nombre, boolean activo)` con `static desde(Cliente)`
     - `@Service @Transactional(readOnly = true) ClienteReferenciaService` con `Optional<ClienteReferencia> buscar(UUID)`, `Map<UUID, ClienteReferencia> buscarTodos(Collection<UUID>)` (una sola consulta con `findAllById`; una colección vacía devuelve un mapa vacío sin consultar) y `@Transactional(propagation = Propagation.MANDATORY) Optional<ClienteReferencia> buscarParaAsociar(UUID)`, que reutiliza `ClienteRepository.findParaContratoById` (`PESSIMISTIC_READ`) (D2, D12)
     - Ampliar solo el Javadoc de `findParaContratoById` con el segundo uso. `ClienteService`, los controladores y los endpoints CRM no cambian; el CRM no importa nada de `erp`
     - _Requisitos: 1.5, 1.6, 1.8, 14.11, DP-ARQ-01, ERP-05_
 
-  - [ ] 4.2 Escribir `crm/service/ClienteReferenciaServiceTests`
+  - [x] 4.2 Escribir `crm/service/ClienteReferenciaServiceTests`
     - Área: backend · Responsable: Sebastián
     - `@SpringBootTest` con H2 y `CrmDatosPrueba`: `buscar` con cliente activo, inactivo e inexistente; `buscarTodos` con colección vacía (sin consulta), ids mezclados, repetidos e inexistentes; `buscarParaAsociar` dentro de un `TransactionTemplate`; fuera de transacción lanza `IllegalTransactionStateException`
     - _Requisitos: 1.6, 14.11, 25.1, NF-07_

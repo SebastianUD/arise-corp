@@ -39,7 +39,8 @@ public interface ClienteRepository
     Optional<Cliente> findConCuentaById(UUID id);
 
     /**
-     * Carga el cliente con bloqueo de lectura para crear un contrato sobre el.
+     * Carga el cliente con bloqueo de lectura para crear un contrato sobre el o
+     * para asociarlo a un movimiento financiero del ERP (D2, D12).
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
     Optional<Cliente> findParaContratoById(UUID id);
