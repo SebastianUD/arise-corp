@@ -97,6 +97,7 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - Spring Security como OAuth2 Resource Server que valida JWT de Supabase Auth (ES256, JWKS, issuer y audiencia).
 - Frontend React con login, sesión, rutas protegidas, cliente HTTP y perfil; cobertura automática de 35 pruebas frontend y 58 backend documentada en `001-foundation/tasks.md`.
 - Vistas CRM del frontend disponibles para Administración y Comercial: gestión de clientes y cuentas corporativas, creación de contratos desde clientes activos, edición de borradores, cambios de estado y resumen comercial. Finanzas/RR. HH. consulta clientes y Operaciones consulta clientes y contratos.
+- Vistas ERP del frontend implementadas para Administración y Finanzas/RR. HH. (ERP-01 a ERP-05): empleados, proveedores, movimientos, asociaciones con clientes/proveedores y panel financiero; menú y tarjetas por rol, trece rutas protegidas, validación local y pruebas con API simulada. La validación con Supabase real (003, tarea 30.1) espera la migración y los endpoints ERP.
 - Endpoint protegido `GET /api/me` con identidad y rol empresarial del perfil activo.
 - Autorización por rol en backend: `PerfilJwtAuthenticationConverter` deriva `ROLE_<ROL>` del perfil activo y `SecurityConfig` aplica la matriz de módulos y las lecturas cruzadas mínimas de ERP-05/SGA-05 (tarea 17).
 - Administración de perfiles por el rol Administrador mediante `PUT /api/admin/usuarios/{id}/perfil` y `PATCH /api/admin/usuarios/{id}/estado`.
@@ -112,7 +113,7 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 
 [Aprobado, pendiente de implementar]
 - Migraciones de negocio para ERP y SGA.
-- Módulos ERP y SGA, sus interfaces y sus tareas de `.kiro/specs/`.
+- Backend del ERP e integración con sus vistas; módulo SGA y sus interfaces; tareas pendientes en `.kiro/specs/`.
 
 ## Idioma
 - Documentación, especificaciones y steering files: español (práctica de todo el repositorio).

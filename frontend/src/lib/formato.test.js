@@ -2,6 +2,7 @@ import { expect, it } from 'vitest'
 import { formatoCop, formatoFecha, formatoInstante } from './formato.js'
 
 it.each([
+  ['-1200000.50', '-$1.200.000,50'],
   ['0.00', '$0,00'],
   ['1500000.5', '$1.500.000,50'],
   ['9999999999999.99', '$9.999.999.999.999,99'],

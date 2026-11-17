@@ -41,7 +41,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
   - [x] 1.1 Crear la rama `feat/erp-empleados-proveedores-finanzas` desde `main`
     - Área: integración/Git · Responsable: Paula
     - Actualizar `main` (`git switch main` y `git pull`), crear la rama con `git switch -c feat/erp-empleados-proveedores-finanzas` y publicarla con `git push -u origin feat/erp-empleados-proveedores-finanzas`
-    - Confirmar en la rama `requirements.md`, `design.md`, `tasks.md` y `.config.kiro` de `.kiro/specs/003-erp-empleados-proveedores-finanzas/` con `docs(erp): agregar spec 003-erp-empleados-proveedores-finanzas`
+    - Confirmar en la rama `requirements.md`, `design.md` y `tasks.md` de `.kiro/specs/003-erp-empleados-proveedores-finanzas/` con `docs(erp): agregar spec 003-erp-empleados-proveedores-finanzas`. `.config.kiro` es metadata local excluida por `.gitignore` y no se versiona
     - Comprobar con `git status` que ningún archivo `.env` queda preparado para commit
     - _Requisitos: 29.6, DP-SDD-03, DP-SDD-04, DP-SDD-05, NF-01_
 
@@ -510,33 +510,33 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
   - Área: verificación · Responsable: Davidson
   - Ejecutar desde `backend/` `.\mvnw.cmd clean test` y, con Docker en ejecución, `.\mvnw.cmd verify` (Requirement 26.11); desde la raíz, `docker compose build backend`. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
-- [ ] 19. Implementar el servicio y las reglas de interfaz del ERP
-  - [ ] 19.1 Crear `services/erpApi.js`
+- [x] 19. Implementar el servicio y las reglas de interfaz del ERP
+  - [x] 19.1 Crear `services/erpApi.js`
     - Área: frontend · Responsable: Paula
     - Las 16 funciones de la tabla "Servicio del ERP" del diseño sobre `apiRequest` de `apiClient.js`, con una función local `listar(ruta, filtros)` igual a la de `crmApi.js`: solo añade a `URLSearchParams` los filtros con valor no nulo y no vacío después de `trim`
     - `crearMovimiento` y `actualizarMovimiento` envían `valor: String(datos.valor)`; las fechas viajan como `AAAA-MM-DD`. Se trabaja sobre el contrato de `design.md`, sin esperar al backend
     - _Requisitos: 21.1–21.3, AUTH-03, DP-API-03, DP-API-04_
 
-  - [ ] 19.2 Ampliar `src/test/generadores.js`
+  - [x] 19.2 Ampliar `src/test/generadores.js`
     - Área: frontend · Responsable: Paula
     - Conservar `mulberry32(semilla)` y añadir `entero(azar, min, max)`, `elegir(azar, lista)` y `cadena(azar, alfabeto, longitud)`; las pruebas existentes no cambian
     - _Requisitos: 27.1, 27.2, NF-07_
 
-  - [ ] 19.3 Escribir `services/erpApi.test.js`
+  - [x] 19.3 Escribir `services/erpApi.test.js`
     - Área: frontend · Responsable: Paula
     - `fetch` simulado con `vi.stubGlobal` y Supabase con `vi.mock('../lib/supabase.js')`: ruta, método, consulta y cuerpo JSON de cada función, sin llamadas de red reales
     - **Property 20: El servicio ERP del frontend construye las peticiones del contrato** (filtros generados con valores nulos, vacíos, solo espacios o con contenido) · **Validates: Requirements 21.1, 21.3, 27.1**
     - **Property 5: Los importes viajan como texto sin perder precisión** (lado frontend) · **Validates: Requirements 21.2, 23.11**
     - _Requisitos: 27.1, 27.5, NF-07_
 
-  - [ ] 19.4 Crear `lib/validacionErp.js`
+  - [x] 19.4 Crear `lib/validacionErp.js`
     - Área: frontend · Responsable: Paula
     - `lib/validacionCrm.js` pasa a exportar `texto`, `revisar`, `maximo`, `correo`, `telefono` y `fecha` sin cambiar su comportamiento (D18)
     - `normalizarReferencia`, `fechaHoyColombia(ahora)` con `Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts`, `validarEmpleado(datos, hoy)`, `validarProveedor`, `validarMovimiento`, `validarRangoFechas(desde, hasta)` y `cuerpoMovimiento(datos)`, con los límites y mensajes del contrato de API (D7)
     - `validarMovimiento` valida `valor` como texto con `^\d{1,13}(\.\d{1,2})?$` y al menos un dígito distinto de 0, sin convertirlo a número, y la referencia normalizada con `^[A-Z0-9 ./-]{1,50}$`; `cuerpoMovimiento` envía `clienteId` solo con `INGRESO` y `proveedorId` solo con `EGRESO`
     - _Requisitos: 21.2, 22.6, 23.4, 23.8, 23.10, 23.11, 24.4, NF-06_
 
-  - [ ] 19.5 Escribir `lib/validacionErp.test.js`
+  - [x] 19.5 Escribir `lib/validacionErp.test.js`
     - Área: frontend · Responsable: Paula
     - `fechaHoyColombia` con instantes fijos a ambos lados de la medianoche de Bogotá; las pruebas de `validacionCrm.test.js` siguen sin cambios
     - **Property 1: La normalización es idempotente** (`normalizarDocumento` y `normalizarReferencia`) · **Validates: Requirements 3.4**
@@ -546,181 +546,181 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 15: Los parámetros de lista y de rango se aceptan o rechazan según la regla** (`validarRangoFechas`) · **Validates: Requirements 23.4, 24.4**
     - _Requisitos: 27.2, NF-07_
 
-  - [ ] 19.6 Ampliar `lib/permisos.js`
+  - [x] 19.6 Ampliar `lib/permisos.js`
     - Área: frontend · Responsable: Paula
     - `puedeGestionarErp`, `TRANSICIONES_MOVIMIENTO`, `esMovimientoEditable`, `OPCIONES_ERP` y `opcionesMenuErp(rol)` según el diseño; `opcionesMenu(rol)` y el resto de funciones no cambian (D11, D17)
     - _Requisitos: 21.5–21.7, 23.14, 23.15, DP-PRO-01_
 
-  - [ ] 19.7 Ampliar `lib/permisos.test.js`
+  - [x] 19.7 Ampliar `lib/permisos.test.js`
     - Área: frontend · Responsable: Paula
     - Los casos existentes de `opcionesMenu` no cambian
     - **Property 12: Solo se aceptan las dos transiciones permitidas** (`TRANSICIONES_MOVIMIENTO` y `esMovimientoEditable`) · **Validates: Requirements 23.14, 23.15**
     - **Property 21: El menú y el panel ERP derivan del rol** (`puedeGestionarErp` y `opcionesMenuErp` para los cuatro roles, sin perfil y con un valor desconocido) · **Validates: Requirements 21.5, 21.6, 21.7**
     - _Requisitos: 27.2, NF-07_
 
-  - [ ]* 19.8 Ampliar `lib/formato.test.js`
+  - [x]* 19.8 Ampliar `lib/formato.test.js`
     - Área: frontend · Responsable: Paula
     - `formatoCop('-1200000.50')` empieza con el signo menos; `"0.00"` y `"9999999999999.99"`. `lib/formato.js` no cambia
     - _Requisitos: 23.12, 24.1, 24.7_
 
-- [ ] 20. Incorporar el menú y las tarjetas del ERP
-  - [ ] 20.1 Ampliar `components/AppLayout.jsx` con el grupo ERP
+- [x] 20. Incorporar el menú y las tarjetas del ERP
+  - [x] 20.1 Ampliar `components/AppLayout.jsx` con el grupo ERP
     - Área: frontend · Responsable: Paula
     - Crear `frontend/public/assets/erp.svg`, un SVG estático propio sin datos ni referencias externas
     - `const erp = opcionesMenuErp(rol)`; si no está vacío, grupo "ERP" con el icono y los cuatro enlaces debajo del grupo CRM; sección "ERP" en la ruta de navegación cuando `pathname.startsWith('/erp/')`; título de la página buscado en `[...opciones, ...erp]`. El menú CRM no cambia
     - _Requisitos: 21.5–21.7, 21.11, DP-PRO-01_
 
-  - [ ] 20.2 Ampliar `pages/Panel.jsx` con las tarjetas ERP
+  - [x] 20.2 Ampliar `pages/Panel.jsx` con las tarjetas ERP
     - Área: frontend · Responsable: Paula
     - Si `puedeGestionarErp(rol)`, una tarjeta por cada elemento de `OPCIONES_ERP` con `<small>ERP</small>`, el título y el enlace `accion →`; ninguna tarjeta ERP para COMERCIAL ni OPERACIONES
     - _Requisitos: 21.7, 21.8, ERP-04_
 
-- [ ] 21. Crear los componentes compartidos del ERP
-  - [ ] 21.1 Implementar `SelectorRegistro` y `EstadoMovimientoEtiqueta`
+- [x] 21. Crear los componentes compartidos del ERP
+  - [x] 21.1 Implementar `SelectorRegistro` y `EstadoMovimientoEtiqueta`
     - Área: frontend · Responsable: Paula
     - `components/SelectorRegistro.jsx` con las props `{ etiqueta, buscar, valor, onCambiar, error, deshabilitado }`: búsqueda con el botón "Buscar"; `<select>` con "Sin asociación", los resultados de `buscar(q)` y, si `valor` no está entre ellos, la opción actual "`<nombre>` (inactivo)" cuando `valor.activo === false`; usa `useConsulta`, `EstadoConsulta` y `Campo` (D19)
     - `components/EstadoMovimientoEtiqueta.jsx` con las clases existentes: `PENDIENTE → borrador`, `PAGADO → activo` y `ANULADO → inactivo`. Ningún componente usa `dangerouslySetInnerHTML`
     - _Requisitos: 23.6, 23.7, 23.9, NF-06_
 
-  - [ ]* 21.2 Escribir `components/ComponentesErp.test.jsx`
+  - [x]* 21.2 Escribir `components/ComponentesErp.test.jsx`
     - Área: frontend · Responsable: Paula
     - `SelectorRegistro`: búsqueda con `q`, selección, "Sin asociación" y opción "(inactivo)" para la asociación actual; `EstadoMovimientoEtiqueta` para los tres estados
     - _Requisitos: 23.6, 23.7, 23.9_
 
-- [ ] 22. Checkpoint de la base del frontend
+- [x] 22. Checkpoint de la base del frontend
   - Área: verificación · Responsable: Paula
   - Ejecutar `npm test` desde `frontend/`: las pruebas nuevas del servicio, las reglas y los componentes pasan junto con las de `001-foundation` y `002-crm-clientes-contratos`. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
-- [ ] 23. Implementar las vistas de empleados
-  - [ ] 23.1 Implementar `pages/erp/EmpleadosLista.jsx`
+- [x] 23. Implementar las vistas de empleados
+  - [x] 23.1 Implementar `pages/erp/EmpleadosLista.jsx`
     - Área: frontend · Responsable: Paula
     - Búsqueda `q` con el botón "Buscar", filtro Todos/Activos/Inactivos y paginación, con el estado en la URL (`useSearchParams`) como `ClientesLista`; columnas nombre, documento, cargo, área, fecha de ingreso y estado; "Nuevo empleado"; "No hay empleados para los criterios elegidos." si la página está vacía
     - _Requisitos: 22.1–22.3, ERP-01, DP-API-03_
 
-  - [ ] 23.2 Implementar `pages/erp/EmpleadoFormulario.jsx`
+  - [x] 23.2 Implementar `pages/erp/EmpleadoFormulario.jsx`
     - Área: frontend · Responsable: Paula
     - Alta y edición con selector de tipo `CC`, `CE` y `PASAPORTE`, obligatorios marcados con `*` y fecha de ingreso `type="date"` con `max={fechaHoyColombia()}`
     - Validación local con `validarEmpleado` antes de enviar; `fieldset` deshabilitado y "Guardando…" durante el envío; errores 400 y 409 junto al campo (`errors[].field` o `campo`) sin perder lo escrito; con `EMPLEADO_INACTIVO_EXISTENTE`, el mensaje y el enlace "Ver empleado" a `/erp/empleados/{problem.empleadoId}`
     - _Requisitos: 22.4, 22.6–22.9, ERP-01, NF-06_
 
-  - [ ] 23.3 Implementar `pages/erp/EmpleadoDetalle.jsx`
+  - [x] 23.3 Implementar `pages/erp/EmpleadoDetalle.jsx`
     - Área: frontend · Responsable: Paula
     - Datos, estado y fechas de creación y actualización con `formatoInstante`; "Editar"; "Desactivar" o "Reactivar" con `DialogoConfirmacion` y `cambiarEstadoEmpleado`; al recibir 200 muestra el nuevo estado
     - _Requisitos: 22.10, 22.11, ERP-01_
 
-  - [ ] 23.4 Escribir `pages/erp/EmpleadosLista.test.jsx`
+  - [x] 23.4 Escribir `pages/erp/EmpleadosLista.test.jsx`
     - Área: frontend · Responsable: Paula
     - Carga, lista vacía, búsqueda, filtro activo y paginación con la API simulada
     - _Requisitos: 22.1–22.3, 27.4, 27.5_
 
-  - [ ] 23.5 Escribir `pages/erp/EmpleadoFormulario.test.jsx`
+  - [x] 23.5 Escribir `pages/erp/EmpleadoFormulario.test.jsx`
     - Área: frontend · Responsable: Paula
     - Validación local sin petición (incluida la fecha de ingreso futura), botón deshabilitado durante el envío, errores 400 por campo con los valores conservados, 409 de duplicado junto a `numeroDocumento` y 409 inactivo existente con el enlace
     - _Requisitos: 22.6–22.9, 27.3_
 
-  - [ ] 23.6 Escribir `pages/erp/EmpleadoDetalle.test.jsx`
+  - [x] 23.6 Escribir `pages/erp/EmpleadoDetalle.test.jsx`
     - Área: frontend · Responsable: Paula
     - Confirmación y `PATCH` de desactivación y reactivación, y nuevo estado tras el 200
     - _Requisitos: 22.10, 22.11, 27.3_
 
-- [ ] 24. Implementar las vistas de proveedores
-  - [ ] 24.1 Implementar `pages/erp/ProveedoresLista.jsx`
+- [x] 24. Implementar las vistas de proveedores
+  - [x] 24.1 Implementar `pages/erp/ProveedoresLista.jsx`
     - Área: frontend · Responsable: Paula
     - Igual que `EmpleadosLista`; columnas nombre, documento, contacto, ciudad y estado; "Nuevo proveedor"; "No hay proveedores para los criterios elegidos."
     - _Requisitos: 22.1–22.3, ERP-02, DP-API-03_
 
-  - [ ] 24.2 Implementar `pages/erp/ProveedorFormulario.jsx`
+  - [x] 24.2 Implementar `pages/erp/ProveedorFormulario.jsx`
     - Área: frontend · Responsable: Paula
     - Selector de tipo `NIT`, `CC`, `CE` y `PASAPORTE`; opcionales de contacto, dirección y ciudad; validación local con `validarProveedor`; mismo tratamiento del envío y de los errores que `EmpleadoFormulario`; con `PROVEEDOR_INACTIVO_EXISTENTE`, enlace "Ver proveedor" a `/erp/proveedores/{problem.proveedorId}`
     - _Requisitos: 22.5–22.9, ERP-02, NF-06_
 
-  - [ ] 24.3 Implementar `pages/erp/ProveedorDetalle.jsx`
+  - [x] 24.3 Implementar `pages/erp/ProveedorDetalle.jsx`
     - Área: frontend · Responsable: Paula
     - Datos, estado, auditoría, "Editar" y "Desactivar" o "Reactivar" con confirmación; tabla paginada de sus movimientos con `listarMovimientos({ proveedorId, page })`: fecha, concepto, valor con `formatoCop` y estado con `EstadoMovimientoEtiqueta`, enlazados a `/erp/movimientos/{id}`
     - _Requisitos: 22.10–22.12, ERP-02, ERP-05_
 
-  - [ ] 24.4 Escribir `pages/erp/ProveedoresLista.test.jsx`
+  - [x] 24.4 Escribir `pages/erp/ProveedoresLista.test.jsx`
     - Área: frontend · Responsable: Paula
     - Carga, lista vacía, búsqueda, filtro activo y paginación
     - _Requisitos: 22.1–22.3, 27.4, 27.5_
 
-  - [ ] 24.5 Escribir `pages/erp/ProveedorFormulario.test.jsx`
+  - [x] 24.5 Escribir `pages/erp/ProveedorFormulario.test.jsx`
     - Área: frontend · Responsable: Paula
     - Validación local sin petición, opcionales vacíos, botón deshabilitado durante el envío, 400 por campo con los valores conservados, 409 de duplicado junto a `numeroDocumento` y 409 inactivo existente con el enlace
     - _Requisitos: 22.5–22.9, 27.3_
 
-  - [ ] 24.6 Escribir `pages/erp/ProveedorDetalle.test.jsx`
+  - [x] 24.6 Escribir `pages/erp/ProveedorDetalle.test.jsx`
     - Área: frontend · Responsable: Paula
     - Confirmación y `PATCH` de desactivación y reactivación; movimientos del proveedor pedidos con `proveedorId` y valores en COP
     - _Requisitos: 22.10–22.12, 27.3, 27.4_
 
-- [ ] 25. Implementar las vistas de movimientos financieros
-  - [ ] 25.1 Implementar `pages/erp/MovimientosLista.jsx`
+- [x] 25. Implementar las vistas de movimientos financieros
+  - [x] 25.1 Implementar `pages/erp/MovimientosLista.jsx`
     - Área: frontend · Responsable: Paula
     - Filtros tipo, estado, `desde`, `hasta` y búsqueda `q` en la URL; si `validarRangoFechas` falla, mensaje junto a "Hasta" y sin consulta; columnas fecha, tipo, concepto, valor en COP, estado y nombre del cliente o proveedor ("—" sin relación); paginación; "Nuevo movimiento"; "No hay movimientos para los criterios elegidos."
     - _Requisitos: 23.1–23.4, 23.12, ERP-03, ERP-05, DP-API-03_
 
-  - [ ] 25.2 Implementar `pages/erp/MovimientoFormulario.jsx`
+  - [x] 25.2 Implementar `pages/erp/MovimientoFormulario.jsx`
     - Área: frontend · Responsable: Paula
     - Alta y edición solo en `PENDIENTE` (si no, "Solo se editan movimientos pendientes." con enlace al detalle); tipo, fecha, concepto, valor como texto con `inputMode="decimal"` y el ejemplo "2500000.50" y referencia opcional
     - `SelectorRegistro` de clientes con `q => listarClientes({ activo: true, q, size: 20, sort: 'nombre,asc' })` de `crmApi.js` para `INGRESO` y de proveedores con `listarProveedores` para `EGRESO`; cambiar el tipo quita la selección incompatible; al editar, la asociación actual aparece seleccionada y, si está inactiva, con "(inactivo)" y el texto "El registro asociado está inactivo; puedes conservarlo."
     - Validación local con `validarMovimiento`; envía `cuerpoMovimiento(datos)`; errores 400, 404 y 409 con `campo` junto al campo (también bajo el selector) con los valores conservados; un 409 sin campo (`MOVIMIENTO_NO_EDITABLE`) muestra el mensaje y vuelve a cargar el movimiento
     - _Requisitos: 21.2, 23.5–23.11, 23.13, 23.17, ERP-03, ERP-05, NF-06_
 
-  - [ ] 25.3 Implementar `pages/erp/MovimientoDetalle.jsx`
+  - [x] 25.3 Implementar `pages/erp/MovimientoDetalle.jsx`
     - Área: frontend · Responsable: Paula
     - Datos, valor en COP, estado, auditoría de datos y del último cambio de estado, y enlace a `/crm/clientes/{id}` o `/erp/proveedores/{id}` según la relación
     - En `PENDIENTE`: "Editar", "Marcar como pagado" y "Anular" a partir de `TRANSICIONES_MOVIMIENTO`, cada transición con `DialogoConfirmacion` "Este cambio es irreversible." antes de `cambiarEstadoMovimiento`; en `PAGADO` o `ANULADO`, sin edición ni transiciones; un 409 muestra el mensaje en `role="alert"` y vuelve a cargar el movimiento
     - _Requisitos: 23.12, 23.14–23.18, ERP-03, ERP-05, DP-API-05_
 
-  - [ ] 25.4 Escribir `pages/erp/MovimientosLista.test.jsx`
+  - [x] 25.4 Escribir `pages/erp/MovimientosLista.test.jsx`
     - Área: frontend · Responsable: Paula
     - Filtros en la consulta, rango inválido sin petición, columnas con el nombre del relacionado, lista vacía y paginación
     - _Requisitos: 23.1–23.4, 27.4_
 
-  - [ ] 25.5 Escribir `pages/erp/MovimientoFormulario.test.jsx`
+  - [x] 25.5 Escribir `pages/erp/MovimientoFormulario.test.jsx`
     - Área: frontend · Responsable: Paula
     - Selector según el tipo con `listarClientes({ activo: true, ... })`, limpieza al cambiar el tipo, asociación inactiva conservada, validación local sin petición, `valor` enviado como texto, y 404 y 409 con `campo` junto al selector
     - _Requisitos: 23.5–23.11, 23.13, 27.3, 27.4_
 
-  - [ ] 25.6 Escribir `pages/erp/MovimientoDetalle.test.jsx`
+  - [x] 25.6 Escribir `pages/erp/MovimientoDetalle.test.jsx`
     - Área: frontend · Responsable: Paula
     - Confirmación irreversible, recarga tras un 409, edición solo en `PENDIENTE` y enlaces al cliente y al proveedor
     - **Property 12: Solo se aceptan las dos transiciones permitidas** (transiciones ofrecidas en cada estado con `it.each`) · **Validates: Requirements 23.14, 23.15**
     - _Requisitos: 23.14–23.18, 27.3, 27.4_
 
-- [ ] 26. Implementar la vista del panel financiero
-  - [ ] 26.1 Implementar `pages/erp/PanelFinanciero.jsx`
+- [x] 26. Implementar la vista del panel financiero
+  - [x] 26.1 Implementar `pages/erp/PanelFinanciero.jsx`
     - Área: frontend · Responsable: Paula
     - Filtro `desde` y `hasta` en la URL; con un rango inválido, mensaje junto a "Hasta" y sin petición; secciones Ingresos y Egresos con una fila por estado (incluidos los que tienen 0) con cantidad y suma en COP y la cantidad del tipo
     - Tarjeta "Saldo pagado" con `formatoCop(saldoPagado)`, que muestra el signo menos si es negativo; límites aplicados ("Todo el periodo" si ambos son nulos); carga y error con "Reintentar" mediante `EstadoConsulta`
     - _Requisitos: 24.1–24.7, ERP-04, NF-06_
 
-  - [ ] 26.2 Escribir `pages/erp/PanelFinanciero.test.jsx`
+  - [x] 26.2 Escribir `pages/erp/PanelFinanciero.test.jsx`
     - Área: frontend · Responsable: Paula
     - Tres estados por tipo con valores en 0, saldo negativo con signo menos, filtro de fechas que vuelve a consultar con `desde` y `hasta`, rango inválido sin petición, y carga y error con "Reintentar"
     - _Requisitos: 24.1–24.7, 27.4_
 
-- [ ] 27. Integrar las rutas ERP en la aplicación
-  - [ ] 27.1 Registrar las rutas `/erp/*` en `App.jsx`
+- [x] 27. Integrar las rutas ERP en la aplicación
+  - [x] 27.1 Registrar las rutas `/erp/*` en `App.jsx`
     - Área: frontend · Responsable: Paula
     - Bloque `<Route element={<RolRoute permite={puedeGestionarErp} />}>` del diseño dentro de `<Route element={<AppLayout />}>`, con las 13 rutas y las páginas cargadas con `lazy(() => import(...))`; `/login`, `/perfil`, `/panel`, `/admin/usuarios` y `/crm/*` no cambian
     - _Requisitos: 21.9, 21.11, 22.1, 23.1, 24.1_
 
-  - [ ] 27.2 Ampliar `App.test.jsx` con la navegación ERP
+  - [x] 27.2 Ampliar `App.test.jsx` con la navegación ERP
     - Área: frontend · Responsable: Paula
     - Menú y tarjetas del panel por rol; una ruta `/erp/*` con COMERCIAL u OPERACIONES muestra el mensaje de permisos sin peticiones a la API; FINANZAS_RRHH conserva Clientes en modo consulta y ve el grupo ERP; un 403 del backend en una vista ERP muestra el mensaje de permisos sin cerrar sesión; las pruebas existentes siguen en verde
     - **Property 21: El menú y el panel ERP derivan del rol** (integración) · **Validates: Requirements 21.5, 21.6, 21.7, 21.8, 21.9**
     - _Requisitos: 21.4–21.11, 27.4–27.6_
 
-- [ ] 28. Documentar el frontend del ERP
-  - [ ] 28.1 Actualizar la documentación del frontend
+- [x] 28. Documentar el frontend del ERP
+  - [x] 28.1 Actualizar la documentación del frontend
     - Área: documentación · Responsable: Paula
     - README §11.6: subsección "Vistas del ERP por rol" con la tabla de rutas `/erp/*` y sus roles (ADMINISTRADOR y FINANZAS_RRHH) y la nota de que FINANZAS_RRHH consulta clientes en modo lectura para asociarlos a ingresos; comandos `npm test`, `npm run build` y `npm run check:secrets`, sin variables nuevas
     - `structure.md`: `pages/erp`, `components/SelectorRegistro`, `components/EstadoMovimientoEtiqueta`, `services/erpApi.js`, `lib/validacionErp.js` y `public/assets/erp.svg`. `architecture.md`: la SPA presenta las vistas ERP. `product.md`: vistas ERP del frontend implementadas en "Estado actual"
     - _Requisitos: 29.2, 29.3, CA-01, CA-07_
 
-- [ ] 29. Checkpoint del frontend
+- [x] 29. Checkpoint del frontend
   - Área: verificación · Responsable: Paula
   - Ejecutar desde `frontend/` `npm test`, `npm run build` y `npm run check:secrets` (Requirements 27.6, 27.7). Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
@@ -829,3 +829,24 @@ Alcance respetado:
 - Sin credenciales, tokens, UUID ni datos personales en este registro.
 
 Commits: `f1a4d64` (3.1, 3.2, 3.3, 4.1 y 4.2) y `1c2040a` (3.6).
+
+### Frontend de Paula · 2026-11-17
+
+Implementación y verificación local de 1.1 y de los grupos 19–29, incluidos los checkpoints 22 y 29. La rama ya estaba creada y publicada con la spec en `2277fdd`; se incorporó por fast-forward el avance remoto hasta `f193a99`. Se confirmó que `origin/main` es ancestro de la rama. La referencia a versionar `.config.kiro` en 1.1 se corrigió para respetar su exclusión explícita en `.gitignore`; no se generó ni forzó metadata local.
+
+| Tareas | Entregable y evidencia |
+|---|---|
+| 19.1–19.8 | Las 16 funciones de `erpApi.js`; validación local con fecha de Colombia e importes como texto; exportaciones compartidas del CRM; generadores con semilla fija; permisos ERP y transiciones. Pruebas de propiedades 1, 2, 3, 5, 9, 12, 15, 20 y 21; 100 o más entradas por propiedad de dominio amplio, más bordes conocidos |
+| 20.1–20.2 | Grupo ERP con icono local, ruta de navegación y cuatro tarjetas solo para Administración y Finanzas/RR. HH.; menú CRM conservado |
+| 21.1–21.2 | Selector con búsqueda por botón, selección opcional, conservación de asociación inactiva, carga y reintento; etiquetas de los tres estados |
+| 22 | Suite completa del frontend aprobada, incluidas las pruebas de foundation y CRM |
+| 23.1–24.6 | Seis vistas de empleados y proveedores, con lista, alta, edición, detalle, confirmación de activación/desactivación y movimientos paginados por proveedor. `RegistroCompartido.jsx` comparte su presentación y lógica; las pruebas ejercitan cada página |
+| 25.1–25.6 | Lista, formulario y detalle de movimientos; filtros en URL; selector según tipo, limpieza de relación incompatible y conservación de asociación inactiva; importes enviados como texto; mensajes por campo; confirmación irreversible y recarga tras conflicto de estado |
+| 26.1–26.2 | Panel financiero con límites aplicados, cantidades y sumas por estado, ceros, saldo negativo y reintento; rango inválido sin consulta |
+| 27.1–27.2 | Trece rutas con carga diferida y `RolRoute`; pruebas de cada ruta y del menú/panel por rol; acceso directo denegado sin consultas ERP; 403 sin cerrar sesión; Finanzas conserva Clientes en consulta |
+| 28.1 | README §11.6 y steering de estructura, arquitectura y producto actualizados con el alcance frontend y la integración real pendiente |
+| 29 | `npm test`: **31 archivos, 265 pruebas aprobadas**. `npm run build`: correcto con configuración pública ficticia. `npm run check:secrets`: aprobado en fuente, plantilla y bundle |
+
+Sin cambios en dependencias, variables de entorno, backend, migraciones, Docker ni workflows. No se abrieron archivos `.env`; no se usaron cuentas ni datos personales reales. Las pruebas frontend simulan Supabase y la API; no acreditan una integración real.
+
+**Pendiente de Paula: 30.1.** No se ejecutó: faltan la migración ERP aplicada (15.1), los endpoints ERP y las cuentas/datos ficticios previstos para la validación manual. La spec sigue abierta y el PR único se mantiene para su cierre completo (32.3), según DP-SDD-05.

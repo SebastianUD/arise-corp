@@ -2,7 +2,7 @@ import { Suspense, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import { PerfilProvider, usePerfil } from '../context/PerfilContext.jsx'
-import { etiquetasRol, opcionesMenu, puedeLeerClientes } from '../lib/permisos.js'
+import { etiquetasRol, opcionesMenu, opcionesMenuErp, puedeLeerClientes } from '../lib/permisos.js'
 
 function EspacioTrabajo() {
   const { rol } = usePerfil()
@@ -11,10 +11,11 @@ function EspacioTrabajo() {
   const navegar = useNavigate()
   const [oscuro, setOscuro] = useState(() => localStorage.getItem('arise-tema') === 'oscuro')
   const opciones = opcionesMenu(rol)
+  const erp = opcionesMenuErp(rol)
   const crm = opciones.filter(opcion => opcion.ruta.startsWith('/crm/'))
   const usuarios = opciones.find(opcion => opcion.ruta === '/admin/usuarios')
-  const seccion = pathname.startsWith('/crm/') ? 'CRM' : pathname.startsWith('/admin/') ? 'Seguridad' : 'Inicio'
-  const actual = opciones.find(opcion => pathname === opcion.ruta || pathname.startsWith(opcion.ruta + '/'))
+  const seccion = pathname.startsWith('/erp/') ? 'ERP' : pathname.startsWith('/crm/') ? 'CRM' : pathname.startsWith('/admin/') ? 'Seguridad' : 'Inicio'
+  const actual = [...opciones, ...erp].find(opcion => pathname === opcion.ruta || pathname.startsWith(opcion.ruta + '/'))
   const titulo = actual?.texto ?? (pathname === '/panel' ? 'Panel general' : 'Perfil')
 
   function cambiarTema() {
@@ -31,6 +32,10 @@ function EspacioTrabajo() {
         {crm.length > 0 && <>
           <div className={'nav-item nav-group' + (seccion === 'CRM' ? ' selected' : '')}><img src="/assets/crm.svg" alt="" />CRM</div>
           <div className="nav-sub">{crm.map(({ texto, ruta }) => <NavLink key={ruta} to={ruta}>{texto}</NavLink>)}</div>
+        </>}
+        {erp.length > 0 && <>
+          <div className={'nav-item nav-group' + (seccion === 'ERP' ? ' selected' : '')}><img src="/assets/erp.svg" alt="" />ERP</div>
+          <div className="nav-sub">{erp.map(({ texto, ruta }) => <NavLink key={ruta} to={ruta}>{texto}</NavLink>)}</div>
         </>}
       </nav>
       <div className="nav-tools">

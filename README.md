@@ -396,6 +396,30 @@ Al iniciar sesión, la SPA abre `/perfil` y construye el menú con el rol que de
 | Alta y edición de cuentas corporativas | `/crm/cuentas-corporativas/nueva`, `/crm/cuentas-corporativas/:id/editar` | Gestores |
 | Resumen de clientes y contratos por estado | `/crm/resumen` | Gestores |
 
+#### Vistas del ERP por rol
+
+`ADMINISTRADOR` y `FINANZAS_RRHH` ven el grupo ERP del menú y sus cuatro tarjetas en `/panel`. Todas las rutas siguientes requieren uno de esos dos roles; Comercial y Operaciones reciben un mensaje de permisos antes de consultar datos del ERP.
+
+| Vista | Ruta en la SPA | Roles con acceso |
+|---|---|---|
+| Lista de empleados con búsqueda, estado y paginación | `/erp/empleados` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Alta de empleado | `/erp/empleados/nuevo` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Detalle y activación/desactivación de empleado | `/erp/empleados/:id` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Edición de empleado | `/erp/empleados/:id/editar` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Lista de proveedores con búsqueda, estado y paginación | `/erp/proveedores` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Alta de proveedor | `/erp/proveedores/nuevo` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Detalle, activación/desactivación y movimientos del proveedor | `/erp/proveedores/:id` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Edición de proveedor | `/erp/proveedores/:id/editar` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Lista de movimientos con filtros y paginación | `/erp/movimientos` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Alta de movimiento | `/erp/movimientos/nuevo` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Detalle y cambios irreversibles a pagado o anulado | `/erp/movimientos/:id` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Edición de movimiento pendiente | `/erp/movimientos/:id/editar` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Panel financiero con cantidades, sumas por estado y saldo pagado | `/erp/resumen` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+
+Finanzas/RR. HH. conserva la consulta de clientes del CRM en modo lectura para asociarlos a ingresos. Los egresos permiten asociar proveedores. Las búsquedas ofrecen registros activos; al editar se puede conservar una asociación actual inactiva, señalada en el selector. Los importes se envían como texto decimal, por ejemplo `2500000.50`, y se muestran en COP. La fecha de ingreso se valida con la fecha calendario de Colombia.
+
+El frontend ERP se verifica con `npm test`, `npm run build` y `npm run check:secrets`, sin dependencias ni variables de entorno nuevas. Las pruebas simulan la API aprobada en la spec 003. El uso contra Supabase real requiere completar el backend ERP y aplicar su migración (tarea 15.1); la validación manual 30.1 permanece pendiente hasta disponer de esas precondiciones.
+
 ### 11.7 Validar la integración de autenticación
 
 Las pruebas automáticas se ejecutan sin servicios externos: el backend usa H2 y JWT simulados, y el frontend simula Supabase y la API. La configuración en `backend/src/test/resources/application.properties` reemplaza la principal y no importa el archivo `.env`. Los tokens inválidos/vencidos se prueban simulando el rechazo del decoder de Spring Security.

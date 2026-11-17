@@ -104,30 +104,37 @@ com.arise.corp
 - Comentarios y encabezados de sección de `application.properties` en español.
 
 ## Frontend [Aprobado, MVP §9]
-La SPA organiza las vistas de acceso, perfil y CRM en `frontend/src/`. La sección 11.6 del README enumera las rutas disponibles por rol.
+La SPA organiza las vistas de acceso, perfil, CRM y ERP en `frontend/src/`. La sección 11.6 del README enumera las rutas disponibles por rol. El frontend ERP está implementado sobre el contrato de la spec 003; su validación con Supabase real sigue pendiente del backend y la migración.
 
 ```text
 frontend/
 ├── .env.example      # solo variables VITE_* públicas
+├── public/assets/erp.svg           # icono estático del menú ERP
 └── src/
     ├── App.jsx                    # registro de rutas y agrupación por permiso
     ├── pages/                     # Login.jsx y Perfil.jsx
-    │   └── crm/                   # clientes, contratos, cuentas corporativas y resumen
+    │   ├── crm/                   # clientes, contratos, cuentas corporativas y resumen
+    │   └── erp/                   # empleados, proveedores, movimientos y panel financiero
+    │       └── RegistroCompartido.jsx # lista, formulario y detalle comunes de empleados/proveedores
     ├── context/
     │   ├── AuthContext.jsx        # sesión de Supabase
     │   └── PerfilContext.jsx      # perfil y rol compartidos de GET /api/me
     ├── components/
-    │   └── AppLayout.jsx          # cabecera privada, menú por rol y salida de sesión
+    │   ├── AppLayout.jsx          # cabecera privada, menú CRM/ERP por rol y salida de sesión
+    │   ├── SelectorRegistro.jsx   # búsqueda y asociación de cliente/proveedor, conserva inactivos actuales
+    │   └── EstadoMovimientoEtiqueta.jsx # pendiente, pagado o anulado
     ├── routes/
     │   ├── ProtectedRoute.jsx     # comprueba la sesión
     │   └── RolRoute.jsx           # comprueba el rol antes de montar la vista
     ├── services/
     │   ├── apiClient.js           # cliente HTTP autenticado y errores de la API
-    │   └── crmApi.js              # consultas y escrituras del CRM
+    │   ├── crmApi.js              # consultas y escrituras del CRM
+    │   └── erpApi.js              # consultas y escrituras del ERP con importes como texto
     └── lib/
         ├── supabase.js            # cliente de autenticación
         ├── permisos.js            # menú, permisos y transiciones visibles
         ├── validacionCrm.js       # normalización y validación de formularios
+        ├── validacionErp.js       # documentos, importes positivos, asociaciones y fechas de Colombia
         └── formato.js             # importes en COP, fechas e instantes en es-CO
 ```
 

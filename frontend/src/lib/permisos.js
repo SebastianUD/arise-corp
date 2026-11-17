@@ -10,6 +10,17 @@ export const puedeGestionarCrm = rol => rol === 'ADMINISTRADOR' || rol === 'COME
 export const puedeLeerClientes = rol => puedeGestionarCrm(rol) || rol === 'FINANZAS_RRHH' || rol === 'OPERACIONES'
 export const puedeLeerContratos = rol => puedeGestionarCrm(rol) || rol === 'OPERACIONES'
 
+export const puedeGestionarErp = rol => rol === 'ADMINISTRADOR' || rol === 'FINANZAS_RRHH'
+export const TRANSICIONES_MOVIMIENTO = { PENDIENTE: ['PAGADO', 'ANULADO'], PAGADO: [], ANULADO: [] }
+export const esMovimientoEditable = estado => estado === 'PENDIENTE'
+export const OPCIONES_ERP = [
+  { texto: 'Empleados', ruta: '/erp/empleados', accion: 'Gestionar empleados' },
+  { texto: 'Proveedores', ruta: '/erp/proveedores', accion: 'Gestionar proveedores' },
+  { texto: 'Movimientos financieros', ruta: '/erp/movimientos', accion: 'Registrar movimientos' },
+  { texto: 'Panel financiero', ruta: '/erp/resumen', accion: 'Ver totales' },
+]
+export const opcionesMenuErp = rol => puedeGestionarErp(rol) ? OPCIONES_ERP : []
+
 export const TRANSICIONES = {
   BORRADOR: ['ACTIVO', 'CANCELADO'],
   ACTIVO: ['FINALIZADO', 'CANCELADO'],
