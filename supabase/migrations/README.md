@@ -22,6 +22,7 @@ CLI y siguen el nombre `<timestamp>_<nombre>.sql` (DP-TEC-03).
 |---|---|---|
 | `20261108000000_app_perfiles_usuario.sql` | Esquema privado `app` y tabla `perfiles_usuario` (perfil empresarial, RLS, revocacion de grants a `anon`/`authenticated`). | 001-foundation, tarea 15 |
 | `20261111120000_app_crm_clientes_contratos.sql` | Tablas `cuentas_corporativas`, `clientes` y `contratos` del CRM (PK UUID, `UNIQUE`, `CHECK`, FK, indices, auditoria, RLS y revocacion de grants a `anon`/`authenticated`). | 002-crm-clientes-contratos |
+| `20261118095500_app_erp_empleados_proveedores_movimientos.sql` | Tablas `empleados`, `proveedores` y `movimientos_financieros` del ERP (PK UUID, `UNIQUE` de documento, `CHECK` de formato y coherencia tipo-relacion, FK a `app.clientes` y `app.proveedores`, indices de fecha y FK, auditoria, RLS y revocacion de grants a `anon`/`authenticated`). | 003-erp-empleados-proveedores-finanzas |
 
 ## Aprovisionamiento del primer Administrador
 
