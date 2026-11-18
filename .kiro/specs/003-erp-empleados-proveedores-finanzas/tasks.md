@@ -37,7 +37,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
 
 ## Tasks
 
-- [ ] 1. Preparar la rama y las reglas de la spec
+- [x] 1. Preparar la rama y las reglas de la spec
   - [x] 1.1 Crear la rama `feat/erp-empleados-proveedores-finanzas` desde `main`
     - Área: integración/Git · Responsable: Paula
     - Actualizar `main` (`git switch main` y `git pull`), crear la rama con `git switch -c feat/erp-empleados-proveedores-finanzas` y publicarla con `git push -u origin feat/erp-empleados-proveedores-finanzas`
@@ -45,7 +45,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Comprobar con `git status` que ningún archivo `.env` queda preparado para commit
     - _Requisitos: 29.6, DP-SDD-03, DP-SDD-04, DP-SDD-05, NF-01_
 
-  - [ ] 1.2 Registrar en los steering los ajustes de reglas que adopta el diseño
+  - [x] 1.2 Registrar en los steering los ajustes de reglas que adopta el diseño
     - Área: documentación · Responsable: Davidson
     - `architecture.md`, DP-ARQ-01: los módulos consumidores leen clientes mediante `crm.service.ClienteReferenciaService` (solo lectura, en lote y con bloqueo de lectura dentro de la transacción del llamador); el ERP define sus propios DTO de salida (D2, D3)
     - `api-conventions.md`, sección "Validaciones": las reglas entre parámetros de consulta (por ejemplo `desde ≤ hasta`) lanzan `ParametroInvalidoException` y responden 400 con `errors` en el parámetro afectado (D9)
@@ -55,15 +55,16 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - _Requisitos: 29.3, NF-05, DP-ARQ-01, DP-API-04_
 
 - [ ] 2. Crear y revisar la migración del ERP
-  - [ ] 2.1 Crear `supabase/migrations/<timestamp>_app_erp_empleados_proveedores_movimientos.sql`
+  - [x] 2.1 Crear `supabase/migrations/<timestamp>_app_erp_empleados_proveedores_movimientos.sql`
     - Área: base de datos · Responsable: Davidson
     - Generar el archivo con `supabase migration new app_erp_empleados_proveedores_movimientos`; el timestamp debe ser posterior a `20261111120000`. No modificar las migraciones existentes
     - Escribir el SQL de "Migración ERP" del diseño: `app.empleados`, `app.proveedores` y `app.movimientos_financieros` en orden de dependencia, con `create table` sin `if not exists`; PK UUID; `UNIQUE` `empleados_documento_uk` y `proveedores_documento_uk`; `CHECK` de tipos y formato de documento (solo dígitos con `CC` en empleados y con `CC` o `NIT` en proveedores), longitudes, teléfono, `tipo`, `estado`, `valor > 0`, concepto, referencia y coherencia de `cliente_id` y `proveedor_id` con `tipo`; FK `cliente_id → app.clientes` y `proveedor_id → app.proveedores`; índices de `fecha`, `cliente_id` y `proveedor_id`; comentarios de tabla; auditoría `timestamptz` y `uuid not null` sin FK a `auth.users`. Sin `CHECK` de fecha de ingreso no futura (interpretación 9 del diseño)
     - Habilitar RLS en las tres tablas y ejecutar `revoke all ... from anon, authenticated`. Sin `insert`, UUID personales, secretos ni sentencias que no admitan transacción
     - Anotar en este `tasks.md` el nombre real del archivo
+    - Archivo real: `20261118095500_app_erp_empleados_proveedores_movimientos.sql`
     - _Requisitos: 2.1–2.9, ERP-01, ERP-02, ERP-03, ERP-05, NF-01, NF-03, NF-05, DP-SEG-05, DP-SEG-06, DP-API-04_
 
-  - [ ] 2.2 Registrar la migración en `supabase/migrations/README.md`
+  - [x] 2.2 Registrar la migración en `supabase/migrations/README.md`
     - Área: base de datos · Responsable: Davidson
     - Añadir la fila de la Migracion_ERP a la tabla "Migraciones" con su nombre real, la descripción y `003-erp-empleados-proveedores-finanzas`. Las reglas de revisión y aplicación de DP-TEC-03 ya están en el archivo desde `002-crm-clientes-contratos` y no cambian
     - _Requisitos: 29.4, NF-05, DP-TEC-03_
@@ -74,7 +75,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - No la apliques tú: la aplicación controlada es la tarea 15.1 y la realiza Davidson, autor de la migración, después de `MigracionesErpIT` (14.2) y de esta revisión
     - _Requisitos: 2.1–2.9, 29.7, DP-TEC-03, DP-SEG-05_
 
-- [ ] 3. Ampliar los componentes compartidos del backend
+- [x] 3. Ampliar los componentes compartidos del backend
   - [x] 3.1 Crear `shared.error.ParametroInvalidoException` y su handler
     - Área: backend · Responsable: Sebastián
     - `ParametroInvalidoException(String parametro, String mensaje)` con `getParametro()` (D9)
@@ -92,12 +93,12 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Restricción compuesta con `@ReportAsSingleViolation`, `@DecimalMin(value = "0.00", inclusive = false)` y `@Digits(integer = 13, fraction = 2)`; acepta `null`; mensaje "debe ser mayor que 0, con hasta 13 dígitos enteros y 2 decimales" (D6). `@ValorCop` del CRM no cambia
     - _Requisitos: 13.7, DP-API-04_
 
-  - [ ] 3.4 Crear `@FechaNoFutura` en `shared.validacion`
+  - [x] 3.4 Crear `@FechaNoFutura` en `shared.validacion`
     - Área: backend · Responsable: Davidson
     - Anotación con su `ConstraintValidator<FechaNoFutura, LocalDate>` y la constante `ZONA_COLOMBIA = ZoneId.of("America/Bogota")`; acepta `null`; informa "no puede ser posterior a la fecha actual" si la fecha es posterior a `LocalDate.now(contexto.getClockProvider().getClock().withZone(ZONA_COLOMBIA))` (D6, D7)
     - _Requisitos: 4.7, DP-API-04_
 
-  - [ ] 3.5 Registrar el reloj de la aplicación en Bean Validation
+  - [x] 3.5 Registrar el reloj de la aplicación en Bean Validation
     - Área: backend · Responsable: Davidson
     - En `config.ClockConfig`, `@Bean ValidationConfigurationCustomizer relojDeValidacion(Clock clock)` que devuelve `configuracion -> configuracion.clockProvider(() -> clock)`. Comprobar el paquete de `ValidationConfigurationCustomizer` en Spring Boot 4.1.2 (`org.springframework.boot.validation.autoconfigure`); no se añade ninguna dependencia (D7, D21)
     - _Requisitos: 4.7, 29.5, DP-API-04_
@@ -108,7 +109,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Solo datos ficticios
     - _Requisitos: 25.3, 25.4, NF-07_
 
-  - [ ] 3.7 Escribir `shared/validacion/FechaNoFuturaTests`
+  - [x] 3.7 Escribir `shared/validacion/FechaNoFuturaTests`
     - Área: backend · Responsable: Davidson
     - `Validator` construido con `Validation.byDefaultProvider().configure().clockProvider(...)`: con el reloj fijo en `2026-11-21T03:30:00Z` (20 de noviembre en Bogotá) acepta `2026-11-20` y rechaza `2026-11-21`; `null` es válido
     - **Property 3: Las validaciones de formato coinciden con la regla de referencia** (fecha de ingreso con `relojAleatorio` y `fechaAlrededorDe`) · **Validates: Requirements 4.7**
@@ -127,53 +128,53 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - `@SpringBootTest` con H2 y `CrmDatosPrueba`: `buscar` con cliente activo, inactivo e inexistente; `buscarTodos` con colección vacía (sin consulta), ids mezclados, repetidos e inexistentes; `buscarParaAsociar` dentro de un `TransactionTemplate`; fuera de transacción lanza `IllegalTransactionStateException`
     - _Requisitos: 1.6, 14.11, 25.1, NF-07_
 
-- [ ] 5. Implementar las entidades y los repositorios JPA del ERP
-  - [ ] 5.1 Crear las enumeraciones de `erp.entity`
+- [x] 5. Implementar las entidades y los repositorios JPA del ERP
+  - [x] 5.1 Crear las enumeraciones de `erp.entity`
     - Área: backend · Responsable: Davidson
     - `TipoDocumentoEmpleado { CC, CE, PASAPORTE }`, `TipoDocumentoProveedor { NIT, CC, CE, PASAPORTE }`, `TipoMovimiento { INGRESO, EGRESO }` y `EstadoMovimiento { PENDIENTE, PAGADO, ANULADO }` (D4). Las reglas de transición se añaden en la tarea 6.1. No se reutiliza `crm.entity.TipoDocumento`
     - _Requisitos: 1.1, 1.5, 2.2–2.5, DP-API-04_
 
-  - [ ] 5.2 Implementar las entidades `Empleado` y `Proveedor`
+  - [x] 5.2 Implementar las entidades `Empleado` y `Proveedor`
     - Área: backend · Responsable: Davidson
     - Mapeo según "Entidades JPA (`erp.entity`)" del diseño: `@Table` sin esquema con `uniqueConstraints` `empleados_documento_uk` y `proveedores_documento_uk`, `@Id @GeneratedValue(strategy = GenerationType.UUID)`, `@Enumerated(EnumType.STRING)`, `fechaIngreso` como `LocalDate` y `creadoEn` con `updatable = false`
     - Sin setters públicos: `static crear(..., UUID actor, Instant ahora)` con `activo = true`, `actualizarDatos(..., actor, ahora)` y `boolean cambiarEstado(boolean activo, actor, ahora)`, que devuelve `false` y no toca la auditoría si el valor no cambia
     - _Requisitos: 1.1, 2.2, 2.3, 2.7, 2.10, 4.1, 7.3, 9.1, 12.2, DP-SEG-06_
 
-  - [ ] 5.3 Implementar la entidad `MovimientoFinanciero`
+  - [x] 5.3 Implementar la entidad `MovimientoFinanciero`
     - Área: backend · Responsable: Davidson
     - `valor` `BigDecimal` con `precision = 15, scale = 2`; `cliente_id` como `UUID clienteId` sin asociación JPA (D1); `@ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "proveedor_id") Proveedor proveedor` opcional, sin colecciones inversas; `estado`, `estadoActualizadoEn`, `estadoActualizadoPor` y auditoría de datos
     - `static crear(tipo, fecha, concepto, valor, referencia, clienteId, proveedor, actor, ahora)` en `PENDIENTE`, con la auditoría de estado igual a la de datos; `actualizarDatos(...)` cambia solo los siete campos editables y `actualizado_*`; `cambiarEstado(destino, actor, ahora)` cambia solo `estado` y su auditoría (D13). Las defensas de invariantes se añaden en la tarea 6.1
     - _Requisitos: 1.7, 2.4, 2.7, 2.10, 13.1, 16.5, 17.1, 17.5, DP-ARQ-01, DP-SEG-06_
 
-  - [ ] 5.4 Crear los repositorios del ERP
+  - [x] 5.4 Crear los repositorios del ERP
     - Área: backend · Responsable: Davidson
     - `EmpleadoRepository` y `ProveedorRepository` con `JpaSpecificationExecutor` y `findByTipoDocumentoAndNumeroDocumento`; `ProveedorRepository.findParaAsociarById` con `@Lock(LockModeType.PESSIMISTIC_READ)`
     - `MovimientoFinancieroRepository` con `findAll(Specification, Pageable)` y `findConProveedorById` con `@EntityGraph(attributePaths = "proveedor")`, y `findParaModificarById` con `@Lock(LockModeType.PESSIMISTIC_WRITE)` sin *fetch join* (D12)
     - _Requisitos: 5.1, 10.1, 14.11, 15.1, 15.8, ERP-01, ERP-02, ERP-03_
 
-  - [ ] 5.5 Crear el fragmento `TotalesMovimientos` del panel
+  - [x] 5.5 Crear el fragmento `TotalesMovimientos` del panel
     - Área: backend · Responsable: Davidson
     - `TotalesMovimientos.totalizar(LocalDate desde, LocalDate hasta)`, `record TotalMovimientos(TipoMovimiento tipo, EstadoMovimiento estado, Long cantidad, BigDecimal suma)` y `TotalesMovimientosImpl` con Criteria API que agrupa por `tipo` y `estado` y solo añade los límites presentes, sin parámetros nulos en JPQL (D10)
     - `MovimientoFinancieroRepository` pasa a extender `TotalesMovimientos`; Spring Data compone el fragmento por el sufijo `Impl` en el mismo paquete
     - _Requisitos: 18.1, 18.3, 18.6, ERP-04_
 
-  - [ ] 5.6 Crear `erp.repository.EspecificacionesErp`
+  - [x] 5.6 Crear `erp.repository.EspecificacionesErp`
     - Área: backend · Responsable: Davidson
     - `nombreODocumentoContiene(q)` y `activoIgual(Boolean)` genéricas para `Empleado` y `Proveedor`; `tipoIgual`, `estadoIgual`, `clienteIgual`, `proveedorIgual` (`proveedor.id`, sin *join*), `fechaDesde`, `fechaHasta` y `conceptoOReferenciaContiene(q)` para movimientos
     - JPQL portable con `LIKE ... ESCAPE '\'` y `NormalizadorTexto.patronContiene`; el documento solo se compara si el Documento_Normalizado de `q` no queda vacío; una referencia nula no coincide; un filtro ausente devuelve `Specification.unrestricted()`
     - _Requisitos: 5.3, 5.4, 10.3, 10.4, 15.2–15.5, ERP-01, ERP-02, ERP-03_
 
-  - [ ]* 5.7 Escribir `erp/repository/ErpRepositoriosTests`
+  - [x]* 5.7 Escribir `erp/repository/ErpRepositoriosTests`
     - Área: backend · Responsable: Davidson
     - `@DataJpaTest` en H2: guardar y leer las tres entidades, búsquedas derivadas, `@EntityGraph("proveedor")`, consultas con bloqueo y composición de `totalizar` con y sin límites, con datos ficticios
     - _Requisitos: 2.10, 18.1, NF-07_
 
-  - [ ]* 5.8 Escribir `erp/repository/EspecificacionesErpTests`
+  - [x]* 5.8 Escribir `erp/repository/EspecificacionesErpTests`
     - Área: backend · Responsable: Davidson
     - `@DataJpaTest` en H2: cada especificación por separado y combinada, escape de `%`, `_` y `\`, referencia nula sin coincidencia y filtros ausentes sin restricción
     - _Requisitos: 5.3, 10.3, 15.4, 15.5, NF-07_
 
-  - [ ] 5.9 Crear `ErpDatosPrueba` en el paquete de prueba `com.arise.corp.erp`
+  - [x] 5.9 Crear `ErpDatosPrueba` en el paquete de prueba `com.arise.corp.erp`
     - Área: backend · Responsable: Davidson
     - Componente de prueba que se importa con `@Import({CrmDatosPrueba.class, ErpDatosPrueba.class})`: crea empleados, proveedores y movimientos ficticios en cualquier estado (aplicando `cambiarEstado` de la entidad) y su `limpiar()` borra movimientos, proveedores y empleados y después llama a `CrmDatosPrueba.limpiar()`. Los perfiles y los clientes se crean con `CrmDatosPrueba`; la autenticación usa `AutenticacionPerfilTestSupport.como(...)` con el `PerfilJwtAuthenticationConverter` real
     - _Requisitos: 25.5, 25.6, NF-07_
@@ -202,19 +203,19 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Cada fábrica fija el código, `campo`, `detail` y las extensiones (`empleadoId`, `proveedorId`, `estadoActual`, `estadoSolicitado`), sin documentos, nombres ni datos de contacto
     - _Requisitos: 8.4, 20.4, 20.5, CA-06, DP-API-02_
 
-- [ ] 7. Checkpoint de persistencia y componentes compartidos
+- [x] 7. Checkpoint de persistencia y componentes compartidos
   - Área: verificación · Responsable: Davidson
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/`: el contexto arranca con las entidades ERP en H2, el `ValidationConfigurationCustomizer` queda registrado y las pruebas existentes de `001-foundation` y `002-crm-clientes-contratos` pasan. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
 - [ ] 8. Implementar la vertical de empleados
-  - [ ] 8.1 Crear los DTO de empleados y la validación de documentos del ERP
+  - [x] 8.1 Crear los DTO de empleados y la validación de documentos del ERP
     - Área: backend · Responsable: Davidson
     - `EmpleadoRequest` como el record del diseño: `@JsonIgnoreProperties(ignoreUnknown = true)`, normalización en el constructor compacto, `@NotNull` separado del formato, `@Correo`, `@Telefono`, `@FechaNoFutura`, mensajes en español y `toString()` "EmpleadoRequest[datos protegidos]"
     - `EmpleadoResponse` con los 13 campos, `static desde(Empleado)` y `toString()` protegido; `EstadoActivoRequest` con `activo` obligatorio, compartido con proveedores (D14)
     - En `erp.dto.validacion`: interfaz `DocumentoErp` y restricción de clase `@NumeroDocumentoErpValido` con su validador, que informa sobre el nodo `numeroDocumento` "debe tener entre 3 y 20 letras o dígitos" o `mensajeSoloDigitos()` (D4). `NumeroDocumentoValido` del CRM no cambia
     - _Requisitos: 3.1, 3.2, 3.5, 4.2–4.7, 4.10, 5.6, 7.4, 8.1–8.3, 20.2, ERP-01_
 
-  - [ ] 8.2 Escribir `erp/dto/EmpleadoRequestValidacionTests`
+  - [x] 8.2 Escribir `erp/dto/EmpleadoRequestValidacionTests`
     - Área: backend · Responsable: Davidson
     - `jakarta.validation.Validator` con `ClockProvider` fijo y `GeneradoresErp`; mensajes en español; `1.023.456-7` se normaliza a `10234567`; `tipoDocumento` `NIT` no es un valor de la enumeración
     - **Property 1: La normalización es idempotente** (campos de `EmpleadoRequest`) · **Validates: Requirements 3.4, 3.5**
@@ -259,13 +260,13 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - _Requisitos: 4.7, 25.1, NF-07_
 
 - [ ] 9. Implementar la vertical de proveedores
-  - [ ] 9.1 Crear `ProveedorRequest` y `ProveedorResponse`
+  - [x] 9.1 Crear `ProveedorRequest` y `ProveedorResponse`
     - Área: backend · Responsable: Davidson
     - `ProveedorRequest` con la forma de `EmpleadoRequest`: `TipoDocumentoProveedor`; `nombreContacto`, `direccion` y `ciudad` opcionales (`@Size` sin `@NotNull`, vacío → `null`); `exigeSoloDigitos()` verdadero para `CC` y `NIT` con el mensaje "solo admite dígitos para el tipo CC o NIT"; `toString()` protegido
     - `ProveedorResponse` con los 13 campos, `static desde(Proveedor)` y `toString()` protegido
     - _Requisitos: 3.1, 3.2, 3.5, 8.1–8.3, 9.2–9.6, 9.9, 10.6, ERP-02_
 
-  - [ ] 9.2 Escribir `erp/dto/ProveedorRequestValidacionTests`
+  - [x] 9.2 Escribir `erp/dto/ProveedorRequestValidacionTests`
     - Área: backend · Responsable: Davidson
     - `Validator` y `GeneradoresErp`; opcionales vacíos convertidos en `null`
     - **Property 2: Las variantes de formato de un documento o de una referencia son el mismo valor** (documento de proveedor) · **Validates: Requirements 3.1, 3.2**
@@ -850,3 +851,30 @@ Implementación y verificación local de 1.1 y de los grupos 19–29, incluidos 
 Sin cambios en dependencias, variables de entorno, backend, migraciones, Docker ni workflows. No se abrieron archivos `.env`; no se usaron cuentas ni datos personales reales. Las pruebas frontend simulan Supabase y la API; no acreditan una integración real.
 
 **Pendiente de Paula: 30.1.** No se ejecutó: faltan la migración ERP aplicada (15.1), los endpoints ERP y las cuentas/datos ficticios previstos para la validación manual. La spec sigue abierta y el PR único se mantiene para su cierre completo (32.3), según DP-SDD-05.
+
+### Backend de Davidson · 2026-11-18
+
+Implementación y verificación local de 1.2, 2.1, 2.2, 3.4, 3.5, 3.7, 5.1–5.9, 8.1, 8.2, 9.1, 9.2 y del checkpoint 7. Solo se incluyeron tareas sin dependencia de otros responsables.
+
+| Tareas | Entregable y evidencia |
+|---|---|
+| 1.2 | `architecture.md` (DP-ARQ-01), `api-conventions.md` (reglas entre parámetros y fecha de negocio en `America/Bogota`) y `tech.md` (`ValidationConfigurationCustomizer`) actualizados antes del código que aplica las reglas |
+| 3.4, 3.5, 3.7 | `shared/validacion/FechaNoFutura` con `ZONA_COLOMBIA`; `ClockConfig.relojDeValidacion` con el paquete verificado `org.springframework.boot.validation.autoconfigure` de Spring Boot 4.1.2; `FechaNoFuturaTests` con reloj fijo en `2026-11-21T03:30:00Z` y Property 3 con `relojAleatorio`/`fechaAlrededorDe` |
+| 5.1–5.9 | Enumeraciones, entidades sin setters públicos, repositorios con bloqueos, `@EntityGraph` y búsquedas derivadas; fragmento `TotalesMovimientos` con Criteria API; `EspecificacionesErp` con escape de comodines; `ErpRepositoriosTests` (5), `EspecificacionesErpTests` (8) y `ErpDatosPrueba`. `GeneradoresErp` se reutiliza sin cambios |
+| 2.1, 2.2 | `20261118095500_app_erp_empleados_proveedores_movimientos.sql` con el SQL del diseño y su fila en `supabase/migrations/README.md`. La CLI de Supabase no está instalada en el equipo, así que el archivo se creó con el mismo nombre y timestamp posterior a `20261111120000` |
+| 8.1, 8.2 | `EmpleadoRequest`, `EmpleadoResponse`, `EstadoActivoRequest`, `DocumentoErp` y `@NumeroDocumentoErpValido`; 10 pruebas con Properties 1–4, `1.023.456-7` → `10234567` y `NIT` fuera de la enumeración |
+| 9.1, 9.2 | `ProveedorRequest` y `ProveedorResponse` con opcionales vacíos a `null` y solo dígitos para `CC` y `NIT`; 8 pruebas con Properties 2, 3 y 4 |
+
+Comando ejecutado desde `backend/`:
+
+```text
+.\mvnw.cmd -B clean test
+```
+
+Resultado: 562 pruebas, 0 fallos, 0 errores, 0 omitidas · `BUILD SUCCESS` (528 previas + 34 nuevas). Sin Docker, sin Supabase y sin `.env`.
+
+Alcance respetado:
+
+- No se crearon `ConflictosErp` (6.4), la máquina de estados (6.1), la ampliación de `PostgresIntegracionBase` (14.1), los controladores ni los servicios de empleados, proveedores, movimientos o panel. Por eso quedan pendientes 8.3–8.6 y 9.3–9.6 (dependen de 6.4; 9.5 comparte commit con 12.1), 8.7 (necesita el endpoint de empleados), 14.2, 15.1, 16.2, 17.1–17.3, 18, 30.2 y 32.x.
+- La migración no está aplicada: faltan la revisión 2.3, `MigracionesErpIT` (14.2) y la aplicación controlada (15.1). Mientras no se aplique, el backend de la rama no arranca contra `arise-corp-dev`.
+- Los commits de esta tanda se registran en la rama; no se hizo push ni se abrió el PR.
