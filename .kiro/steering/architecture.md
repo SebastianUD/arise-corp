@@ -69,6 +69,8 @@ Justificación de que las entidades no salgan de la capa de servicio: con `sprin
 
 Todos los módulos dependen de la autorización por rol. ERP y SGA consultan CRM solo a través de sus servicios y para las lecturas cruzadas autorizadas en `product.md`. Las relaciones entre módulos conservan UUID y FK en PostgreSQL; no se crean asociaciones JPA entre módulos.
 
+DP-ARQ-01: los módulos consumidores leen clientes mediante `crm.service.ClienteReferenciaService`, que expone solo identificador, nombre y estado (solo lectura, en lote con una consulta y con bloqueo de lectura dentro de la transacción del llamador). El ERP define sus propios DTO de salida y nunca accede a la entidad `Cliente` ni a `ClienteRepository`.
+
 ### Orden de construcción [Aprobado, MVP §13]
 1. Constitución del proyecto: alcance, stack, arquitectura y convenciones (estos steering files).
 2. Especificación `001-foundation`: autenticación e integración técnica.

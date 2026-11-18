@@ -78,6 +78,8 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 ## Validaciones
 - Los DTO de entrada se validan con Bean Validation: `@Valid` en el `@RequestBody` y anotaciones como `@NotNull`, `@NotBlank`, `@Size`, `@Email` o `@Positive` en los campos. Los parámetros de ruta y de consulta se validan con la validación de métodos integrada de Spring MVC, con las restricciones (`@Min`, `@Max`, `@Pattern`, etc.) directamente en los `@RequestParam` y `@PathVariable`, sin `@Validated` a nivel de clase (D8).
 - Las reglas que dependen de datos (duplicados, existencia y estado de los recursos referenciados, transiciones válidas, existencias de inventario) se comprueban en el servicio y producen 404 o 409.
+- Las reglas entre parámetros de consulta (por ejemplo `desde ≤ hasta`) lanzan `ParametroInvalidoException` desde el DTO o record que recibe los parámetros y responden 400 con `errors` en el parámetro afectado (D9).
+- La "fecha actual" de una regla de negocio es la fecha calendario en `America/Bogota`, calculada con el `Clock` de la aplicación (`LocalDate.now(clock.withZone(ZONA_COLOMBIA))`), nunca con `LocalDate.now()` ni con la zona por defecto del servidor (DP-API-04, D7).
 - No confiar en identificadores enviados por el cliente: comprobar que el recurso referenciado existe y está activo antes de usarlo (por ejemplo, el cliente al que se asocia un paquete).
 - Las restricciones de PostgreSQL son la última defensa (NF-03). Una `DataIntegrityViolationException` se traduce a 409 sin exponer el mensaje de la base.
 - El frontend valida para mejorar la usabilidad (NF-06), pero la validación que vale es la del backend.

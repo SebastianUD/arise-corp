@@ -53,6 +53,7 @@ Spring Boot 4 trae Spring Framework 7, Spring Security 7, Hibernate 7 y Jackson 
 - Datasource: `jdbc:postgresql://${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}?sslmode=require` con `org.postgresql.Driver`.
 - `spring.jpa.hibernate.ddl-auto=validate`: Hibernate valida la entidad contra las migraciones y nunca crea ni modifica el esquema (DP-TEC-03). `spring.jpa.properties.hibernate.default_schema=app` sitúa las entidades en el esquema privado (DP-ARQ-02).
 - `spring.jpa.open-in-view=false`: la sesión de Hibernate no sigue abierta durante la serialización de la respuesta. Las relaciones perezosas se cargan dentro del servicio, en la transacción.
+- `ClockConfig` registra el `Clock` de la aplicación y un `ValidationConfigurationCustomizer` (`org.springframework.boot.validation.autoconfigure`) que entrega ese `Clock` a Bean Validation, de modo que las restricciones que dependen de la fecha actual (como `@FechaNoFutura`) usan la fecha de `America/Bogota` y son reproducibles en pruebas con un reloj fijo (D7).
 - JWT: issuer, JWKS, algoritmo ES256 y audiencia `authenticated` (detalle en `security.md`).
 - Puerto: no configurado; Spring Boot usa 8080.
 
