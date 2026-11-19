@@ -428,7 +428,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/` sin Docker, sin Supabase y sin `.env` (Requirement 25.11), con las pruebas de `001-foundation` y `002-crm-clientes-contratos` en verde. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
 - [ ] 14. Implementar las pruebas de integración del ERP con PostgreSQL efímero
-  - [ ] 14.1 Ampliar `PostgresIntegracionBase`
+  - [x] 14.1 Ampliar `PostgresIntegracionBase`
     - Área: backend · Responsable: Sebastián
     - El `truncate` de `@BeforeEach` incluye `app.movimientos_financieros`, `app.proveedores` y `app.empleados` antes de las tablas del CRM, `app.perfiles_usuario` y `auth.users`, con `cascade`, según el diseño. `MigracionesSupabase`, `PostgresContenedorConfig`, el Script_Preparacion_IT y `pom.xml` no cambian
     - _Requisitos: 26.1, 26.9, 26.10, ENG-03_
@@ -984,4 +984,24 @@ Alcance respetado:
 - `ResumenFinancieroResponse` completa lo que la tarea 10 dejó fuera; `SerializacionErpTests` no cambió y las aserciones de `desde`/`hasta` nulos quedan cubiertas por 11.2 y 11.6.
 - No se aplicó ninguna migración a `arise-corp-dev` ni se usaron credenciales, tokens o datos personales.
 - El commit de esta tanda incluye el código, las pruebas y este registro; queda solo en local, sin push.
+
+### Base de pruebas de integración (tarea 14.1) — 2026-11-18
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 14.1 | `PostgresIntegracionBase.vaciarTablas()` | El `truncate` incluye `app.movimientos_financieros`, `app.proveedores` y `app.empleados` antes de las tablas del CRM, `app.perfiles_usuario` y `auth.users`, con `cascade`, tal como fija el diseño. `MigracionesSupabase`, `PostgresContenedorConfig`, `preparacion-supabase.sql` y `pom.xml` no cambiaron |
+
+Comando ejecutado desde `backend/` con Docker disponible:
+
+```text
+.\mvnw.cmd -B clean verify
+```
+
+Resultado: 769 pruebas unitarias y 16 pruebas de integración, 0 fallos, 0 errores, 0 omitidas · `BUILD SUCCESS`. Las 16 IT del CRM (5 clases) comparten esta base, así que el nuevo `truncate` se ejecuta en cada una sin afectar a las tablas del CRM.
+
+Alcance respetado:
+
+- Solo se amplió la base compartida de IT; no se crearon `MigracionesErpIT` (14.2) ni las demás IT del ERP (14.3–14.6), que siguen pendientes.
+- No se aplicó ninguna migración a `arise-corp-dev` ni se usaron credenciales, tokens o datos personales.
+- El commit de esta tanda se publica en `origin/feat/erp-empleados-proveedores-finanzas`.
 
