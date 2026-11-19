@@ -427,7 +427,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
   - Área: verificación · Responsable: Sebastián
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/` sin Docker, sin Supabase y sin `.env` (Requirement 25.11), con las pruebas de `001-foundation` y `002-crm-clientes-contratos` en verde. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
-- [ ] 14. Implementar las pruebas de integración del ERP con PostgreSQL efímero
+- [x] 14. Implementar las pruebas de integración del ERP con PostgreSQL efímero
   - [x] 14.1 Ampliar `PostgresIntegracionBase`
     - Área: backend · Responsable: Sebastián
     - El `truncate` de `@BeforeEach` incluye `app.movimientos_financieros`, `app.proveedores` y `app.empleados` antes de las tablas del CRM, `app.perfiles_usuario` y `auth.users`, con `cascade`, según el diseño. `MigracionesSupabase`, `PostgresContenedorConfig`, el Script_Preparacion_IT y `pom.xml` no cambian
@@ -494,7 +494,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Evidencia parcial (2026-11-18): `backend-ci`, `frontend-ci` e `integration-tests` concluyeron en verde para el commit `84fe4cf`; los YAML de `.github/workflows/` no cambiaron. La tarea no se cierra hasta que existan `MovimientoTransaccionIT`, `FlujoErpIT`, `ConsultasErpIT` y `ResumenFinancieroIT` (14.3–14.6) y el log de `integration-tests` las liste.
     - _Requisitos: 26.11, 28.4–28.6, 28.8, ENG-04_
 
-- [ ] 17. Documentar el backend y actualizar los steering
+- [x] 17. Documentar el backend y actualizar los steering
   - [x] 17.1 Actualizar el README
     - Área: documentación · Responsable: Davidson
     - Aviso inicial y §4: estado con el ERP implementado. §5: estructura con `erp/`, `crm/service/ClienteReferenciaService`, `shared/validacion` ampliado, `shared/error/ParametroInvalidoException`, `pages/erp`, `services/erpApi.js` y la Migracion_ERP. La §11.6 la actualiza Paula en la tarea 28.1
