@@ -508,10 +508,11 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Los ajustes de reglas quedaron registrados en la tarea 1.2; aquí solo se comprueba que el código los cumple
     - _Requisitos: 29.3, CA-07, NF-05_
 
-  - [ ] 17.3 Actualizar los steering de API y seguridad
+  - [x] 17.3 Actualizar los steering de API y seguridad
     - Área: documentación · Responsable: Sebastián
     - `api-conventions.md`: endpoints del ERP en "Endpoints existentes", códigos de conflicto del ERP, `campo` en los 404 de `clienteId` y `proveedorId` y 405 de los `DELETE` del ERP
     - `security.md`: datos personales de empleados y proveedores con una sola representación para los gestores del ERP, sin lectura cruzada, DTO con `toString()` protegido y `ErpLogsTests` como verificación
+    - Evidencia (2026-11-18): `api-conventions.md` incluye las ocho filas de endpoints del ERP con sus roles y respuestas, el catálogo de conflictos del ERP con sus extensiones, el `campo` de los 404 de `clienteId` y `proveedorId` (y la lista vacía cuando el filtro no existe) y el 405 con `Allow` de los tres `DELETE`. `security.md` registra que `/api/erp/**` no tiene lecturas cruzadas, que el ERP lee clientes solo con `ClienteReferenciaService`, que empleados y proveedores comparten una única representación para los dos roles gestores y que `ErpLogsTests` verifica que no se filtran datos personales. Comprobado contra `SecurityConfig`, los controladores y `ErpLogsTests`; no se modificó código
     - _Requisitos: 8.3, 29.3, CA-07_
 
 - [x] 18. Checkpoint del backend completo
