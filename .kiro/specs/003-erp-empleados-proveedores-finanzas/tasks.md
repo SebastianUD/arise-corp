@@ -303,15 +303,15 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 19: Los errores del ERP no exponen información interna ni datos personales** · **Validates: Requirements 8.4, 20.8**
     - _Requisitos: 9.1–9.9, 10.1–10.7, 11.1–11.6, 12.1–12.6, 25.7, NF-07_
 
-- [ ] 10. Implementar la vertical de movimientos financieros
-  - [ ] 10.1 Crear los DTO de movimientos y `@RelacionCoherente`
+- [x] 10. Implementar la vertical de movimientos financieros
+  - [x] 10.1 Crear los DTO de movimientos y `@RelacionCoherente`
     - Área: backend · Responsable: Sebastián
     - `MovimientoRequest` como el record del diseño, para `POST` y `PUT` (D14): `@ValorCopPositivo`, `@Pattern` de referencia y normalización con `NormalizadorTexto.texto` y `NormalizadorTexto.codigo`; `EstadoMovimientoRequest` con `estado` obligatorio
     - `RegistroAsociado(UUID id, String nombre, boolean activo)` con `desde(Proveedor)` y `desde(ClienteReferencia)`, que devuelven `null` con entrada `null`; `MovimientoResponse` con `valor` como texto `setScale(2, RoundingMode.UNNECESSARY).toPlainString()` y `static desde(MovimientoFinanciero, ClienteReferencia)` con `Objects.requireNonNull` si hay `clienteId` (D3)
     - Restricción de clase `@RelacionCoherente` en `erp.dto.validacion`: no informa nada si `tipo` es `null`; informa "solo se admite en movimientos de tipo INGRESO" sobre `clienteId` y "solo se admite en movimientos de tipo EGRESO" sobre `proveedorId` (D8)
     - _Requisitos: 3.3, 3.5, 13.2–13.9, 14.1–14.3, 14.12, 15.8, 15.9, 17.3, ERP-03, ERP-05, DP-API-04_
 
-  - [ ] 10.2 Escribir `erp/dto/MovimientoRequestValidacionTests`
+  - [x] 10.2 Escribir `erp/dto/MovimientoRequestValidacionTests`
     - Área: backend · Responsable: Sebastián
     - `Validator` y `GeneradoresErp`; una referencia con `ñ` se rechaza; mensajes en español
     - **Property 2: Las variantes de formato de un documento o de una referencia son el mismo valor** (referencia) · **Validates: Requirements 3.3**
@@ -320,18 +320,18 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 9: La relación es coherente con el tipo** (las 8 combinaciones a nivel de DTO) · **Validates: Requirements 14.1, 14.2, 14.3**
     - _Requisitos: 25.3, 25.7, NF-07_
 
-  - [ ] 10.3 Crear `RangoFechas` y `FiltroMovimientos`
+  - [x] 10.3 Crear `RangoFechas` y `FiltroMovimientos`
     - Área: backend · Responsable: Sebastián
     - `record RangoFechas(LocalDate desde, LocalDate hasta)` en `erp.service`, que lanza `ParametroInvalidoException("hasta", "debe ser igual o posterior a la fecha desde")` si ambos límites existen y `desde` es posterior a `hasta` (D9)
     - `record FiltroMovimientos(TipoMovimiento tipo, EstadoMovimiento estado, UUID clienteId, UUID proveedorId, RangoFechas rango, String q)`
     - _Requisitos: 15.3, 15.7, 18.3, 18.5_
 
-  - [ ]* 10.4 Escribir `erp/service/RangoFechasTests`
+  - [x]* 10.4 Escribir `erp/service/RangoFechasTests`
     - Área: backend · Responsable: Sebastián
     - **Property 15: Los parámetros de lista y de rango se aceptan o rechazan según la regla** (rangos de `GeneradoresErp.rango` y rangos invertidos) · **Validates: Requirements 15.7, 18.5**
     - _Requisitos: 15.7, 18.5, NF-07_
 
-  - [ ] 10.5 Implementar `MovimientoService`
+  - [x] 10.5 Implementar `MovimientoService`
     - Área: backend · Responsable: Sebastián
     - Dependencias: `MovimientoFinancieroRepository`, `ProveedorRepository`, `ClienteReferenciaService`, `ConflictosErp` y `Clock`
     - `listar` (`Specification.allOf` de los filtros, `findAll` con `@EntityGraph` y una sola llamada a `buscarTodos` con los `clienteId` de la página; lista vacía con un `clienteId` o `proveedorId` sin registro), `obtener` (404 "El movimiento financiero no existe.") y `crear` (cliente con `buscarParaAsociar` y proveedor con `findParaAsociarById`: 404 con `campo`; inactivo → `CLIENTE_INACTIVO` o `PROVEEDOR_INACTIVO`; creación en `PENDIENTE`)
@@ -339,7 +339,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - `cambiarEstado` con `PESSIMISTIC_WRITE` y `TRANSICION_NO_PERMITIDA` con `estadoActual` y `estadoSolicitado`; no usa el estado del cliente ni del proveedor y solo actualiza la auditoría de estado (D12, D13). No registrar datos de clientes ni proveedores en logs
     - _Requisitos: 1.4, 1.5, 13.1, 14.4–14.12, 15.1–15.6, 15.8, 15.10, 16.1–16.6, 17.1, 17.2, 17.4–17.6, 17.8, 19.6, ERP-03, ERP-05, DP-ARQ-01, DP-SEG-06_
 
-  - [ ] 10.6 Escribir `erp/service/MovimientoServiceTests`
+  - [x] 10.6 Escribir `erp/service/MovimientoServiceTests`
     - Área: backend · Responsable: Sebastián
     - Mockito y `Clock.fixed` con `ClienteReferenciaService` y `ProveedorRepository` simulados: creación en `PENDIENTE` con auditorías iguales y el `sub` del actor; `listar` llama a `buscarTodos` una sola vez; orden 404 → 409 del `PUT`; `cambiarEstado` no llama a `buscarParaAsociar` ni a `findParaAsociarById`
     - **Property 10: Solo se asocian registros activos o la asociación actual** (15 combinaciones por cliente y por proveedor) · **Validates: Requirements 14.4, 14.5, 14.6, 14.7, 14.8, 14.9**
@@ -347,12 +347,12 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 12: Solo se aceptan las dos transiciones permitidas** (relacionado ausente, activo o inactivo) · **Validates: Requirements 17.1, 17.2, 17.5, 17.6**
     - _Requisitos: 25.1, 25.2, NF-07, ERP-03, ERP-05_
 
-  - [ ] 10.7 Implementar `MovimientoController`
+  - [x] 10.7 Implementar `MovimientoController`
     - Área: backend · Responsable: Sebastián
     - `GET`, `GET /{id}`, `POST`, `PUT /{id}` y `PATCH /{id}/estado` en `/api/erp/movimientos` según el código del diseño: filtros `tipo`, `estado`, `clienteId`, `proveedorId`, `desde` y `hasta` con `@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)`, `q`, `page`, `size` y `sort` (`fecha`, `valor` o `creadoEn`; por defecto `fecha,desc`); `RangoFechas` construido en el controlador; sin `DELETE` mapeado
     - _Requisitos: 1.2, 1.3, 13.1, 15.1–15.10, 16.1, 17.1, 17.3, 17.7, 17.8, ERP-03_
 
-  - [ ] 10.8 Escribir `erp/controller/MovimientoControllerTests`
+  - [x] 10.8 Escribir `erp/controller/MovimientoControllerTests`
     - Área: backend · Responsable: Sebastián
     - 201 con `Location`, 200, 400 por cada regla (incluidos `estado` desconocido, `fecha` inválida, `valor` `"abc"`, relación incoherente y `desde > hasta` en `hasta`), 404 de la ruta y de `clienteId` o `proveedorId` con `campo`, 409 de cada conflicto con `conflicto`, `campo` y extensiones, y 405 de `DELETE` con `Allow`; `valor` serializado con dos decimales
     - **Property 6: Los campos controlados por el servidor no se toman del cuerpo** · **Validates: Requirements 13.1, 13.9, 16.3, 16.5**
@@ -361,7 +361,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 19: Los errores del ERP no exponen información interna ni datos personales** · **Validates: Requirements 8.4, 20.1, 20.3, 20.8**
     - _Requisitos: 13.1–13.9, 14.1–14.12, 15.1–15.10, 16.1–16.6, 17.1–17.8, 20.4–20.6, 25.7, NF-07_
 
-  - [ ]* 10.9 Escribir `erp/dto/SerializacionErpTests`
+  - [x]* 10.9 Escribir `erp/dto/SerializacionErpTests`
     - Área: backend · Responsable: Sebastián
     - `@SpringBootTest` con el `ObjectMapper` de la aplicación; `cliente`, `proveedor`, `desde` y `hasta` se serializan como `null`
     - **Property 5: Los importes viajan como texto sin perder precisión** (`valor` de ida y vuelta como texto y como número) · **Validates: Requirements 15.9**
@@ -929,3 +929,33 @@ Alcance respetado:
 - Sin credenciales, tokens ni datos personales en este registro.
 
 Commit: `8a3f010` (6.1–6.4).
+
+### Movimientos financieros (tarea 10) — 2026-11-18
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 10.1 | `MovimientoRequest`, `EstadoMovimientoRequest`, `RegistroAsociado`, `MovimientoResponse` y `@RelacionCoherente` | DTO de entrada compartido por `POST` y `PUT`, con normalización de concepto y referencia; `valor` como texto de dos decimales; referencias anidadas con `id`, `nombre` y `activo`; la restricción de clase informa sobre `clienteId` o `proveedorId` según el tipo y no informa si `tipo` es nulo |
+| 10.2 | `erp/dto/MovimientoRequestValidacionTests` | 18 pruebas: Properties 2, 3, 4 y 9 sobre las 8 combinaciones de tipo y relación, una referencia con `ñ` rechazada, mensajes en español y normalización en el constructor |
+| 10.3 | `erp/service/RangoFechas` y `FiltroMovimientos` | El rango lanza `ParametroInvalidoException("hasta", "debe ser igual o posterior a la fecha desde")` solo cuando ambos límites existen y `desde > hasta`; el filtro es un record sin lógica |
+| 10.4 | `erp/service/RangoFechasTests` | 4 pruebas: 120 rangos de `GeneradoresErp.rango`, 120 pares posiblemente invertidos, límites aislados, el mismo día y conservación de los límites |
+| 10.5 | `MovimientoService` | `listar` con `Specification.allOf`, una sola llamada a `buscarTodos` por página y lista vacía sin referencias; `obtener` con 404; `crear` con 404/409 de la referencia y estado `PENDIENTE`; `actualizar` con la regla de asociación y el orden 404 → 404 → 409 → 409; `cambiarEstado` sin consultar el estado activo de los relacionados |
+| 10.6 | `erp/service/MovimientoServiceTests` | 80 pruebas: auditorías y actor, consulta en lote, orden de errores, Property 10 con 15 combinaciones por cliente y por proveedor, Property 13 sobre los 3 estados y Property 12 sobre los 9 pares y los 3 estados del relacionado |
+| 10.7 | `MovimientoController` | `GET`, `GET /{id}`, `POST`, `PUT /{id}` y `PATCH /{id}/estado` en `/api/erp/movimientos`; filtros y paginación con las mismas reglas del CRM; `RangoFechas` en el controlador; sin `DELETE` mapeado |
+| 10.8 | `erp/controller/MovimientoControllerTests` | 50 pruebas: 201 con `Location`, 200, 400 por cada regla, 404 de ruta y de referencias con `campo`, 409 de cada conflicto con `conflicto`, `campo` y extensiones, 405 de `DELETE` con `Allow`, Properties 6, 15, 17 y 19 |
+| 10.9 | `erp/dto/SerializacionErpTests` | 6 pruebas: Property 5 con ida y vuelta como texto y como número, Property 6 con propiedades desconocidas ignoradas, relaciones nulas serializadas como `null` y defensa de `MovimientoResponse.desde` |
+
+Comando ejecutado desde `backend/`:
+
+```text
+.\mvnw.cmd -B clean test
+```
+
+Resultado: 757 pruebas, 0 fallos, 0 errores, 0 omitidas · `BUILD SUCCESS` (599 previas + 158 nuevas).
+
+Alcance respetado:
+
+- Solo se implementó la vertical de movimientos financieros de Sebastián; no se modificaron el CRM, las entidades, los repositorios, las especificaciones ni las tareas de Davidson o Paula.
+- No se crearon el servicio, el controlador ni las pruebas del panel financiero (11.3–11.6); `ResumenFinancieroResponse` sigue pendiente en 11.1.
+- No se aplicó ninguna migración a `arise-corp-dev` ni se usaron credenciales, tokens o datos personales.
+- El commit de esta tanda incluye el código, las pruebas y este registro; queda solo en local, sin push.
+
