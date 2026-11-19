@@ -403,7 +403,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 15: Los parámetros de lista y de rango se aceptan o rechazan según la regla** · **Validates: Requirements 18.5**
     - _Requisitos: 18.1–18.8, 25.7, NF-07_
 
-- [ ] 12. Escribir las pruebas de autorización y de logs del ERP
+- [x] 12. Escribir las pruebas de autorización y de logs del ERP
   - [x] 12.1 Retirar el doble ERP de `AutorizacionModulosTests`
     - Área: backend · Responsable: Sebastián
     - Eliminar la constante `RUTA_ERP` y el doble `listarProveedores()`; conservar el doble `GET /api/sga/paquetes`
@@ -411,19 +411,19 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Confirmar en el mismo commit que `ProveedorController` (9.5), coordinado con Davidson
     - _Requisitos: 25.9, CA-03_
 
-  - [ ] 12.2 Escribir `erp/controller/ErpAutorizacionTests`
+  - [x] 12.2 Escribir `erp/controller/ErpAutorizacionTests`
     - Área: backend · Responsable: Sebastián
     - Matriz exhaustiva: 19 operaciones (16 endpoints y los tres `DELETE`) × {sin token, sin perfil, perfil inactivo, ADMINISTRADOR, COMERCIAL, FINANZAS_RRHH, OPERACIONES}, con `ErpDatosPrueba` y el `PerfilJwtAuthenticationConverter` real sobre perfiles persistidos en H2. En los casos denegados, datos sin cambios y 403 también con un `{id}` inexistente; `DELETE` con un rol gestor → 405 con `Allow` y registro conservado
     - Caso adicional: FINANZAS_RRHH lee `GET /api/crm/clientes/{id}` con la Vista_Reducida_Cliente y recibe 403 en `POST /api/crm/clientes`
     - **Property 18: La matriz de acceso se aplica a todos los endpoints del ERP** · **Validates: Requirements 7.5, 12.5, 17.7, 19.1, 19.2, 19.3, 19.4, 19.5, 25.5**
     - _Requisitos: 19.1–19.7, 25.5, 25.6, 25.10, CA-02, CA-03, NF-02, NF-07_
 
-  - [ ] 12.3 Escribir `erp/ErpLogsTests`
+  - [x] 12.3 Escribir `erp/ErpLogsTests`
     - Área: backend · Responsable: Sebastián
     - Con `OutputCaptureExtension`: crear y editar un empleado y un proveedor y provocar un 409 de duplicado y un 500 (endpoint de prueba que lanza una excepción sin datos) con datos personales ficticios conocidos; la salida capturada no contiene el nombre, el número de documento, el correo, el teléfono ni la dirección
     - _Requisitos: 8.3, 25.8, CA-06_
 
-- [ ] 13. Checkpoint del backend sin Docker
+- [x] 13. Checkpoint del backend sin Docker
   - Área: verificación · Responsable: Sebastián
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/` sin Docker, sin Supabase y sin `.env` (Requirement 25.11), con las pruebas de `001-foundation` y `002-crm-clientes-contratos` en verde. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
@@ -1022,4 +1022,41 @@ Alcance respetado:
 - Solo se amplió la base compartida de IT; no se crearon `MigracionesErpIT` (14.2) ni las demás IT del ERP (14.3–14.6), que siguen pendientes.
 - No se aplicó ninguna migración a `arise-corp-dev` ni se usaron credenciales, tokens o datos personales.
 - El commit de esta tanda se publica en `origin/feat/erp-empleados-proveedores-finanzas`.
+
+### Autorización y logs del ERP (tarea 12) — 2026-11-18
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 12.2 | `erp/controller/ErpAutorizacionTests` | 134 pruebas (19 operaciones × 7 identidades) con `ErpDatosPrueba` y el `PerfilJwtAuthenticationConverter` real sobre H2. Los 401 conservan `WWW-Authenticate`; los 403 no cambian empleados, proveedores ni movimientos y también se producen con un `{id}` inexistente; los `DELETE` de los roles gestores responden 405 con `Allow` (GET y PUT) y conservan el registro. Property 18. Incluye el caso de FINANZAS_RRHH leyendo `GET /api/crm/clientes/{id}` en vista reducida y recibiendo 403 en `POST /api/crm/clientes` |
+| 12.3 | `erp/ErpLogsTests` | Crea y edita un empleado y un proveedor, provoca un 409 de documento duplicado y un 500 con un endpoint de prueba que lanza una excepción sin datos. La salida capturada no contiene nombres, documentos, correos, teléfonos ni direcciones ficticias conocidas |
+
+Comando ejecutado desde `backend/`:
+
+```text
+.\mvnw.cmd test "-Dtest=ErpAutorizacionTests,ErpLogsTests"
+```
+
+Resultado: 135 pruebas, 0 fallos, 0 errores, 0 omitidas · `BUILD SUCCESS`. Sin Docker, sin Supabase y sin `.env`.
+
+Alcance respetado:
+
+- Solo se añadieron las dos pruebas de la tarea 12; no cambiaron los controladores, los servicios, las entidades ni las migraciones.
+- Los commits quedan solo en local hasta que se ordene publicarlos.
+
+### Checkpoint del backend sin Docker (tarea 13) — 2026-11-18
+
+Comando ejecutado desde `backend/`, sin Docker, sin Supabase y sin `.env`:
+
+```text
+.\mvnw.cmd clean test
+```
+
+Resultado: 939 pruebas, 0 fallos, 0 errores, 0 omitidas · `BUILD SUCCESS`. Incluye las suites de `001-foundation`, `002-crm-clientes-contratos` y las 135 pruebas nuevas de la tarea 12.
+
+Alcance respetado:
+
+- No se modificó código de producción, migraciones, Docker ni workflows; solo se ejecutó la verificación.
+- Los commits quedan solo en local hasta que se ordene publicarlos.
+
+
 
