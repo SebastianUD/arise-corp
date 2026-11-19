@@ -478,7 +478,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Evidencia (2026-11-18, entorno `arise-corp-dev`): migración aplicada en una única transacción y registrada en el historial de migraciones con la versión del archivo. Verificación posterior: las tres tablas existen y están vacías; `uuid`, `date`, `numeric(15,2)`, `timestamptz` y `text` coinciden con el diseño; RLS activo en las tres y `anon` y `authenticated` sin privilegios `select`, `insert`, `update` ni `delete`. La comprobación de los esquemas expuestos en el panel de Supabase queda como verificación manual; a nivel SQL no hay privilegios que expongan estas tablas a la Data API. No se edita la migración.
     - _Requisitos: 2.8, 29.7, DP-TEC-03, DP-SEG-05, NF-01_
 
-- [ ] 16. Verificar la imagen Docker y los workflows con el ERP
+- [x] 16. Verificar la imagen Docker y los workflows con el ERP
   - [x] 16.1 Verificar la imagen y Compose
     - Área: backend/Docker · Responsable: Sebastián
     - `docker build -t arise-backend:local backend` sin credenciales ni conexión a Supabase; `docker run --rm --entrypoint sh arise-backend:local -c "find / -name '.env*' 2>/dev/null"` no devuelve nada y `docker history --no-trunc` no muestra valores de configuración. `backend/Dockerfile`, `backend/.dockerignore` y `docker-compose.yml` no cambian (D21)
