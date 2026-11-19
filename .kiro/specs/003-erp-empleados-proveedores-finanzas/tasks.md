@@ -54,7 +54,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Se hace antes del código que aplica estas reglas (`sdd-workflow.md`, "Registro de decisiones") y se confirma con `docs(erp): registrar en steering los ajustes de la spec 003`. El estado [Implementado] de cada área se actualiza en las tareas 17.1, 17.2, 17.3 y 28.1
     - _Requisitos: 29.3, NF-05, DP-ARQ-01, DP-API-04_
 
-- [ ] 2. Crear y revisar la migración del ERP
+- [x] 2. Crear y revisar la migración del ERP
   - [x] 2.1 Crear `supabase/migrations/<timestamp>_app_erp_empleados_proveedores_movimientos.sql`
     - Área: base de datos · Responsable: Davidson
     - Generar el archivo con `supabase migration new app_erp_empleados_proveedores_movimientos`; el timestamp debe ser posterior a `20261111120000`. No modificar las migraciones existentes
@@ -69,7 +69,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Añadir la fila de la Migracion_ERP a la tabla "Migraciones" con su nombre real, la descripción y `003-erp-empleados-proveedores-finanzas`. Las reglas de revisión y aplicación de DP-TEC-03 ya están en el archivo desde `002-crm-clientes-contratos` y no cambian
     - _Requisitos: 29.4, NF-05, DP-TEC-03_
 
-  - [ ] 2.3 Revisar la migración en la rama antes de aplicarla
+  - [x] 2.3 Revisar la migración en la rama antes de aplicarla
     - Área: base de datos · Responsable: Sebastián
     - Contrastar el SQL con "Migración ERP" y "Entidades JPA (`erp.entity`)" del diseño: columnas, tipos, `CHECK`, `UNIQUE`, FK, índices, comentarios, RLS, `revoke` y ausencia de datos. Los cambios que pida la revisión se hacen en el mismo archivo, porque todavía no está aplicado
     - No la apliques tú: la aplicación controlada es la tarea 15.1 y la realiza Davidson, autor de la migración, después de `MigracionesErpIT` (14.2) y de esta revisión
@@ -876,5 +876,31 @@ Resultado: 562 pruebas, 0 fallos, 0 errores, 0 omitidas · `BUILD SUCCESS` (528 
 Alcance respetado:
 
 - No se crearon `ConflictosErp` (6.4), la máquina de estados (6.1), la ampliación de `PostgresIntegracionBase` (14.1), los controladores ni los servicios de empleados, proveedores, movimientos o panel. Por eso quedan pendientes 8.3–8.6 y 9.3–9.6 (dependen de 6.4; 9.5 comparte commit con 12.1), 8.7 (necesita el endpoint de empleados), 14.2, 15.1, 16.2, 17.1–17.3, 18, 30.2 y 32.x.
-- La migración no está aplicada: faltan la revisión 2.3, `MigracionesErpIT` (14.2) y la aplicación controlada (15.1). Mientras no se aplique, el backend de la rama no arranca contra `arise-corp-dev`.
+- La migración no está aplicada: la revisión 2.3 ya está aprobada (ver abajo), pero faltan `MigracionesErpIT` (14.2) y la aplicación controlada (15.1). Mientras no se aplique, el backend de la rama no arranca contra `arise-corp-dev`.
 - Los commits de esta tanda se registran en la rama; no se hizo push ni se abrió el PR.
+
+### Revisión de la migración ERP (2.3) — 2026-11-18
+
+Revisión de `supabase/migrations/20261118095500_app_erp_empleados_proveedores_movimientos.sql` por Sebastián. Resultado: **aprobada sin cambios**.
+
+| Comprobación | Resultado |
+|---|---|
+| Contraste con el bloque SQL de "Migración ERP" | Idéntico línea a línea (130 líneas); el archivo es copia exacta del diseño |
+| Orden y creación | `empleados`, `proveedores` y `movimientos_financieros` en orden de dependencia, con `create table` sin `if not exists`; timestamp `20261118095500` posterior a `20261111120000` |
+| Columnas y tipos | PK `uuid` con `gen_random_uuid()`; `date` en `fecha_ingreso` y `fecha`; `numeric(15,2)` en `valor`; `timestamptz` en las marcas de auditoría; `text` en el resto |
+| `UNIQUE` | `empleados_documento_uk` y `proveedores_documento_uk` sobre (`tipo_documento`, `numero_documento`) |
+| `CHECK` | Tipos de documento (`CC`/`CE`/`PASAPORTE` en empleados; `NIT`/`CC`/`CE`/`PASAPORTE` en proveedores), solo dígitos para `CC` y `NIT`, longitudes de "Supuestos adoptados", `tipo`, `estado`, `valor > 0`, concepto, referencia y coherencia `cliente_id`/`proveedor_id` con `tipo` |
+| FK e índices | `cliente_id → app.clientes (id)` y `proveedor_id → app.proveedores (id)` con `no action`; índices de `fecha`, `cliente_id` y `proveedor_id` |
+| Comentarios, RLS y `revoke` | Comentario en las tres tablas; RLS habilitado sin políticas; `revoke all ... from anon, authenticated` |
+| Ausencia de datos | Sin `insert`, UUID personales, secretos ni sentencias fuera de transacción |
+| Entidades JPA | Columnas, nulabilidad, tipos, `precision`/`scale` y nombres de `@Table(uniqueConstraints)` coinciden; `clienteId` es columna simple y `proveedor` es `@ManyToOne` sobre `proveedor_id` |
+
+Comando ejecutado desde `backend/`:
+
+```text
+.\mvnw.cmd -B verify "-Dit.test=MigracionesCrmIT" "-Dfailsafe.failIfNoSpecifiedTests=false"
+```
+
+Resultado: 562 pruebas unitarias y 7 IT en verde · `BUILD SUCCESS`. `MigracionesCrmIT` aplica todas las migraciones, incluida la del ERP, en un PostgreSQL efímero de Testcontainers: el archivo ejecuta sin errores, la FK a `app.clientes` encuentra la tabla y `ddl-auto=validate` acepta las entidades del ERP (Requirement 2.10).
+
+La migración **no se aplicó** a `arise-corp-dev`: la aplicación controlada sigue siendo la tarea 15.1 de Davidson, tras `MigracionesErpIT` (14.2). Sin credenciales ni datos personales en este registro.
