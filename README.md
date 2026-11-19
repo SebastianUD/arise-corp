@@ -387,6 +387,8 @@ Dependencias fijadas en `package.json` y `package-lock.json`; usar `npm ci` para
 
 #### Vistas del CRM por rol
 
+La ruta pública `/` presenta la misión y visión de Arise Corp., tomadas del documento de constitución (páginas 2 y 3), y ofrece acceso al login o al panel para una sesión vigente. El login y el menú privado incluyen un enlace a Inicio. Los grupos CRM y ERP del menú lateral comienzan cerrados: pulsar el encabezado abre sus opciones y cierra el otro grupo; pulsarlo de nuevo las oculta. Las opciones mantienen los permisos de cada rol. Detalles y validación en `docs/interfaz-inicio.md`.
+
 Al iniciar sesión, la SPA abre `/perfil` y construye el menú con el rol que devuelve `GET /api/me`. Los **gestores** (`ADMINISTRADOR` y `COMERCIAL`) ven Clientes, Cuentas corporativas y Resumen comercial. `OPERACIONES` y `FINANZAS_RRHH` entran por Clientes y consultan una vista reducida. Desde el detalle del cliente, Operaciones también puede abrir sus contratos. El CRM utiliza las tres variables públicas de esta sección.
 
 | Vista | Ruta en la SPA | Roles con acceso |

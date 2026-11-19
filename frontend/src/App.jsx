@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
@@ -8,6 +8,7 @@ import Perfil from './pages/Perfil.jsx'
 import RolRoute from './routes/RolRoute.jsx'
 import { puedeAdministrarUsuarios, puedeGestionarCrm, puedeGestionarErp, puedeLeerClientes, puedeLeerContratos } from './lib/permisos.js'
 
+const Inicio = lazy(() => import('./pages/Inicio.jsx'))
 const Panel = lazy(() => import('./pages/Panel.jsx'))
 const UsuariosRoles = lazy(() => import('./pages/UsuariosRoles.jsx'))
 const ClientesLista = lazy(() => import('./pages/crm/ClientesLista.jsx'))
@@ -36,6 +37,7 @@ export default function App() {
     <AuthProvider>
       <main className="app-root">
         <Routes>
+          <Route path="/" element={<Suspense fallback={<p className="access-loading" role="status">Cargando inicio…</p>}><Inicio /></Suspense>} />
           <Route path="/login" element={<Login />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>

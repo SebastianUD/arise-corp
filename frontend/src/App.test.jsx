@@ -65,6 +65,49 @@ async function loginForm() {
 
 const submit = () => fireEvent.submit(screen.getByRole('form', { name: 'Inicio de sesión' }))
 
+it('presenta la misión y visión en la llegada pública sin consultar datos privados', async () => {
+  mount('/')
+  expect(await screen.findByRole('heading', { name: 'Nuestra misión' })).toBeVisible()
+  expect(screen.getByRole('heading', { name: 'Nuestra visión' })).toBeVisible()
+  expect(screen.getByText(/Para 2035, Arise Corp\./)).toBeVisible()
+  expect(screen.getByText(/En Arise Corp\. diseñamos y fabricamos/)).toBeVisible()
+  expect(fetch).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('link', { name: 'Iniciar sesión', exact: true }))
+  await screen.findByRole('heading', { name: 'Bienvenido de nuevo' })
+  fireEvent.click(screen.getByRole('link', { name: 'Volver al inicio' }))
+  expect(screen.getByRole('heading', { name: 'Nuestra misión' })).toBeVisible()
+})
+
+it('ofrece volver al panel desde la llegada cuando hay una sesión vigente', async () => {
+  store.session = session
+  mount('/')
+  expect(await screen.findByRole('link', { name: 'Ir al panel' })).toHaveAttribute('href', '/panel')
+  expect(fetch).not.toHaveBeenCalled()
+})
+
+it('abre un solo grupo del sidebar y permite cerrar el grupo activo', async () => {
+  store.session = session
+  fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ ...profile, role: 'ADMINISTRADOR' }) })
+  mount('/perfil')
+  await screen.findByText(profile.email)
+  const crm = screen.getByRole('button', { name: 'CRM', exact: true })
+  const erp = screen.getByRole('button', { name: 'ERP', exact: true })
+  expect(crm).toHaveAttribute('aria-expanded', 'false')
+  expect(erp).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByRole('link', { name: 'Clientes', exact: true })).toBeNull()
+  fireEvent.click(crm)
+  expect(crm).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.getByRole('link', { name: 'Clientes', exact: true })).toBeVisible()
+  fireEvent.click(erp)
+  expect(crm).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByRole('link', { name: 'Clientes', exact: true })).toBeNull()
+  expect(screen.getByRole('link', { name: 'Empleados', exact: true })).toBeVisible()
+  expect(document.getElementById(erp.getAttribute('aria-controls'))).toContainElement(screen.getByRole('link', { name: 'Empleados', exact: true }))
+  fireEvent.click(erp)
+  expect(erp).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByRole('link', { name: 'Empleados', exact: true })).toBeNull()
+})
+
 it('redirige una ruta privada sin sesión sin mostrar el perfil', async () => {
   mount('/perfil')
   expect(screen.queryByText('Mi perfil')).not.toBeInTheDocument()
@@ -287,13 +330,20 @@ it.each([
   fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
   mount('/perfil', true)
   await screen.findByText(profile.email)
-  expect(screen.getAllByRole('link')).toHaveLength(opciones.length + (role ? 2 : 1))
+  expect(screen.getByRole('link', { name: 'Inicio', exact: true })).toHaveAttribute('href', '/')
+  expect(screen.queryByRole('link', { name: 'Clientes', exact: true })).toBeNull()
+  expect(screen.queryByRole('link', { name: 'Empleados', exact: true })).toBeNull()
   const destinos = {
     Contratos: '/crm/contratos', 'Usuarios y roles': '/admin/usuarios', Perfil: '/perfil', Clientes: '/crm/clientes',
     'Cuentas corporativas': '/crm/cuentas-corporativas', 'Resumen comercial': '/crm/resumen',
     ...Object.fromEntries(OPCIONES_ERP.map(({ texto, ruta }) => [texto, ruta])),
   }
   for (const nombre of ['Perfil', ...opciones]) {
+    const grupo = OPCIONES_ERP.some(o => o.texto === nombre) ? 'ERP' : nombre !== 'Perfil' && nombre !== 'Usuarios y roles' ? 'CRM' : null
+    if (grupo) {
+      const control = screen.getByRole('button', { name: grupo, exact: true })
+      if (control.getAttribute('aria-expanded') === 'false') fireEvent.click(control)
+    }
     expect(screen.getByRole('link', { name: nombre })).toHaveAttribute('href', destinos[nombre])
   }
   expect(screen.getByRole('link', { name: 'Perfil' })).toHaveAttribute('aria-current', 'page')
@@ -362,6 +412,7 @@ it('abre las tres vistas desde el menú comercial compartiendo una sola consulta
   store.session = session
   mount('/perfil')
   await screen.findByText(profile.email)
+  fireEvent.click(screen.getByRole('button', { name: 'CRM', exact: true }))
   const pagina = { content: [], page: 0, totalPages: 0 }
   const resumen = {
     clientes: { activos: 1, inactivos: 2, total: 3 },
@@ -429,6 +480,7 @@ it.each(['ADMINISTRADOR', 'FINANZAS_RRHH', 'COMERCIAL', 'OPERACIONES'])('Feature
   await screen.findByRole('heading', { name: 'Tu operación, conectada.' })
   const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
   const permitido = ['ADMINISTRADOR', 'FINANZAS_RRHH'].includes(role)
+  if (permitido) fireEvent.click(within(nav).getByRole('button', { name: 'ERP', exact: true }))
   for (const { texto, ruta, accion } of OPCIONES_ERP) {
     if (permitido) {
       expect(within(nav).getByRole('link', { name: texto })).toHaveAttribute('href', ruta)
@@ -439,6 +491,7 @@ it.each(['ADMINISTRADOR', 'FINANZAS_RRHH', 'COMERCIAL', 'OPERACIONES'])('Feature
     }
   }
   if (role === 'FINANZAS_RRHH') {
+    fireEvent.click(within(nav).getByRole('button', { name: 'CRM', exact: true }))
     fireEvent.click(within(nav).getByRole('link', { name: 'Clientes' }))
     await screen.findByRole('heading', { name: 'Clientes' })
     expect(screen.queryByRole('link', { name: 'Nuevo cliente' })).toBeNull()
