@@ -464,12 +464,13 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 14: El resumen financiero es consistente con los movimientos** (contra PostgreSQL) · **Validates: Requirements 18.1, 18.2, 18.3, 18.4, 18.6, 18.7, 25.4**
     - _Requisitos: 26.7, ERP-04, ENG-03_
 
-- [ ] 15. Aplicar la migración del ERP en `arise-corp-dev`
-  - [ ] 15.1 Aplicar la migración revisada de forma controlada
+- [x] 15. Aplicar la migración del ERP en `arise-corp-dev`
+  - [x] 15.1 Aplicar la migración revisada de forma controlada
     - Área: base de datos · Responsable: Davidson
     - Requisitos previos: revisión 2.3 aprobada y `MigracionesErpIT` (14.2) en verde. Aplicar con el mismo procedimiento controlado de la tarea 17.1 de `002-crm-clientes-contratos` (D20)
     - Ejecutar las consultas de verificación del diseño (RLS y privilegios de `anon` y `authenticated`) y confirmar en Supabase que `app` sigue fuera de los esquemas expuestos de la Data API
     - Registrar en este `tasks.md` solo resultado, fecha y entorno, sin UUID, credenciales ni datos personales. Desde aquí la migración no se edita; un cambio de esquema llega en una migración nueva
+    - Evidencia (2026-11-18, entorno `arise-corp-dev`): migración aplicada en una única transacción y registrada en el historial de migraciones con la versión del archivo. Verificación posterior: las tres tablas existen y están vacías; `uuid`, `date`, `numeric(15,2)`, `timestamptz` y `text` coinciden con el diseño; RLS activo en las tres y `anon` y `authenticated` sin privilegios `select`, `insert`, `update` ni `delete`. La comprobación de los esquemas expuestos en el panel de Supabase queda como verificación manual; a nivel SQL no hay privilegios que expongan estas tablas a la Data API. No se edita la migración.
     - _Requisitos: 2.8, 29.7, DP-TEC-03, DP-SEG-05, NF-01_
 
 - [ ] 16. Verificar la imagen Docker y los workflows con el ERP
@@ -891,8 +892,9 @@ Con las dependencias de Sebastián ya en la rama (6.1, 6.4, 10.x, 11.x, 14.1 y l
 | 14.2 | `MigracionesErpIT` (8 pruebas) contra PostgreSQL efímero: `ddl-auto=validate`, tipos de `information_schema`, 23505, 23514 (documentos, tipo, estado, valor, concepto, referencia y coherencia tipo-relación), 23503 y RLS sin privilegios |
 | 17.1, 17.2 | README (aviso, §4 y §5 con `erp/`, `ClienteReferenciaService`, `ParametroInvalidoException`, `pages/erp`, `erpApi.js` y la migración) y steering de arquitectura, estructura, tecnología y producto con el ERP implementado y SGA como única área pendiente |
 | 18 | Checkpoint del backend completo: 804 pruebas unitarias y 24 de integración en verde; `docker compose build backend` construyó `arise-backend:local` |
+| 15.1 | Migración aplicada de forma controlada en `arise-corp-dev` el 2026-11-18: tres tablas vacías, tipos del diseño, RLS activo, sin privilegios para `anon` ni `authenticated` y fila registrada en el historial de migraciones |
 
-Pendiente y bloqueado: 15.1 (aplicación controlada en `arise-corp-dev`, requiere autorización y credenciales), 30.1 y 30.2 (dependen de 15.1), 12.2, 12.3, 14.3–14.6 (Sebastián), 16.1, 16.2, 17.3, 32.1–32.3 (CI, protección de `main`, PR y entrega).
+Pendiente y bloqueado: 30.1 y 30.2 (validación extremo a extremo con la migración ya aplicada), 12.2, 12.3, 14.3–14.6 (Sebastián), 16.1, 16.2, 17.3, 32.1–32.3 (CI, protección de `main`, PR y entrega). La migración del ERP quedó aplicada en `arise-corp-dev` el 2026-11-18 (15.1).
 
 ### Revisión de la migración ERP (2.3) — 2026-11-18
 

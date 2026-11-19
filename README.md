@@ -2,7 +2,7 @@
 
 Plataforma web de gestión empresarial para centralizar los procesos comerciales, administrativos y operativos de Arise Corp., empresa colombiana orientada al transporte y entrega de paquetes mediante drones.
 
-> **Estado del proyecto:** `001-foundation` está completada y `002-crm-clientes-contratos` tiene el backend, el frontend, la migración, Docker y CI implementados; quedan la validación extremo a extremo y la entrega del PR. `003-erp-empleados-proveedores-finanzas` tiene implementados el backend, el frontend y la migración; quedan la aplicación controlada de la migración en `arise-corp-dev`, la validación extremo a extremo, los checkpoints finales y el PR. El resumen vigente y las próximas funcionalidades están en `.kiro/steering/product.md`.
+> **Estado del proyecto:** `001-foundation` está completada y `002-crm-clientes-contratos` tiene el backend, el frontend, la migración, Docker y CI implementados; quedan la validación extremo a extremo y la entrega del PR. `003-erp-empleados-proveedores-finanzas` tiene implementados el backend, el frontend y la migración, ya aplicada en `arise-corp-dev`; quedan la validación extremo a extremo, los checkpoints finales y el PR. El resumen vigente y las próximas funcionalidades están en `.kiro/steering/product.md`.
 
 ## 1. Objetivo del proyecto
 
@@ -100,7 +100,7 @@ Las versiones y dependencias adicionales que aún no estén aprobadas se definir
 
 ## 4. Estado actual del desarrollo
 
-El estado implementado y las próximas funcionalidades se mantienen en `.kiro/steering/product.md`. La spec `001-foundation` está cerrada y `002-crm-clientes-contratos` tiene implementados el backend, el frontend, la migración, Docker y CI; sus tareas pendientes son la validación extremo a extremo con Supabase real, los checkpoints finales y la entrega del PR. `003-erp-empleados-proveedores-finanzas` tiene implementados el backend del ERP (empleados, proveedores, movimientos y panel financiero), sus vistas, la migración y las pruebas unitarias, MockMvc y de integración; quedan la aplicación controlada de la migración, la validación extremo a extremo, los checkpoints finales y el PR. Las tareas y evidencias de verificación se conservan en `.kiro/specs/`. Este README concentra instalación y uso.
+El estado implementado y las próximas funcionalidades se mantienen en `.kiro/steering/product.md`. La spec `001-foundation` está cerrada y `002-crm-clientes-contratos` tiene implementados el backend, el frontend, la migración, Docker y CI; sus tareas pendientes son la validación extremo a extremo con Supabase real, los checkpoints finales y la entrega del PR. `003-erp-empleados-proveedores-finanzas` tiene implementados el backend del ERP (empleados, proveedores, movimientos y panel financiero), sus vistas, la migración ya aplicada en `arise-corp-dev` y las pruebas unitarias, MockMvc y de integración; quedan la validación extremo a extremo, los checkpoints finales y el PR. Las tareas y evidencias de verificación se conservan en `.kiro/specs/`. Este README concentra instalación y uso.
 
 El proyecto se ejecuta localmente (`localhost`) con el backend en Docker Compose o con Maven, y el frontend con Vite. No incluye CD, publicación de imágenes ni entornos remotos.
 
