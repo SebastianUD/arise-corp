@@ -735,11 +735,12 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
   - Ejecutar desde `frontend/` `npm test`, `npm run build` y `npm run check:secrets` (Requirements 27.6, 27.7). Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
 - [ ] 30. Validar el ERP de extremo a extremo con Supabase real
-  - [ ] 30.1 Validar el flujo de FINANZAS_RRHH en las vistas ERP
+  - [x] 30.1 Validar el flujo de FINANZAS_RRHH en las vistas ERP
     - Área: integración · Responsable: Paula
     - Precondiciones: migración aplicada (15.1); cuentas de prueba con perfiles FINANZAS_RRHH, COMERCIAL y OPERACIONES creados con `PUT /api/admin/usuarios/{id}/perfil`; al menos un cliente activo ficticio creado por COMERCIAL; backend con `docker compose up backend` y frontend con `npm run dev`
     - Con FINANZAS_RRHH: registrar un empleado, editar su cargo, registrar un proveedor, registrar un `EGRESO` asociado al proveedor y un `INGRESO` asociado al cliente activo buscado en el selector, marcar uno como `PAGADO`, anular el otro, abrir el panel financiero y recargar la aplicación para comprobar que los datos y los totales persisten
     - Registrar en este `tasks.md` fecha, pasos y resultado sin credenciales, tokens, UUID ni datos personales reales
+    - Validación del 2026-11-19. Con FINANZAS_RRHH se creó un empleado ficticio, se editó su cargo y se creó un proveedor ficticio. Se registró un ingreso de 12.000 COP seleccionando el cliente activo desde el buscador y un egreso de 3.500 COP asociado al proveedor. Se marcó el ingreso como `PAGADO` y se anuló el egreso. El panel, inicialmente en cero, mostró un ingreso pagado, un egreso anulado y un saldo pagado de 12.000 COP. Tras recargar se conservaron las cantidades y sumas por estado. Se volvieron a abrir ambos movimientos, el proveedor y el empleado para verificar los estados y el cargo editado.
     - _Requisitos: 30.1, 30.5, CA-04, ERP-01, ERP-02, ERP-03, ERP-04, ERP-05_
 
   - [ ] 30.2 Validar las denegaciones del ERP y del CRM
@@ -748,6 +749,10 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Con FINANZAS_RRHH, el detalle de un cliente muestra la vista reducida sin edición; un usuario COMERCIAL con un formulario de cliente abierto, cuyo rol se cambia a FINANZAS_RRHH, recibe 403 sin cambios
     - Al terminar, restablecer los roles, desactivar los empleados y proveedores ficticios y registrar en este `tasks.md` fecha, pasos y resultado sin datos sensibles
     - _Requisitos: 30.2–30.5, AUTH-05, CA-03, NF-02, DP-PRO-01_
+
+  - Evidencia parcial del 2026-11-19: se inició el backend con Compose y el frontend con Vite. Un `GET /api/erp/empleados` sin sesión devolvió 401. En el navegador, `/perfil` mostró el rol Comercial y el acceso directo a `/erp/empleados` mostró «No tienes permisos para acceder a esta sección.».
+  - Con el perfil FINANZAS_RRHH activo se abrió la ficha del cliente ficticio. Mostró documento, ciudad, cuenta corporativa y estado, sin acciones de edición. Se abrió la edición del empleado ficticio para probar el cambio de rol con el formulario abierto.
+  - Pendiente de 30.2: comprobar la ausencia de consultas ERP en el acceso directo con COMERCIAL y OPERACIONES, verificar los tres envíos denegados y la conservación de los datos y la sesión, restablecer los roles y desactivar el empleado y el proveedor de esta prueba.
 
 - [ ] 31. Checkpoint final
   - Área: verificación · Responsable: Sebastián
