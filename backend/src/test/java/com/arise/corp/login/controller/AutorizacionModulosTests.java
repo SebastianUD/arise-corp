@@ -30,19 +30,19 @@ import com.arise.corp.login.repository.PerfilUsuarioRepository;
 /**
  * Pruebas de la matriz de autorizacion por rol en {@code SecurityConfig}.
  *
- * <p>Los endpoints de modulo son dobles de prueba de ERP y SGA: permiten
- * verificar el acceso permitido y denegado sin implementar esos modulos. El CRM
+ * <p>El unico endpoint de modulo es un doble de prueba de SGA: permite
+ * verificar el acceso permitido y denegado sin implementar ese modulo. El CRM
  * usa los controladores reales y su matriz se cubre en
- * {@code CrmAutorizacionTests} (Requirement 23.8). El rol se obtiene del perfil
- * persistido mediante el converter de produccion; no se usan tokens reales de
- * Supabase.
+ * {@code CrmAutorizacionTests}; el ERP usa sus controladores reales y se cubre
+ * en {@code ErpAutorizacionTests} (Requirement 23.8). El rol se obtiene del
+ * perfil persistido mediante el converter de produccion; no se usan tokens
+ * reales de Supabase.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(AutorizacionModulosTests.ConfiguracionEndpoints.class)
 class AutorizacionModulosTests {
 
-    private static final String RUTA_ERP = "/api/erp/proveedores";
     private static final String RUTA_SGA = "/api/sga/paquetes";
 
     @Autowired
@@ -61,12 +61,10 @@ class AutorizacionModulosTests {
 
     @Test
     void sinTokenDevuelve401() throws Exception {
-        for (String ruta : new String[] {RUTA_ERP, RUTA_SGA}) {
-            mvc.perform(get(ruta))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(content().contentTypeCompatibleWith(
-                            MediaType.APPLICATION_PROBLEM_JSON));
-        }
+        mvc.perform(get(RUTA_SGA))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(
+                        MediaType.APPLICATION_PROBLEM_JSON));
     }
 
     @Test
@@ -74,12 +72,10 @@ class AutorizacionModulosTests {
         RequestPostProcessor autenticacion =
                 autenticacionDe(UUID.randomUUID());
 
-        for (String ruta : new String[] {RUTA_ERP, RUTA_SGA}) {
-            mvc.perform(get(ruta).with(autenticacion))
-                    .andExpect(status().isForbidden())
-                    .andExpect(content().contentTypeCompatibleWith(
-                            MediaType.APPLICATION_PROBLEM_JSON));
-        }
+        mvc.perform(get(RUTA_SGA).with(autenticacion))
+                .andExpect(status().isForbidden())
+                .andExpect(content().contentTypeCompatibleWith(
+                        MediaType.APPLICATION_PROBLEM_JSON));
     }
 
     @Test
@@ -87,24 +83,10 @@ class AutorizacionModulosTests {
         UUID usuarioId = crearPerfil(RolUsuario.COMERCIAL, false);
         RequestPostProcessor autenticacion = autenticacionDe(usuarioId);
 
-        for (String ruta : new String[] {RUTA_ERP, RUTA_SGA}) {
-            mvc.perform(get(ruta).with(autenticacion))
-                    .andExpect(status().isForbidden())
-                    .andExpect(content().contentTypeCompatibleWith(
-                            MediaType.APPLICATION_PROBLEM_JSON));
-        }
-    }
-
-    @Test
-    void finanzasAccedeAErpYOperacionesNo() throws Exception {
-        UUID finanzasId = crearPerfil(RolUsuario.FINANZAS_RRHH, true);
-        UUID operacionesId = crearPerfil(RolUsuario.OPERACIONES, true);
-
-        mvc.perform(get(RUTA_ERP).with(autenticacionDe(finanzasId)))
-                .andExpect(status().isOk());
-
-        mvc.perform(get(RUTA_ERP).with(autenticacionDe(operacionesId)))
-                .andExpect(status().isForbidden());
+        mvc.perform(get(RUTA_SGA).with(autenticacion))
+                .andExpect(status().isForbidden())
+                .andExpect(content().contentTypeCompatibleWith(
+                        MediaType.APPLICATION_PROBLEM_JSON));
     }
 
     @Test
@@ -120,25 +102,21 @@ class AutorizacionModulosTests {
     }
 
     @Test
-    void comercialNoAccedeAErpNiSga() throws Exception {
+    void comercialNoAccedeASga() throws Exception {
         UUID usuarioId = crearPerfil(RolUsuario.COMERCIAL, true);
         RequestPostProcessor autenticacion = autenticacionDe(usuarioId);
 
-        for (String ruta : new String[] {RUTA_ERP, RUTA_SGA}) {
-            mvc.perform(get(ruta).with(autenticacion))
-                    .andExpect(status().isForbidden());
-        }
+        mvc.perform(get(RUTA_SGA).with(autenticacion))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    void administradorAccedeATodosLosModulos() throws Exception {
+    void administradorAccedeASga() throws Exception {
         UUID usuarioId = crearPerfil(RolUsuario.ADMINISTRADOR, true);
         RequestPostProcessor autenticacion = autenticacionDe(usuarioId);
 
-        for (String ruta : new String[] {RUTA_ERP, RUTA_SGA}) {
-            mvc.perform(get(ruta).with(autenticacion))
-                    .andExpect(status().isOk());
-        }
+        mvc.perform(get(RUTA_SGA).with(autenticacion))
+                .andExpect(status().isOk());
     }
 
     private UUID crearPerfil(RolUsuario rol, boolean activo) {
@@ -169,11 +147,6 @@ class AutorizacionModulosTests {
 
     @RestController
     static class EndpointsModulos {
-
-        @GetMapping(RUTA_ERP)
-        String listarProveedores() {
-            return "proveedores";
-        }
 
         @GetMapping(RUTA_SGA)
         String listarPaquetes() {
