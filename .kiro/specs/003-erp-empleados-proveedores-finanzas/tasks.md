@@ -179,25 +179,25 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Componente de prueba que se importa con `@Import({CrmDatosPrueba.class, ErpDatosPrueba.class})`: crea empleados, proveedores y movimientos ficticios en cualquier estado (aplicando `cambiarEstado` de la entidad) y su `limpiar()` borra movimientos, proveedores y empleados y después llama a `CrmDatosPrueba.limpiar()`. Los perfiles y los clientes se crean con `CrmDatosPrueba`; la autenticación usa `AutenticacionPerfilTestSupport.como(...)` con el `PerfilJwtAuthenticationConverter` real
     - _Requisitos: 25.5, 25.6, NF-07_
 
-- [ ] 6. Implementar la máquina de estados del movimiento y el catálogo de conflictos
-  - [ ] 6.1 Añadir las transiciones a `EstadoMovimiento` y las defensas de `MovimientoFinanciero`
+- [x] 6. Implementar la máquina de estados del movimiento y el catálogo de conflictos
+  - [x] 6.1 Añadir las transiciones a `EstadoMovimiento` y las defensas de `MovimientoFinanciero`
     - Área: backend · Responsable: Sebastián
     - `transicionesPermitidas()`, `puedeTransicionarA(destino)`, `esFinal()` y `esEditable()` según el código del diseño (D11)
     - En `MovimientoFinanciero`: `crear` y `actualizarDatos` lanzan `IllegalArgumentException` con `clienteId` en un `EGRESO` o con proveedor en un `INGRESO` (D8); `actualizarDatos` lanza `IllegalStateException` si `!estado.esEditable()`; `cambiarEstado` la lanza ante una transición no permitida. Son defensas de invariantes: el servicio comprueba cada regla antes
     - _Requisitos: 14.2, 14.3, 16.4, 17.1, 17.2, ERP-03, DP-API-05_
 
-  - [ ] 6.2 Escribir `erp/entity/EstadoMovimientoTests`
+  - [x] 6.2 Escribir `erp/entity/EstadoMovimientoTests`
     - Área: backend · Responsable: Sebastián
     - `@ParameterizedTest` exhaustivo sobre los 9 pares de origen y destino, `esFinal` y `esEditable`
     - **Property 12: Solo se aceptan las dos transiciones permitidas** (nivel enumeración) · **Validates: Requirements 17.1, 17.2, 25.2**
     - _Requisitos: 25.2, NF-07_
 
-  - [ ]* 6.3 Escribir `erp/entity/MovimientoFinancieroTests`
+  - [x]* 6.3 Escribir `erp/entity/MovimientoFinancieroTests`
     - Área: backend · Responsable: Sebastián
     - `crear` deja la auditoría de estado igual a la de datos; `cambiarEstado` no toca datos ni `actualizado_*`; `actualizarDatos` no toca el estado ni su auditoría; defensas `IllegalArgumentException` (relación incoherente) e `IllegalStateException` (no editable y transición no permitida)
     - _Requisitos: 13.1, 16.5, 17.5, NF-07_
 
-  - [ ] 6.4 Crear `erp.service.ConflictosErp`
+  - [x] 6.4 Crear `erp.service.ConflictosErp`
     - Área: backend · Responsable: Sebastián
     - Clase `final` con una fábrica de `ConflictoNegocioException` por fila del catálogo de "Error Handling": `empleadoDuplicado()`, `empleadoInactivoExistente(UUID)`, `proveedorDuplicado()`, `proveedorInactivoExistente(UUID)`, `clienteInactivo()`, `proveedorInactivo()`, `movimientoNoEditable(EstadoMovimiento)` y `transicionNoPermitida(EstadoMovimiento, EstadoMovimiento)`
     - Cada fábrica fija el código, `campo`, `detail` y las extensiones (`empleadoId`, `proveedorId`, `estadoActual`, `estadoSolicitado`), sin documentos, nombres ni datos de contacto

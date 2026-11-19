@@ -24,8 +24,12 @@ import jakarta.persistence.Table;
  * CRM es el dueno de esos datos y la relacion vive solo en PostgreSQL
  * (DP-ARQ-01). El proveedor si es una asociacion dentro del ERP y se carga de
  * forma perezosa. Los datos del movimiento y la auditoria de su estado se
- * actualizan por separado (D13). Las defensas de invariantes se anaden en la
- * tarea 6.1.
+ * actualizan por separado (D13).
+ *
+ * <p>Las defensas de invariantes comprueban la coherencia entre el tipo y la
+ * relacion (D8) y la maquina de estados (D11). El servicio valida cada regla
+ * antes de llamar a la entidad, de modo que estas excepciones solo protegen
+ * las invariantes.
  */
 @Entity
 @Table(name = "movimientos_financieros")
@@ -127,6 +131,8 @@ public class MovimientoFinanciero {
             UUID actor,
             Instant ahora) {
 
+        validarRelacion(tipo, clienteId, proveedor);
+
         return new MovimientoFinanciero(
                 tipo,
                 fecha,
@@ -158,6 +164,13 @@ public class MovimientoFinanciero {
             UUID actor,
             Instant ahora) {
 
+        if (!estado.esEditable()) {
+            throw new IllegalStateException(
+                    "Solo se pueden editar movimientos en estado PENDIENTE.");
+        }
+
+        validarRelacion(tipo, clienteId, proveedor);
+
         this.tipo = tipo;
         this.fecha = fecha;
         this.concepto = concepto;
@@ -177,9 +190,27 @@ public class MovimientoFinanciero {
             UUID actor,
             Instant ahora) {
 
+        if (!estado.puedeTransicionarA(destino)) {
+            throw new IllegalStateException(
+                    "Transicion no permitida de " + estado + " a " + destino + ".");
+        }
+
         this.estado = destino;
         this.estadoActualizadoEn = ahora;
         this.estadoActualizadoPor = actor;
+    }
+
+    private static void validarRelacion(
+            TipoMovimiento tipo,
+            UUID clienteId,
+            Proveedor proveedor) {
+
+        if (tipo == TipoMovimiento.EGRESO && clienteId != null) {
+            throw new IllegalArgumentException("Un EGRESO no admite clienteId.");
+        }
+        if (tipo == TipoMovimiento.INGRESO && proveedor != null) {
+            throw new IllegalArgumentException("Un INGRESO no admite proveedor.");
+        }
     }
 
     public UUID getId() {
