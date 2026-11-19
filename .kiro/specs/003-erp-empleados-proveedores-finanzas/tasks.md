@@ -368,36 +368,36 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 6: Los campos controlados por el servidor no se toman del cuerpo** (propiedades desconocidas ignoradas) · **Validates: Requirements 4.10, 9.9, 13.9**
     - _Requisitos: 15.9, NF-07_
 
-- [ ] 11. Implementar el panel financiero
-  - [ ] 11.1 Crear `ResumenFinancieroResponse`
+- [x] 11. Implementar el panel financiero
+  - [x] 11.1 Crear `ResumenFinancieroResponse`
     - Área: backend · Responsable: Sebastián
     - `record ResumenFinancieroResponse(LocalDate desde, LocalDate hasta, Map<TipoMovimiento, ResumenTipo> porTipo, String saldoPagado)` con `ResumenTipo(Map<EstadoMovimiento, ResumenEstado> porEstado, long cantidad)` y `ResumenEstado(long cantidad, String suma)`
     - Función pura `static desde(desde, hasta, List<TotalMovimientos>)` con los cinco pasos del diseño: `EnumMap` con las seis combinaciones en `(0, 0.00)`, copia de las filas, cantidad del tipo como suma de sus estados, `saldoPagado = suma(INGRESO, PAGADO) − suma(EGRESO, PAGADO)` y serialización con `setScale(2, RoundingMode.UNNECESSARY).toPlainString()` (D10)
     - _Requisitos: 18.1, 18.2, 18.4, 18.6–18.8, ERP-04, DP-API-04_
 
-  - [ ] 11.2 Escribir `erp/dto/ResumenFinancieroResponseTests`
+  - [x] 11.2 Escribir `erp/dto/ResumenFinancieroResponseTests`
     - Área: backend · Responsable: Sebastián
     - Conjuntos de `GeneradoresErp.conjuntoMovimientos` agrupados por el modelo y comparados con el cálculo directo; caso sin filas
     - **Property 14: El resumen financiero es consistente con los movimientos** (función pura) · **Validates: Requirements 18.1, 18.2, 18.4, 18.6, 18.7, 25.4**
     - **Property 5: Los importes viajan como texto sin perder precisión** (sumas y saldo con dos decimales y signo) · **Validates: Requirements 18.8**
     - _Requisitos: 25.4, NF-07, ERP-04_
 
-  - [ ] 11.3 Implementar `ResumenFinancieroService`
+  - [x] 11.3 Implementar `ResumenFinancieroService`
     - Área: backend · Responsable: Sebastián
     - `@Service @Transactional(readOnly = true)`; `obtener(RangoFechas)` llama una vez a `totalizar(desde, hasta)` y construye la respuesta con `ResumenFinancieroResponse.desde`
     - _Requisitos: 18.1, 18.3, 18.6, CA-04, ERP-04_
 
-  - [ ]* 11.4 Escribir `erp/service/ResumenFinancieroServiceTests`
+  - [x]* 11.4 Escribir `erp/service/ResumenFinancieroServiceTests`
     - Área: backend · Responsable: Sebastián
     - Mockito: delega en `totalizar` con los límites recibidos, también nulos
     - _Requisitos: 18.3, NF-07_
 
-  - [ ] 11.5 Implementar `ResumenFinancieroController`
+  - [x] 11.5 Implementar `ResumenFinancieroController`
     - Área: backend · Responsable: Sebastián
     - `GET /api/erp/resumen` con `desde` y `hasta` opcionales (`@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)`) y `resumenService.obtener(new RangoFechas(desde, hasta))`
     - _Requisitos: 1.2, 1.3, 18.1, 18.3–18.5, ERP-04_
 
-  - [ ] 11.6 Escribir `erp/controller/ResumenFinancieroControllerTests`
+  - [x] 11.6 Escribir `erp/controller/ResumenFinancieroControllerTests`
     - Área: backend · Responsable: Sebastián
     - Los dos tipos y los tres estados presentes, con 0 y `"0.00"` sin movimientos; `desde` y `hasta` repetidos o `null`; saldo negativo con signo; 400 por una fecha inválida en el parámetro afectado y por `desde > hasta` en `hasta`
     - **Property 15: Los parámetros de lista y de rango se aceptan o rechazan según la regla** · **Validates: Requirements 18.5**
@@ -956,6 +956,32 @@ Alcance respetado:
 
 - Solo se implementó la vertical de movimientos financieros de Sebastián; no se modificaron el CRM, las entidades, los repositorios, las especificaciones ni las tareas de Davidson o Paula.
 - No se crearon el servicio, el controlador ni las pruebas del panel financiero (11.3–11.6); `ResumenFinancieroResponse` sigue pendiente en 11.1.
+- No se aplicó ninguna migración a `arise-corp-dev` ni se usaron credenciales, tokens o datos personales.
+- El commit de esta tanda incluye el código, las pruebas y este registro; queda solo en local, sin push.
+
+### Panel financiero (tarea 11) — 2026-11-18
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 11.1 | `ResumenFinancieroResponse` con `ResumenTipo` y `ResumenEstado` | La función pura `desde` parte de las seis combinaciones en `(0, "0.00")`, copia las filas con `EnumMap`, calcula la cantidad del tipo como suma de sus estados, el saldo pagado como `INGRESO/PAGADO − EGRESO/PAGADO` y serializa las sumas con `setScale(2, RoundingMode.UNNECESSARY).toPlainString()` |
+| 11.2 | `erp/dto/ResumenFinancieroResponseTests` | 4 pruebas: Property 14 con 120 conjuntos de `GeneradoresErp.conjuntoMovimientos` agrupados por el modelo y comparados con el cálculo directo, las seis combinaciones en cero, Property 5 sobre los nueve importes y el saldo con signo, y conservación de los límites |
+| 11.3 | `ResumenFinancieroService` | `@Service @Transactional(readOnly = true)`; `obtener(RangoFechas)` llama una sola vez a `totalizar(desde, hasta)` y construye la respuesta con `ResumenFinancieroResponse.desde` |
+| 11.4 | `erp/service/ResumenFinancieroServiceTests` | 3 pruebas: delegación en `totalizar` con ambos límites, con límites nulos y con un solo límite, comprobando el saldo y las filas devueltas |
+| 11.5 | `ResumenFinancieroController` | `GET /api/erp/resumen` con `desde` y `hasta` opcionales en `ISO.DATE`, `RangoFechas` para validar el rango y el mismo formato de error del resto del ERP |
+| 11.6 | `erp/controller/ResumenFinancieroControllerTests` | 5 pruebas: 200 para ambos roles, seis combinaciones en cero y `"0.00"`, cantidades y sumas por tipo y estado, saldo negativo con signo, filtro inclusivo con límites repetidos o ausentes y 400 por fecha inválida en el parámetro afectado y por `desde > hasta` en `hasta` (Property 15) |
+
+Comando ejecutado desde `backend/`:
+
+```text
+.\mvnw.cmd -B clean test
+```
+
+Resultado: 769 pruebas, 0 fallos, 0 errores, 0 omitidas · `BUILD SUCCESS` (757 previas + 12 nuevas).
+
+Alcance respetado:
+
+- Solo se implementó el panel financiero de Sebastián; no se modificaron el CRM, las entidades, los repositorios, las especificaciones ni las tareas de Davidson o Paula.
+- `ResumenFinancieroResponse` completa lo que la tarea 10 dejó fuera; `SerializacionErpTests` no cambió y las aserciones de `desde`/`hasta` nulos quedan cubiertas por 11.2 y 11.6.
 - No se aplicó ninguna migración a `arise-corp-dev` ni se usaron credenciales, tokens o datos personales.
 - El commit de esta tanda incluye el código, las pruebas y este registro; queda solo en local, sin push.
 
