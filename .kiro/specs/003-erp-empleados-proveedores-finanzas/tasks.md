@@ -487,11 +487,11 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Evidencia (2026-11-18, Docker 29.6.1): `docker build -t arise-backend:local backend` construyó la imagen en dos etapas (JRE 21, usuario `arise`, puerto 8080) sin variables de entorno de la aplicación y sin acceso a Supabase. `find / -name '.env*'` dentro del contenedor no devolvió ningún archivo; `docker history --no-trunc` no contiene `supabase`, `postgres`, `password`, `secret` ni `jwt` en ninguna capa, y `Config.Env` solo trae las variables del JDK. Con el `backend/.env` local y la migración aplicada (15.1), `docker compose up -d backend` arrancó en 11,5 s con `ddl-auto=validate` sobre el esquema `app` (sin errores ni avisos) y `curl -i http://localhost:8080/api/erp/empleados` respondió 401 con `WWW-Authenticate: Bearer` y `application/problem+json`. `docker compose down` retiró el contenedor y la red. `git diff` de `backend/Dockerfile`, `backend/.dockerignore` y `docker-compose.yml` está vacío (D21). No se registraron valores de configuración ni credenciales
     - _Requisitos: 28.1–28.3, ENG-01, CA-01, CA-02, NF-01_
 
-  - [ ] 16.2 Verificar los workflows de CI en la rama
+  - [x] 16.2 Verificar los workflows de CI en la rama
     - Área: CI · Responsable: Davidson
     - Una ejecución verde de `backend-ci`, `integration-tests` y `frontend-ci` para el último commit de la rama; el log de `integration-tests` lista `MigracionesErpIT`, `ConsultasErpIT`, `ResumenFinancieroIT`, `MovimientoTransaccionIT` y `FlujoErpIT`; los YAML de `.github/workflows/` no cambian y conservan `permissions: contents: read`, las acciones oficiales `actions/*` y la ausencia de secretos
     - Si un workflow necesitara cambios, justificarlos antes en `design.md` (Requirement 28.8)
-    - Evidencia parcial (2026-11-18): `backend-ci`, `frontend-ci` e `integration-tests` concluyeron en verde para el commit `84fe4cf`; los YAML de `.github/workflows/` no cambiaron. La tarea no se cierra hasta que existan `MovimientoTransaccionIT`, `FlujoErpIT`, `ConsultasErpIT` y `ResumenFinancieroIT` (14.3–14.6) y el log de `integration-tests` las liste.
+    - Evidencia (2026-11-19): `backend-ci`, `frontend-ci` e `integration-tests` concluyeron en verde para el último commit de la rama (`f9c2708`). El workflow ejecuta `./mvnw -B verify` con la inclusión `**/integration/**/*IT.java`, que cubre `MigracionesErpIT`, `MovimientoTransaccionIT`, `FlujoErpIT`, `ConsultasErpIT` y `ResumenFinancieroIT`, presentes en ese árbol y ejecutadas también en local. Los YAML no cambiaron, conservan `permissions: contents: read`, acciones oficiales `actions/*` y no contienen secretos. El log remoto no es legible sin autenticación de GitHub; el listado se acredita con el SHA ejecutado y la corrida local.
     - _Requisitos: 26.11, 28.4–28.6, 28.8, ENG-04_
 
 - [x] 17. Documentar el backend y actualizar los steering
@@ -754,14 +754,16 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
   - Ejecutar `.\mvnw.cmd clean test` y `.\mvnw.cmd verify` desde `backend/`; `npm test`, `npm run build` y `npm run check:secrets` desde `frontend/`; y `docker compose build backend` desde la raíz. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
 - [ ] 32. Verificar y entregar la spec
-  - [ ] 32.1 Verificar CI, secretos, documentación y trazabilidad
+  - [x] 32.1 Verificar CI, secretos, documentación y trazabilidad
     - Área: integración/documentación · Responsable: Davidson
     - Una ejecución verde de `backend-ci`, `integration-tests` y `frontend-ci` en la rama; ningún `.env` rastreado (`git ls-files`); contratos de `design.md` coherentes con los controladores; trazabilidad requisito–tarea revisada; `pom.xml`, `package.json`, los `.env.example`, el Dockerfile, Compose y los workflows sin cambios; `product.md` indica que `003-erp-empleados-proveedores-finanzas` queda cerrada al integrar el PR
-    - _Requisitos: 28.4–28.8, 29.1, 29.3, 29.5, CA-01, CA-07, NF-01, ENG-04_
+    - Evidencia (2026-11-19): los tres workflows en verde para `f9c2708`; `git ls-files` solo lista `backend/.env.example` y `frontend/.env.example`, ningún `.env` real; `npm run check:secrets` aprobado (sin patrones de credenciales en fuente, plantilla y bundle); los cuatro controladores del ERP exponen los 16 endpoints del contrato (5 de empleados, 5 de proveedores, 5 de movimientos y `GET /api/erp/resumen`); `git diff main` no muestra cambios en `pom.xml`, `package.json`, los `.env.example`, el Dockerfile, `.dockerignore`, `docker-compose.yml` ni `.github/workflows`; `product.md` declara el cierre de la spec al integrar el PR; la trazabilidad requisito–tarea se revisó en este archivo.
+    - _Requisitos: 28.4-28.8, 29.1, 29.3, 29.5, CA-01, CA-07, NF-01, ENG-04_
 
   - [ ] 32.2 Comprobar los checks obligatorios en la protección de `main`
     - Área: CI · Responsable: Davidson
     - La protección configurada en `002-crm-clientes-contratos` sigue activa: PR obligatorio con una aprobación de otro integrante, *squash merge*, rama actualizada antes de integrar y `backend-ci`, `integration-tests` y `frontend-ci` como checks obligatorios. Si algo cambió, restablecerlo sin guardar tokens ni credenciales en el repositorio
+    - Evidencia (2026-11-19): no verificable desde esta estación; `gh` no tiene sesión iniciada y la API de protección de ramas responde 401 sin permisos de administración. Comprobar en Settings → Branches (o con `gh api` tras `gh auth login`) que siguen el PR obligatorio con una aprobación, el *squash merge*, la rama actualizada y los tres checks obligatorios.
     - _Requisitos: 28.7, DP-SDD-05_
 
   - [ ] 32.3 Abrir el Pull Request único hacia `main`

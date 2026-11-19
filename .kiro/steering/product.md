@@ -111,6 +111,7 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - Dockerfile multi-stage, `.dockerignore` y `docker-compose.yml` para ejecutar el backend en local con la configuración inyectada en tiempo de ejecución.
 - CI de GitHub Actions con `backend-ci`, `integration-tests` y `frontend-ci`.
 - `002-crm-clientes-contratos` queda cerrada al integrar su Pull Request; hasta entonces permanecen abiertas la validación manual extremo a extremo, los checkpoints finales y la entrega.
+- `003-erp-empleados-proveedores-finanzas` queda cerrada al integrar su Pull Request; hasta entonces permanecen abiertas la validación manual extremo a extremo (30.1 y 30.2), la comprobación de la protección de `main` (32.2) y la entrega (32.3).
 
 [Aprobado, pendiente de implementar]
 - Módulo SGA y sus interfaces; tareas pendientes en `.kiro/specs/`.
