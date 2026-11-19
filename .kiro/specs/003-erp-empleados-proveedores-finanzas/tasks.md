@@ -207,7 +207,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
   - Área: verificación · Responsable: Davidson
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/`: el contexto arranca con las entidades ERP en H2, el `ValidationConfigurationCustomizer` queda registrado y las pruebas existentes de `001-foundation` y `002-crm-clientes-contratos` pasan. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
-- [ ] 8. Implementar la vertical de empleados
+- [x] 8. Implementar la vertical de empleados
   - [x] 8.1 Crear los DTO de empleados y la validación de documentos del ERP
     - Área: backend · Responsable: Davidson
     - `EmpleadoRequest` como el record del diseño: `@JsonIgnoreProperties(ignoreUnknown = true)`, normalización en el constructor compacto, `@NotNull` separado del formato, `@Correo`, `@Telefono`, `@FechaNoFutura`, mensajes en español y `toString()` "EmpleadoRequest[datos protegidos]"
@@ -224,14 +224,14 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 4: Un error por cada campo inválido** · **Validates: Requirements 4.2, 4.3, 20.2**
     - _Requisitos: 25.3, 25.7, NF-07_
 
-  - [ ] 8.3 Implementar `EmpleadoService`
+  - [x] 8.3 Implementar `EmpleadoService`
     - Área: backend · Responsable: Davidson
     - Record `erp.service.FiltroEmpleados(String q, Boolean activo)`
     - `listar`, `obtener` (404 "El empleado no existe."), `crear` (activo → `EMPLEADO_DUPLICADO`; inactivo → `EMPLEADO_INACTIVO_EXISTENTE` con `empleadoId`), `actualizar` (404; documento de otro empleado activo o inactivo → `EMPLEADO_DUPLICADO`; conserva `activo` y `creadoEn`) y `cambiarEstado` (sin tocar la auditoría si el valor coincide)
     - `ConflictosErp`, `EspecificacionesErp`, `@Transactional`, `Clock` con `Instant.now(clock).truncatedTo(ChronoUnit.MICROS)`, actor con `UUID.fromString(sub)` y conversión a DTO dentro de la transacción. No registrar datos de empleados en logs
     - _Requisitos: 1.4, 4.1, 4.8–4.10, 5.1–5.4, 5.6, 5.7, 6.1, 6.3–6.5, 7.1–7.3, 7.6, 8.3, 19.6, ERP-01, DP-SEG-06_
 
-  - [ ] 8.4 Escribir `erp/service/EmpleadoServiceTests`
+  - [x] 8.4 Escribir `erp/service/EmpleadoServiceTests`
     - Área: backend · Responsable: Davidson
     - Mockito y `Clock.fixed`: creación y edición, conservación de `activo` y `creadoEn`, `actualizadoPor = sub` y un documento ya registrado como cliente o proveedor que no impide registrar el empleado
     - **Property 7: Los duplicados se detectan sobre el documento normalizado** (empleados activos e inactivos, con variantes) · **Validates: Requirements 4.8, 4.9, 6.3**
@@ -239,13 +239,13 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 6: Los campos controlados por el servidor no se toman del cuerpo** (auditoría y conservación en el servicio) · **Validates: Requirements 4.1, 6.1, 6.4, 19.6**
     - _Requisitos: 25.1, NF-07, ERP-01_
 
-  - [ ] 8.5 Implementar `EmpleadoController`
+  - [x] 8.5 Implementar `EmpleadoController`
     - Área: backend · Responsable: Davidson
     - `GET`, `GET /{id}`, `POST` (201 con `Location` relativa), `PUT /{id}` y `PATCH /{id}` en `/api/erp/empleados`; parámetros `q`, `activo`, `page`, `size` y `sort` (`nombre`, `numeroDocumento`, `fechaIngreso` o `creadoEn`; por defecto `nombre,asc`) con las restricciones en los `@RequestParam` y sin `@Validated` a nivel de clase
     - Actor tomado de `@AuthenticationPrincipal Jwt`; sin parámetro `Authentication` y sin `DELETE` mapeado, de modo que el gestor recibe 405 con `Allow`
     - _Requisitos: 1.2, 1.3, 4.1, 5.1–5.8, 6.1, 7.1–7.6, 8.1, ERP-01_
 
-  - [ ] 8.6 Escribir `erp/controller/EmpleadoControllerTests`
+  - [x] 8.6 Escribir `erp/controller/EmpleadoControllerTests`
     - Área: backend · Responsable: Davidson
     - MockMvc + H2 con `ErpDatosPrueba`: 201 con `Location`, 200, 400 por cada regla (incluidos `id` no UUID y `tipoDocumento: "NIT"`), 404, 409 `EMPLEADO_DUPLICADO` y `EMPLEADO_INACTIVO_EXISTENTE` con `conflicto`, `campo` y `empleadoId`, y 405 de `DELETE` con `Allow`. La fecha de ingreso futura se prueba con dos días más que la fecha actual en Bogotá
     - **Property 6: Los campos controlados por el servidor no se toman del cuerpo** · **Validates: Requirements 4.10, 6.4**
@@ -254,12 +254,12 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 19: Los errores del ERP no exponen información interna ni datos personales** · **Validates: Requirements 8.4, 20.1, 20.3, 20.8**
     - _Requisitos: 4.1–4.10, 5.1–5.8, 6.1–6.5, 7.1–7.6, 25.7, NF-07_
 
-  - [ ] 8.7 Escribir `config/ClockConfigTests`
+  - [x] 8.7 Escribir `config/ClockConfigTests`
     - Área: backend · Responsable: Davidson
     - `@SpringBootTest` + MockMvc con un `Clock` `@Primary` fijo en `2026-11-21T03:30:00Z` declarado en una `@TestConfiguration`: `POST /api/erp/empleados` con `fechaIngreso = 2026-11-21` responde 400 en `fechaIngreso` y con `2026-11-20` responde 201. Demuestra que Spring MVC valida con el reloj de la aplicación (D7)
     - _Requisitos: 4.7, 25.1, NF-07_
 
-- [ ] 9. Implementar la vertical de proveedores
+- [x] 9. Implementar la vertical de proveedores
   - [x] 9.1 Crear `ProveedorRequest` y `ProveedorResponse`
     - Área: backend · Responsable: Davidson
     - `ProveedorRequest` con la forma de `EmpleadoRequest`: `TipoDocumentoProveedor`; `nombreContacto`, `direccion` y `ciudad` opcionales (`@Size` sin `@NotNull`, vacío → `null`); `exigeSoloDigitos()` verdadero para `CC` y `NIT` con el mensaje "solo admite dígitos para el tipo CC o NIT"; `toString()` protegido
@@ -274,13 +274,13 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 4: Un error por cada campo inválido** · **Validates: Requirements 9.2, 9.3**
     - _Requisitos: 25.3, 25.7, NF-07_
 
-  - [ ] 9.3 Implementar `ProveedorService`
+  - [x] 9.3 Implementar `ProveedorService`
     - Área: backend · Responsable: Davidson
     - Record `FiltroProveedores(String q, Boolean activo)`; `listar`, `obtener` (404 "El proveedor no existe."), `crear` (`PROVEEDOR_DUPLICADO`; `PROVEEDOR_INACTIVO_EXISTENTE` con `proveedorId`), `actualizar` (opcionales omitidos quedan nulos; conserva `activo` y `creadoEn`) y `cambiarEstado` (no consulta ni modifica movimientos)
     - Mismo patrón transaccional, de reloj y de auditoría que `EmpleadoService`. Cada servicio busca duplicados solo en su tabla
     - _Requisitos: 8.3, 9.1, 9.7–9.9, 10.1–10.4, 10.6, 10.7, 11.1, 11.3–11.6, 12.1, 12.2, 12.4, 12.6, ERP-02, DP-SEG-06_
 
-  - [ ] 9.4 Escribir `erp/service/ProveedorServiceTests`
+  - [x] 9.4 Escribir `erp/service/ProveedorServiceTests`
     - Área: backend · Responsable: Davidson
     - Mockito y `Clock.fixed`: creación, edición con opcionales omitidos a `null`, `actualizadoPor = sub` y desactivación sin interacción con `MovimientoFinancieroRepository`
     - **Property 7: Los duplicados se detectan sobre el documento normalizado** (proveedores) · **Validates: Requirements 9.7, 9.8, 11.4**
@@ -288,13 +288,13 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 11: Desactivar un cliente o un proveedor conserva sus movimientos** (nivel unitario) · **Validates: Requirements 12.4**
     - _Requisitos: 25.1, NF-07, ERP-02_
 
-  - [ ] 9.5 Implementar `ProveedorController`
+  - [x] 9.5 Implementar `ProveedorController`
     - Área: backend · Responsable: Davidson
     - `GET`, `GET /{id}`, `POST`, `PUT /{id}` y `PATCH /{id}` en `/api/erp/proveedores`, con `q`, `activo`, `page`, `size` y `sort` (`nombre`, `numeroDocumento` o `creadoEn`; por defecto `nombre,asc`) y sin `DELETE` mapeado
     - Confirmar en el mismo commit que la tarea 12.1 (retirada del doble `GET /api/erp/proveedores`), coordinado con Sebastián: si conviven, el contexto falla por mapeo ambiguo (D16)
     - _Requisitos: 1.2, 1.3, 9.1, 10.1–10.7, 11.1, 12.1–12.6, ERP-02_
 
-  - [ ] 9.6 Escribir `erp/controller/ProveedorControllerTests`
+  - [x] 9.6 Escribir `erp/controller/ProveedorControllerTests`
     - Área: backend · Responsable: Davidson
     - 201 con `Location`, 200, 400 por cada regla, 404, 409 `PROVEEDOR_DUPLICADO` y `PROVEEDOR_INACTIVO_EXISTENTE` con `proveedorId`, `PUT` que deja nulos los opcionales omitidos y 405 de `DELETE` con `Allow`
     - **Property 6: Los campos controlados por el servidor no se toman del cuerpo** · **Validates: Requirements 9.1, 9.9, 11.1, 11.3, 11.5**
@@ -404,7 +404,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - _Requisitos: 18.1–18.8, 25.7, NF-07_
 
 - [ ] 12. Escribir las pruebas de autorización y de logs del ERP
-  - [ ] 12.1 Retirar el doble ERP de `AutorizacionModulosTests`
+  - [x] 12.1 Retirar el doble ERP de `AutorizacionModulosTests`
     - Área: backend · Responsable: Sebastián
     - Eliminar la constante `RUTA_ERP` y el doble `listarProveedores()`; conservar el doble `GET /api/sga/paquetes`
     - `sinTokenDevuelve401`, `sinPerfilActivoDevuelve403EnCualquierModulo` y `perfilInactivoDevuelve403EnCualquierModulo` recorren solo `RUTA_SGA`; eliminar `finanzasAccedeAErpYOperacionesNo`; renombrar `comercialNoAccedeAErpNiSga` a `comercialNoAccedeASga` y `administradorAccedeATodosLosModulos` a `administradorAccedeASga`; `operacionesAccedeASgaYFinanzasNo` no cambia; el Javadoc indica que los dobles son solo de SGA y que CRM y ERP se prueban en `CrmAutorizacionTests` y `ErpAutorizacionTests` (D16)
@@ -433,7 +433,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - El `truncate` de `@BeforeEach` incluye `app.movimientos_financieros`, `app.proveedores` y `app.empleados` antes de las tablas del CRM, `app.perfiles_usuario` y `auth.users`, con `cascade`, según el diseño. `MigracionesSupabase`, `PostgresContenedorConfig`, el Script_Preparacion_IT y `pom.xml` no cambian
     - _Requisitos: 26.1, 26.9, 26.10, ENG-03_
 
-  - [ ] 14.2 Escribir `MigracionesErpIT`
+  - [x] 14.2 Escribir `MigracionesErpIT`
     - Área: backend · Responsable: Davidson
     - `ddl-auto=validate` acepta las entidades del ERP; las tres tablas están vacías tras migrar; `information_schema` confirma `uuid`, `date` (`fecha_ingreso`, `fecha`), `numeric(15,2)` (`valor`), `timestamptz` y `text`
     - Inserciones JDBC inválidas producen SQLState 23505 (documento duplicado de empleado y de proveedor), 23514 (tipos de documento, `CC` con letras en empleado, `NIT` con letras en proveedor, longitudes, `tipo`, `estado`, `valor = 0` y negativo, concepto corto, referencia en minúsculas, `cliente_id` con `EGRESO` y `proveedor_id` con `INGRESO`) y 23503 (FK de cliente y de proveedor); RLS activo y sin privilegios `select`, `insert`, `update` ni `delete` para `anon` y `authenticated`
@@ -487,13 +487,13 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - _Requisitos: 26.11, 28.4–28.6, 28.8, ENG-04_
 
 - [ ] 17. Documentar el backend y actualizar los steering
-  - [ ] 17.1 Actualizar el README
+  - [x] 17.1 Actualizar el README
     - Área: documentación · Responsable: Davidson
     - Aviso inicial y §4: estado con el ERP implementado. §5: estructura con `erp/`, `crm/service/ClienteReferenciaService`, `shared/validacion` ampliado, `shared/error/ParametroInvalidoException`, `pages/erp`, `services/erpApi.js` y la Migracion_ERP. La §11.6 la actualiza Paula en la tarea 28.1
     - Confirmar que no hay variables de entorno ni dependencias nuevas y que los `.env.example` no cambian
     - _Requisitos: 29.2, 29.5, CA-01_
 
-  - [ ] 17.2 Actualizar los steering de arquitectura, estructura, tecnología y producto
+  - [x] 17.2 Actualizar los steering de arquitectura, estructura, tecnología y producto
     - Área: documentación · Responsable: Davidson
     - `architecture.md`: la API incluye el ERP; PostgreSQL incluye `app.empleados`, `app.proveedores` y `app.movimientos_financieros`; módulo `erp` con su relación de solo lectura con el CRM mediante `ClienteReferenciaService`
     - `structure.md`: árbol del backend con `erp/` y sus capas, `crm/service/ClienteReferenciaService`, `shared/validacion` ampliado, `shared/error/ParametroInvalidoException`, pruebas `erp/`, IT nuevas y la Migracion_ERP
@@ -507,7 +507,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - `security.md`: datos personales de empleados y proveedores con una sola representación para los gestores del ERP, sin lectura cruzada, DTO con `toString()` protegido y `ErpLogsTests` como verificación
     - _Requisitos: 8.3, 29.3, CA-07_
 
-- [ ] 18. Checkpoint del backend completo
+- [x] 18. Checkpoint del backend completo
   - Área: verificación · Responsable: Davidson
   - Ejecutar desde `backend/` `.\mvnw.cmd clean test` y, con Docker en ejecución, `.\mvnw.cmd verify` (Requirement 26.11); desde la raíz, `docker compose build backend`. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
@@ -878,6 +878,21 @@ Alcance respetado:
 - No se crearon `ConflictosErp` (6.4), la máquina de estados (6.1), la ampliación de `PostgresIntegracionBase` (14.1), los controladores ni los servicios de empleados, proveedores, movimientos o panel. Por eso quedan pendientes 8.3–8.6 y 9.3–9.6 (dependen de 6.4; 9.5 comparte commit con 12.1), 8.7 (necesita el endpoint de empleados), 14.2, 15.1, 16.2, 17.1–17.3, 18, 30.2 y 32.x.
 - La migración no está aplicada: la revisión 2.3 ya está aprobada (ver abajo), pero faltan `MigracionesErpIT` (14.2) y la aplicación controlada (15.1). Mientras no se aplique, el backend de la rama no arranca contra `arise-corp-dev`.
 - Los commits de esta tanda se registran en la rama; no se hizo push ni se abrió el PR.
+
+### Backend de Davidson · continuación 2026-11-18
+
+Con las dependencias de Sebastián ya en la rama (6.1, 6.4, 10.x, 11.x, 14.1 y la revisión 2.3), se completaron las verticales restantes y el cierre documental.
+
+| Tareas | Entregable y evidencia |
+|---|---|
+| 8.3–8.7 | `EmpleadoService` y `EmpleadoController` con `FiltroEmpleados`, `@FechaNoFutura` en el DTO, 404 "El empleado no existe.", `EMPLEADO_DUPLICADO`/`EMPLEADO_INACTIVO_EXISTENTE` con `empleadoId`, `PATCH` idempotente, `DELETE` 405 con `Allow` y 9 pruebas MockMvc; 9 pruebas de servicio con Mockito y `Clock.fixed`; `ClockConfigTests` demuestra que el 21/11 se rechaza y el 20/11 se acepta con el reloj fijo en `2026-11-21T03:30:00Z` |
+| 9.3–9.6 | `ProveedorService` y `ProveedorController` con `FiltroProveedores`, opcionales vacíos a `null`, solo dígitos para `CC`/`NIT`, 409 con `proveedorId`, desactivación sin tocar movimientos y 9 pruebas MockMvc; 8 pruebas de servicio |
+| 12.1 | Retirado el doble `GET /api/erp/proveedores` de `AutorizacionModulosTests` en el mismo commit que `ProveedorController` (prerrequisito declarado en el plan); los dobles quedan solo de SGA y la matriz ERP se cubre en `ErpAutorizacionTests` (12.2, pendiente) |
+| 14.2 | `MigracionesErpIT` (8 pruebas) contra PostgreSQL efímero: `ddl-auto=validate`, tipos de `information_schema`, 23505, 23514 (documentos, tipo, estado, valor, concepto, referencia y coherencia tipo-relación), 23503 y RLS sin privilegios |
+| 17.1, 17.2 | README (aviso, §4 y §5 con `erp/`, `ClienteReferenciaService`, `ParametroInvalidoException`, `pages/erp`, `erpApi.js` y la migración) y steering de arquitectura, estructura, tecnología y producto con el ERP implementado y SGA como única área pendiente |
+| 18 | Checkpoint del backend completo: 804 pruebas unitarias y 24 de integración en verde; `docker compose build backend` construyó `arise-backend:local` |
+
+Pendiente y bloqueado: 15.1 (aplicación controlada en `arise-corp-dev`, requiere autorización y credenciales), 30.1 y 30.2 (dependen de 15.1), 12.2, 12.3, 14.3–14.6 (Sebastián), 16.1, 16.2, 17.3, 32.1–32.3 (CI, protección de `main`, PR y entrega).
 
 ### Revisión de la migración ERP (2.3) — 2026-11-18
 
