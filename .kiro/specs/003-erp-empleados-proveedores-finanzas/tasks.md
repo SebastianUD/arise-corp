@@ -904,3 +904,28 @@ Comando ejecutado desde `backend/`:
 Resultado: 562 pruebas unitarias y 7 IT en verde · `BUILD SUCCESS`. `MigracionesCrmIT` aplica todas las migraciones, incluida la del ERP, en un PostgreSQL efímero de Testcontainers: el archivo ejecuta sin errores, la FK a `app.clientes` encuentra la tabla y `ddl-auto=validate` acepta las entidades del ERP (Requirement 2.10).
 
 La migración **no se aplicó** a `arise-corp-dev`: la aplicación controlada sigue siendo la tarea 15.1 de Davidson, tras `MigracionesErpIT` (14.2). Sin credenciales ni datos personales en este registro.
+
+### Máquina de estados y conflictos del ERP (tarea 6) — 2026-11-19
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 6.1 | `EstadoMovimiento` y defensas de `MovimientoFinanciero` | `transicionesPermitidas()`, `puedeTransicionarA`, `esFinal` y `esEditable` según D11. `crear` y `actualizarDatos` lanzan `IllegalArgumentException` con `clienteId` en un `EGRESO` o con proveedor en un `INGRESO` (D8); `actualizarDatos` lanza `IllegalStateException` si el estado no es editable; `cambiarEstado` la lanza ante una transición no permitida. La comprobación ocurre antes de mutar, así que una defensa no deja cambios parciales |
+| 6.2 | `erp/entity/EstadoMovimientoTests` | 17 pruebas: los 9 pares origen-destino (Property 12), `esFinal` y `esEditable` con `@EnumSource`, y las transiciones exactas de `PENDIENTE` |
+| 6.3 | `erp/entity/MovimientoFinancieroTests` | 17 pruebas: al crear, la auditoría de estado queda igual a la de datos; `actualizarDatos` reemplaza los siete campos y `actualizado_*` sin tocar el estado ni su auditoría; `cambiarEstado` solo toca su auditoría; las relaciones incoherentes y los movimientos no editables se rechazan sin cambios; se cubren los 9 pares de transición |
+| 6.4 | `erp/service/ConflictosErp` | Ocho fábricas con el código, `campo`, `detail` y extensiones del catálogo, sin documentos, nombres ni datos de contacto. `ConflictosErpTests` verifica las ocho filas, los códigos estables y los argumentos obligatorios |
+
+Comando ejecutado desde `backend/`:
+
+```text
+.\mvnw.cmd -B clean test
+```
+
+Resultado: 599 pruebas, 0 fallos, 0 errores, 0 omitidas · `BUILD SUCCESS` (562 previas + 37 nuevas).
+
+Alcance respetado:
+
+- No se crearon los servicios, controladores ni DTO de movimientos; `MovimientoService`, `RangoFechas` y la vertical 10 siguen pendientes.
+- El CRM no cambió y `GeneradoresErp` se mantuvo sin tocar.
+- Sin credenciales, tokens ni datos personales en este registro.
+
+Commit: `8a3f010` (6.1–6.4).
