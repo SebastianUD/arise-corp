@@ -1050,6 +1050,32 @@ Alcance respetado:
 - Solo se añadieron las dos pruebas de la tarea 12; no cambiaron los controladores, los servicios, las entidades ni las migraciones.
 - Los commits quedan solo en local hasta que se ordene publicarlos.
 
+### Pruebas de integración del ERP y verificación Docker (tareas 14.3–14.6 y 16.1) — 2026-11-18
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 14.3 | `integration/MovimientoTransaccionIT` | 3 pruebas. El cambio confirmado avanza `estado`, `estado_actualizado_en` y `estado_actualizado_por` sin tocar `actualizado_*`; un `TransactionTemplate` que cambia el estado y después falla deja las cinco columnas intactas; en la carrera de dos hilos exactamente una transición se aplica y la otra recibe `TRANSICION_NO_PERMITIDA` |
+| 14.4 | `integration/FlujoErpIT` | 2 pruebas. Recorre cliente y cuenta del CRM, `INGRESO` con cliente activo, 409 `CLIENTE_INACTIVO`, `PUT` que conserva un cliente ya inactivo, proveedor, `EGRESO`, las dos desactivaciones con sus movimientos conservados (Property 11) y el duplicado de proveedor traducido a 409 sin exponer el mensaje de la base |
+| 14.5 | `integration/ConsultasErpIT` | 3 pruebas y 120 combinaciones generadas contra un modelo en memoria que reproduce `EspecificacionesErp`: 17 empleados, 20 proveedores y 30 movimientos con tildes, mayúsculas, documentos con letras, activos e inactivos y dos años de fechas. Cubre `q` con `%`, `_` y `\` literales, rangos inclusivos, identificadores inexistentes y el desempate `id,asc` con el orden de `uuid` de PostgreSQL; el orden por `nombre` se comprueba aparte con un subconjunto ASCII |
+| 14.6 | `integration/ResumenFinancieroIT` | 3 pruebas y 120 rangos generados con y sin límites. Cada rango compara las seis combinaciones, la cantidad por tipo y el saldo pagado con `count` y `sum` por JDBC, siempre como texto con dos decimales; un rango sin datos devuelve ceros y `"0.00"` y el conjunto sembrado produce un saldo pagado negativo con signo |
+| 16.1 | Imagen y Compose | `docker build -t arise-backend:local backend` en dos etapas sin credenciales ni conexión a Supabase; `find / -name '.env*'` dentro del contenedor no devuelve nada; `docker history --no-trunc` y `Config.Env` no muestran valores de configuración. Con `docker compose up -d backend` la aplicación arrancó en 11,5 s con `ddl-auto=validate` y `curl -i http://localhost:8080/api/erp/empleados` respondió 401 con `WWW-Authenticate: Bearer` y `application/problem+json` |
+
+Comando ejecutado desde `backend/`, con Docker 29.6.1 y PostgreSQL 17 efímero:
+
+```text
+.\mvnw.cmd -B verify
+```
+
+Resultado: 939 pruebas unitarias y 35 de integración, 0 fallos, 0 errores, 0 omitidas · `BUILD SUCCESS`. Las 10 clases de integración en verde: `MigracionesErpIT` (8), `ConsultasErpIT` (3), `ResumenFinancieroIT` (3), `MovimientoTransaccionIT` (3), `FlujoErpIT` (2) y las cinco del CRM.
+
+Alcance respetado:
+
+- Solo se añadieron las cuatro pruebas de integración; no cambiaron entidades, servicios, controladores, migraciones, `pom.xml`, el Dockerfile, `.dockerignore`, Compose ni los workflows.
+- La verificación de Compose usó el `backend/.env` local y la migración ya aplicada en `arise-corp-dev` (15.1); no se copiaron credenciales, tokens ni UUID a este archivo. Al terminar se ejecutó `docker compose down`.
+- Los commits quedan solo en local hasta que se ordene publicarlos.
+
+Pendiente y ajeno a esta tanda: 16.2 (Davidson), 30.1 (Paula) y 30.2 (Davidson). La tarea 31 (checkpoint final) espera esas tres.
+
 ### Checkpoint del backend sin Docker (tarea 13) — 2026-11-18
 
 Comando ejecutado desde `backend/`, sin Docker, sin Supabase y sin `.env`:
