@@ -440,29 +440,34 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - **Property 9: La relación es coherente con el tipo** (restricciones `CHECK` de PostgreSQL) · **Validates: Requirements 14.2, 14.3**
     - _Requisitos: 2.1–2.10, 26.1–26.4, DP-SEG-05, ENG-03_
 
-  - [ ] 14.3 Escribir `MovimientoTransaccionIT`
+  - [x] 14.3 Escribir `MovimientoTransaccionIT`
     - Área: backend · Responsable: Sebastián
     - Un cambio de estado confirmado actualiza juntas `estado`, `estado_actualizado_en` y `estado_actualizado_por` sin tocar `actualizado_*`; un `TransactionTemplate` que llama a `cambiarEstado` y después lanza una excepción no deja cambios en el estado ni en su auditoría
     - Concurrencia (D12): dos hilos intentan `PENDIENTE→PAGADO` y `PENDIENTE→ANULADO` sobre el mismo movimiento; exactamente uno se aplica y el otro termina en `TRANSICION_NO_PERMITIDA`
+    - Evidencia (2026-11-18, PostgreSQL 17 efímero): `MovimientoTransaccionIT` en verde con 3 pruebas. El cambio confirmado avanza la auditoría de estado y conserva `actualizado_en` y `actualizado_por`; el rollback deja las cinco columnas como estaban; en la carrera de dos hilos exactamente una transición se aplica y la otra recibe `TRANSICION_NO_PERMITIDA` con `estadoActual` igual al destino del ganador
     - _Requisitos: 17.4, 17.5, 26.8, DP-SEG-06, ENG-03_
 
-  - [ ] 14.4 Escribir `FlujoErpIT`
+  - [x] 14.4 Escribir `FlujoErpIT`
     - Área: backend · Responsable: Sebastián
     - Por MockMvc contra PostgreSQL: `INGRESO` asociado a un cliente activo del CRM; 409 `CLIENTE_INACTIVO` con un cliente inactivo; `EGRESO` asociado a un proveedor activo; un `PUT` que conserva el cliente inactivo se aplica; un `saveAndFlush` de un proveedor con documento duplicado lanza `DataIntegrityViolationException`, que la API traduce a 409 genérico
     - **Property 11: Desactivar un cliente o un proveedor conserva sus movimientos** (desactivación después de asociarlos) · **Validates: Requirements 12.4, 14.10**
+    - Evidencia (2026-11-18, PostgreSQL 17 efímero): `FlujoErpIT` en verde con 2 pruebas. Recorre cuenta y cliente del CRM, ingreso, 409 `CLIENTE_INACTIVO`, `PUT` que conserva el cliente inactivo, proveedor, egreso y las dos desactivaciones con los movimientos conservados; el duplicado de proveedor viola `proveedores_documento_uk` (SQLState 23505) y la API responde 409 sin exponer el mensaje de la base
     - _Requisitos: 14.6, 14.8, 14.10, 20.7, 26.5, CA-04, ENG-03_
 
-  - [ ] 14.5 Escribir `ConsultasErpIT`
+  - [x] 14.5 Escribir `ConsultasErpIT`
     - Área: backend · Responsable: Sebastián
     - Conjunto sembrado con semilla fija: empleados y proveedores con tildes, mayúsculas y documentos con letras, activos e inactivos; clientes del CRM; movimientos de ambos tipos en los tres estados con fechas repartidas en dos años. Al menos 100 combinaciones generadas de filtros y orden contra la API, incluidos `q` con `%` y `_`, `desde` y `hasta` inclusivos y `clienteId` o `proveedorId` inexistentes
     - **Property 16: Filtros, búsqueda y orden coinciden con un modelo en memoria** · **Validates: Requirements 5.1, 5.3, 5.4, 10.1, 10.3, 10.4, 15.2, 15.3, 15.4, 15.5, 15.6, 26.6**
+    - Evidencia (2026-11-18, PostgreSQL 17 efímero): `ConsultasErpIT` en verde con 3 pruebas y 120 combinaciones generadas de empleados, proveedores y movimientos comparadas con un modelo en memoria que reproduce `EspecificacionesErp`; incluye `%`, `_` y `\` literales, rangos inclusivos con límites repetidos o ausentes, identificadores inexistentes y el desempate `id,asc` con el orden de `uuid` de PostgreSQL. El orden por `nombre` se comprueba aparte con un subconjunto ASCII
     - _Requisitos: 26.6, ERP-01, ERP-02, ERP-03, ENG-03_
 
-  - [ ] 14.6 Escribir `ResumenFinancieroIT`
+  - [x] 14.6 Escribir `ResumenFinancieroIT`
     - Área: backend · Responsable: Sebastián
     - Conjunto sembrado y al menos 100 rangos generados (con y sin límites) comparados con conteos y sumas calculados con JDBC; sumas con dos decimales y saldo negativo
     - **Property 14: El resumen financiero es consistente con los movimientos** (contra PostgreSQL) · **Validates: Requirements 18.1, 18.2, 18.3, 18.4, 18.6, 18.7, 25.4**
+    - Evidencia (2026-11-18, PostgreSQL 17 efímero): `ResumenFinancieroIT` en verde con 3 pruebas y 120 rangos generados con y sin límites. Cada rango compara las seis combinaciones, la cantidad por tipo y el saldo pagado con `count` y `sum` calculados por JDBC, siempre como texto con dos decimales; un rango vacío devuelve ceros y `"0.00"` y el conjunto sembrado produce un saldo negativo con signo
     - _Requisitos: 26.7, ERP-04, ENG-03_
+
 
 - [x] 15. Aplicar la migración del ERP en `arise-corp-dev`
   - [x] 15.1 Aplicar la migración revisada de forma controlada
