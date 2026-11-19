@@ -479,11 +479,12 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - _Requisitos: 2.8, 29.7, DP-TEC-03, DP-SEG-05, NF-01_
 
 - [ ] 16. Verificar la imagen Docker y los workflows con el ERP
-  - [ ] 16.1 Verificar la imagen y Compose
+  - [x] 16.1 Verificar la imagen y Compose
     - Área: backend/Docker · Responsable: Sebastián
     - `docker build -t arise-backend:local backend` sin credenciales ni conexión a Supabase; `docker run --rm --entrypoint sh arise-backend:local -c "find / -name '.env*' 2>/dev/null"` no devuelve nada y `docker history --no-trunc` no muestra valores de configuración. `backend/Dockerfile`, `backend/.dockerignore` y `docker-compose.yml` no cambian (D21)
     - Con un `backend/.env` válido y la migración aplicada (15.1), `docker compose up backend` y `curl -i http://localhost:8080/api/erp/empleados` → 401 con `WWW-Authenticate`
     - Registrar el resultado en este `tasks.md` sin datos sensibles
+    - Evidencia (2026-11-18, Docker 29.6.1): `docker build -t arise-backend:local backend` construyó la imagen en dos etapas (JRE 21, usuario `arise`, puerto 8080) sin variables de entorno de la aplicación y sin acceso a Supabase. `find / -name '.env*'` dentro del contenedor no devolvió ningún archivo; `docker history --no-trunc` no contiene `supabase`, `postgres`, `password`, `secret` ni `jwt` en ninguna capa, y `Config.Env` solo trae las variables del JDK. Con el `backend/.env` local y la migración aplicada (15.1), `docker compose up -d backend` arrancó en 11,5 s con `ddl-auto=validate` sobre el esquema `app` (sin errores ni avisos) y `curl -i http://localhost:8080/api/erp/empleados` respondió 401 con `WWW-Authenticate: Bearer` y `application/problem+json`. `docker compose down` retiró el contenedor y la red. `git diff` de `backend/Dockerfile`, `backend/.dockerignore` y `docker-compose.yml` está vacío (D21). No se registraron valores de configuración ni credenciales
     - _Requisitos: 28.1–28.3, ENG-01, CA-01, CA-02, NF-01_
 
   - [ ] 16.2 Verificar los workflows de CI en la rama
