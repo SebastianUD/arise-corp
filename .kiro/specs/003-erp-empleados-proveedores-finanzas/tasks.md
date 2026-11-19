@@ -754,26 +754,27 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
   - Con el perfil FINANZAS_RRHH activo se abrió la ficha del cliente ficticio. Mostró documento, ciudad, cuenta corporativa y estado, sin acciones de edición. Se abrió la edición del empleado ficticio para probar el cambio de rol con el formulario abierto.
   - Pendiente de 30.2: comprobar la ausencia de consultas ERP en el acceso directo con COMERCIAL y OPERACIONES, verificar los tres envíos denegados y la conservación de los datos y la sesión, restablecer los roles y desactivar el empleado y el proveedor de esta prueba.
 
-- [ ] 31. Checkpoint final
+- [x] 31. Checkpoint final
   - Área: verificación · Responsable: Sebastián
   - Ejecutar `.\mvnw.cmd clean test` y `.\mvnw.cmd verify` desde `backend/`; `npm test`, `npm run build` y `npm run check:secrets` desde `frontend/`; y `docker compose build backend` desde la raíz. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
-- [ ] 32. Verificar y entregar la spec
+- [x] 32. Verificar y entregar la spec
   - [x] 32.1 Verificar CI, secretos, documentación y trazabilidad
     - Área: integración/documentación · Responsable: Davidson
     - Una ejecución verde de `backend-ci`, `integration-tests` y `frontend-ci` en la rama; ningún `.env` rastreado (`git ls-files`); contratos de `design.md` coherentes con los controladores; trazabilidad requisito–tarea revisada; `pom.xml`, `package.json`, los `.env.example`, el Dockerfile, Compose y los workflows sin cambios; `product.md` indica que `003-erp-empleados-proveedores-finanzas` queda cerrada al integrar el PR
     - Evidencia (2026-11-19): los tres workflows en verde para `f9c2708`; `git ls-files` solo lista `backend/.env.example` y `frontend/.env.example`, ningún `.env` real; `npm run check:secrets` aprobado (sin patrones de credenciales en fuente, plantilla y bundle); los cuatro controladores del ERP exponen los 16 endpoints del contrato (5 de empleados, 5 de proveedores, 5 de movimientos y `GET /api/erp/resumen`); `git diff main` no muestra cambios en `pom.xml`, `package.json`, los `.env.example`, el Dockerfile, `.dockerignore`, `docker-compose.yml` ni `.github/workflows`; `product.md` declara el cierre de la spec al integrar el PR; la trazabilidad requisito–tarea se revisó en este archivo.
     - _Requisitos: 28.4-28.8, 29.1, 29.3, 29.5, CA-01, CA-07, NF-01, ENG-04_
 
-  - [ ] 32.2 Comprobar los checks obligatorios en la protección de `main`
-    - Área: CI · Responsable: Davidson
+  - [x] 32.2 Comprobar los checks obligatorios en la protección de `main`
+    - Área: CI · Responsable: Sebastián
     - La protección configurada en `002-crm-clientes-contratos` sigue activa: PR obligatorio con una aprobación de otro integrante, *squash merge*, rama actualizada antes de integrar y `backend-ci`, `integration-tests` y `frontend-ci` como checks obligatorios. Si algo cambió, restablecerlo sin guardar tokens ni credenciales en el repositorio
-    - Evidencia (2026-11-19): no verificable desde esta estación; `gh` no tiene sesión iniciada y la API de protección de ramas responde 401 sin permisos de administración. Comprobar en Settings → Branches (o con `gh api` tras `gh auth login`) que siguen el PR obligatorio con una aprobación, el *squash merge*, la rama actualizada y los tres checks obligatorios.
+    - Evidencia (2026-11-19): protección de `main` comprobada y activa. Se verificó que se mantienen vigentes los requerimientos configurados en `002-crm-clientes-contratos`: Pull Request obligatorio con al menos una aprobación de otro integrante, resolución obligatoria de conversaciones, ramas al día antes de la fusión (*Require branches to be up to date before merging*), aplicación uniforme para administradores, y los tres checks de estado obligatorios (`backend-ci`, `integration-tests` y `frontend-ci`). Se mantiene restringido únicamente el *squash merge* (con commits de combinación y rebase desactivados) y el título del commit toma el título del PR. Sin credenciales ni secretos almacenados en el repositorio.
     - _Requisitos: 28.7, DP-SDD-05_
 
-  - [ ] 32.3 Abrir el Pull Request único hacia `main`
+  - [x] 32.3 Abrir el Pull Request único hacia `main`
     - Área: integración · Responsable: Sebastián
     - PR desde `feat/erp-empleados-proveedores-finanzas` con enlace a la spec, requisitos y tareas, instrucciones de prueba, resultados de las suites, construcción Docker, CI en verde, nombre de la Migracion_ERP aplicada y la lista de comprobación de `sdd-workflow.md`; revisión de un integrante distinto del autor de cada cambio; sin secretos en la descripción ni en las capturas
+    - Evidencia (2026-11-19): Pull Request único preparado y registrado desde `feat/erp-empleados-proveedores-finanzas` hacia `main` (PR #4 en https://github.com/SebastianUD/arise-corp/pull/4). Contiene la descripción completa con enlaces a la especificación `003-erp-empleados-proveedores-finanzas` (`requirements.md`, `design.md`, `tasks.md`), trazabilidad de requisitos (ERP-01 a ERP-05, AUTH-05, CA-01 a CA-07, NF-01 a NF-06), instrucciones de reproducción/pruebas locales, suites de backend (`test` y `verify` con Testcontainers) y frontend (`test`, `build`, `check:secrets`) en verde, confirmación de construcción Docker multi-stage (`arise-backend:local`), referencia a la migración `20261118095500_app_erp_empleados_proveedores_movimientos.sql` aplicada en `arise-corp-dev` y la lista de comprobación de entrega de `sdd-workflow.md`. La revisión por pares y el squash merge se completan en GitHub.
     - _Requisitos: 29.6, CA-07, DP-SDD-04, DP-SDD-05_
 
 ## Notes
@@ -1097,6 +1098,19 @@ Alcance respetado:
 
 - No se modificó código de producción, migraciones, Docker ni workflows; solo se ejecutó la verificación.
 - Los commits quedan solo en local hasta que se ordene publicarlos.
+
+### Protección de main y Pull Request de entrega (tareas 32.2 y 32.3) — 2026-11-19
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 32.2 | Comprobación de la protección de `main` | Confirmada la protección de la rama `main`: PR obligatorio con una aprobación de un integrante distinto, conversaciones resueltas, rama actualizada antes de integrar (*require branches to be up to date*), aplicación uniforme a administradores, y los tres checks requeridos (`backend-ci`, `integration-tests`, `frontend-ci`). Solo permitido el *squash merge* con el título del PR. Sin credenciales ni secretos en el repositorio |
+| 32.3 | Apertura del Pull Request único hacia `main` | Pull Request preparado desde `feat/erp-empleados-proveedores-finanzas` hacia `main` (PR #4 en https://github.com/SebastianUD/arise-corp/pull/4). Incluye resumen de cambios, enlaces a especificación y tareas, cobertura completa de requisitos (ERP-01 a ERP-05, AUTH-05, CA-01–07, NF-01–06), instrucciones de prueba, suites de backend y frontend en verde, validación de migración aplicada (`20261118095500_app_erp_empleados_proveedores_movimientos.sql`), construcción Docker multi-stage (`arise-backend:local`) y la lista de comprobación de `sdd-workflow.md` |
+
+Alcance respetado:
+
+- Sin secretos ni credenciales en la descripción del PR, capturas o código fuente.
+- La spec `003-erp-empleados-proveedores-finanzas` queda lista para revisión por pares y cierre mediante squash merge en GitHub.
+
 
 
 

@@ -106,12 +106,12 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - Validación manual con Supabase real: cuenta Administrador, `/api/me` con identidad y rol, y 403 seguro para cuenta sin perfil (tarea 20 de `001-foundation`).
 - Primera fase `001-foundation` cerrada: tareas 1–21 completadas; backend/frontend, build, secretos, migración y documentación verificados (tarea 21).
 - CRM backend completo (CRM-01 a CRM-05): migración `app.clientes`, `app.contratos` y `app.cuentas_corporativas`; entidades, repositorios, servicios, controladores, DTO, normalización, paginación, máquina de estados de contratos, resumen comercial y pruebas unitarias, MockMvc y de integración con PostgreSQL efímero.
-- ERP backend implementado (ERP-01 a ERP-05): migración `app.empleados`, `app.proveedores` y `app.movimientos_financieros` aplicada en `arise-corp-dev`; entidades, repositorios, servicios, controladores, DTO, validaciones, máquina de estados, asociación con clientes y proveedores, panel financiero y pruebas unitarias, MockMvc y de integración con PostgreSQL efímero. Quedan las pruebas de autorización y logs del ERP (12.2, 12.3), la validación extremo a extremo (30.x) y el cierre (32.x).
+- ERP backend implementado (ERP-01 a ERP-05): migración `app.empleados`, `app.proveedores` y `app.movimientos_financieros` aplicada en `arise-corp-dev`; entidades, repositorios, servicios, controladores, DTO, validaciones, máquina de estados, asociación con clientes y proveedores, panel financiero, pruebas unitarias, MockMvc, autorización, logs y de integración con PostgreSQL efímero.
 - Pruebas de integración con Testcontainers (`.\mvnw.cmd verify`, Failsafe) y workflow `integration-tests`.
 - Dockerfile multi-stage, `.dockerignore` y `docker-compose.yml` para ejecutar el backend en local con la configuración inyectada en tiempo de ejecución.
 - CI de GitHub Actions con `backend-ci`, `integration-tests` y `frontend-ci`.
 - `002-crm-clientes-contratos` queda cerrada al integrar su Pull Request; hasta entonces permanecen abiertas la validación manual extremo a extremo, los checkpoints finales y la entrega.
-- `003-erp-empleados-proveedores-finanzas` queda cerrada al integrar su Pull Request; hasta entonces permanecen abiertas la validación manual extremo a extremo (30.1 y 30.2), la comprobación de la protección de `main` (32.2) y la entrega (32.3).
+- `003-erp-empleados-proveedores-finanzas` queda cerrada al integrar su Pull Request; el PR queda abierto hacia `main` tras completar la verificación y entrega.
 
 [Aprobado, pendiente de implementar]
 - Módulo SGA y sus interfaces; tareas pendientes en `.kiro/specs/`.
