@@ -2,7 +2,7 @@
 
 Plataforma web de gestión empresarial para centralizar los procesos comerciales, administrativos y operativos de Arise Corp., empresa colombiana orientada al transporte y entrega de paquetes mediante drones.
 
-> **Estado del proyecto:** `001-foundation` está completada y `002-crm-clientes-contratos` tiene el backend, el frontend, la migración, Docker y CI implementados; quedan la validación extremo a extremo y la entrega del PR. El resumen vigente y las próximas funcionalidades están en `.kiro/steering/product.md`.
+> **Estado del proyecto:** `001-foundation` está completada y `002-crm-clientes-contratos` tiene el backend, el frontend, la migración, Docker y CI implementados; quedan la validación extremo a extremo y la entrega del PR. `003-erp-empleados-proveedores-finanzas` tiene implementados el backend, el frontend y la migración; quedan la aplicación controlada de la migración en `arise-corp-dev`, la validación extremo a extremo, los checkpoints finales y el PR. El resumen vigente y las próximas funcionalidades están en `.kiro/steering/product.md`.
 
 ## 1. Objetivo del proyecto
 
@@ -100,7 +100,7 @@ Las versiones y dependencias adicionales que aún no estén aprobadas se definir
 
 ## 4. Estado actual del desarrollo
 
-El estado implementado y las próximas funcionalidades se mantienen en `.kiro/steering/product.md`. La spec `001-foundation` está cerrada y `002-crm-clientes-contratos` tiene implementados el backend, el frontend, la migración, Docker y CI; sus tareas pendientes son la validación extremo a extremo con Supabase real, los checkpoints finales y la entrega del PR. Las tareas y evidencias de verificación se conservan en `.kiro/specs/`. Este README concentra instalación y uso.
+El estado implementado y las próximas funcionalidades se mantienen en `.kiro/steering/product.md`. La spec `001-foundation` está cerrada y `002-crm-clientes-contratos` tiene implementados el backend, el frontend, la migración, Docker y CI; sus tareas pendientes son la validación extremo a extremo con Supabase real, los checkpoints finales y la entrega del PR. `003-erp-empleados-proveedores-finanzas` tiene implementados el backend del ERP (empleados, proveedores, movimientos y panel financiero), sus vistas, la migración y las pruebas unitarias, MockMvc y de integración; quedan la aplicación controlada de la migración, la validación extremo a extremo, los checkpoints finales y el PR. Las tareas y evidencias de verificación se conservan en `.kiro/specs/`. Este README concentra instalación y uso.
 
 El proyecto se ejecuta localmente (`localhost`) con el backend en Docker Compose o con Maven, y el frontend con Vite. No incluye CD, publicación de imágenes ni entornos remotos.
 
@@ -120,7 +120,8 @@ arise-corp/
 │   ├── steering/                       # Reglas permanentes del proyecto
 │   └── specs/
 │       ├── 001-foundation/             # Autenticación, perfil y errores (cerrada)
-│       └── 002-crm-clientes-contratos/ # CRM de clientes, cuentas y contratos
+│       ├── 002-crm-clientes-contratos/ # CRM de clientes, cuentas y contratos
+│       └── 003-erp-empleados-proveedores-finanzas/ # ERP: empleados, proveedores y finanzas
 │
 ├── backend/
 │   ├── .env                            # Local; no versionar
@@ -134,9 +135,10 @@ arise-corp/
 │       ├── main/
 │       │   ├── java/com/arise/corp/
 │       │   │   ├── AriseBackendApplication.java
-│       │   │   ├── config/                    # SecurityConfig, CORS y converter JWT de rol
+│       │   │   ├── config/                    # SecurityConfig, CORS, reloj y converter JWT de rol
 │       │   │   ├── login/                     # Perfil y administración de usuarios
-│       │   │   ├── crm/                       # clientes, contratos y cuentas corporativas
+│       │   │   ├── crm/                       # clientes, contratos, cuentas y ClienteReferenciaService
+│       │   │   ├── erp/                       # empleados, proveedores, movimientos y panel
 │       │   │   └── shared/                    # error, normalizacion, paginacion y validacion
 │       │   └── resources/
 │       │       └── application.properties
@@ -147,12 +149,13 @@ arise-corp/
 │
 ├── frontend/
 │   ├── package.json                   # React/Vite y herramientas de prueba
-│   └── src/                            # login, perfil, sesión y vistas CRM
+│   └── src/                            # login, perfil, sesión y vistas CRM y ERP
 │
 ├── supabase/
 │   └── migrations/
 │       ├── 20261108000000_app_perfiles_usuario.sql
-│       └── 20261111120000_app_crm_clientes_contratos.sql
+│       ├── 20261111120000_app_crm_clientes_contratos.sql
+│       └── 20261118095500_app_erp_empleados_proveedores_movimientos.sql
 │
 ├── docs/
 │   └── def_MVP/
@@ -164,6 +167,8 @@ arise-corp/
 ```
 
 Los Steering Files de `.kiro/steering/` contienen las reglas permanentes del proyecto; las especificaciones funcionales se desarrollan en `.kiro/specs/`.
+
+Piezas añadidas por `003-erp-empleados-proveedores-finanzas`: `crm/service/ClienteReferenciaService` (lectura de clientes para otros módulos, sin dependencia inversa), `shared/error/ParametroInvalidoException`, `shared/validacion` ampliado con `@FechaNoFutura` y `@ValorCopPositivo`, el módulo `erp/` con sus capas `controller`, `service`, `repository`, `entity` y `dto`, las pruebas `erp/` y `MigracionesErpIT`, las vistas `frontend/src/pages/erp/`, `components/SelectorRegistro.jsx`, `lib/validacionErp.js`, `services/erpApi.js` y la migración `20261118095500_app_erp_empleados_proveedores_movimientos.sql`.
 
 ## 6. Equipo y responsabilidades
 
