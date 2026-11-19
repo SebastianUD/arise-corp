@@ -485,6 +485,7 @@ La diferencia máxima es de una subtarea en el total (≈3 %) y de dos en las ob
     - Área: CI · Responsable: Davidson
     - Una ejecución verde de `backend-ci`, `integration-tests` y `frontend-ci` para el último commit de la rama; el log de `integration-tests` lista `MigracionesErpIT`, `ConsultasErpIT`, `ResumenFinancieroIT`, `MovimientoTransaccionIT` y `FlujoErpIT`; los YAML de `.github/workflows/` no cambian y conservan `permissions: contents: read`, las acciones oficiales `actions/*` y la ausencia de secretos
     - Si un workflow necesitara cambios, justificarlos antes en `design.md` (Requirement 28.8)
+    - Evidencia parcial (2026-11-18): `backend-ci`, `frontend-ci` e `integration-tests` concluyeron en verde para el commit `84fe4cf`; los YAML de `.github/workflows/` no cambiaron. La tarea no se cierra hasta que existan `MovimientoTransaccionIT`, `FlujoErpIT`, `ConsultasErpIT` y `ResumenFinancieroIT` (14.3–14.6) y el log de `integration-tests` las liste.
     - _Requisitos: 26.11, 28.4–28.6, 28.8, ENG-04_
 
 - [ ] 17. Documentar el backend y actualizar los steering
