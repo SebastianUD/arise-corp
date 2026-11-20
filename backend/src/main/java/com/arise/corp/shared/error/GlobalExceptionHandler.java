@@ -269,6 +269,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
+     * Parametro de consulta invalido detectado en el servicio (D9); responde
+     * 400 con el nombre del parametro y el mensaje recibido. No registra nada
+     * en el log.
+     */
+    @ExceptionHandler(ParametroInvalidoException.class)
+    public ResponseEntity<Object> handleParametroInvalido(
+            ParametroInvalidoException ex,
+            WebRequest request) {
+
+        ProblemDetail problema = problema(
+                HttpStatus.BAD_REQUEST,
+                "Solicitud inválida",
+                "Los parámetros de la solicitud no son válidos.",
+                request);
+
+        problema.setProperty("errors", List.of(Map.of(
+                "field", ex.getParametro() != null ? ex.getParametro() : "solicitud",
+                "message", mensaje(ex.getMessage()))));
+
+        return handleExceptionInternal(
+                ex, problema, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    /**
      * Un perfil ausente o inactivo detectado en el servicio tambien responde
      * 403 con el mismo formato.
      */

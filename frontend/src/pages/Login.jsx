@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import AccessLayout from '../components/AccessLayout.jsx'
 
@@ -74,6 +74,7 @@ export default function Login() {
         {submitting && <p role="status">Comprobando tus credenciales…</p>}
       </form>
       <p className="access-help">¿Necesitas acceso? Contacta al administrador.</p>
+      <Link className="access-home" to="/">Volver al inicio</Link>
     </section>
     </AccessLayout>
   )

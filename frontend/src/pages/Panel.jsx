@@ -1,7 +1,7 @@
 import { Link, Navigate } from 'react-router-dom'
 import IndicadoresCrm from '../components/IndicadoresCrm.jsx'
 import { usePerfil } from '../context/PerfilContext.jsx'
-import { puedeAdministrarUsuarios, puedeGestionarCrm, puedeLeerContratos } from '../lib/permisos.js'
+import { OPCIONES_ERP, puedeAdministrarUsuarios, puedeGestionarCrm, puedeGestionarErp, puedeLeerContratos } from '../lib/permisos.js'
 
 export default function Panel() {
   const { rol, cargando } = usePerfil()
@@ -18,6 +18,9 @@ export default function Panel() {
     <div className="dashboard-cards">{destinos.map(([titulo, ruta, accion]) =>
       <section className="surface" key={ruta}><small>CRM</small><h2>{titulo}</h2><Link to={ruta}>{accion} →</Link></section>
     )}</div>
+    {puedeGestionarErp(rol) && <div className="dashboard-cards">{OPCIONES_ERP.map(({ texto, ruta, accion }) =>
+      <section className="surface" key={ruta}><small>ERP</small><h2>{texto}</h2><Link to={ruta}>{accion} →</Link></section>
+    )}</div>}
     {puedeAdministrarUsuarios(rol) && <section className="surface"><h2>Administración de acceso</h2>
       <Link to="/admin/usuarios">Gestionar usuarios y roles →</Link></section>}
   </section>

@@ -1,11 +1,13 @@
 import { StrictMode, useEffect } from 'react'
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import App from './App.jsx'
 import { PerfilProvider } from './context/PerfilContext.jsx'
 import { puedeGestionarCrm } from './lib/permisos.js'
 import RolRoute from './routes/RolRoute.jsx'
+import { OPCIONES_ERP } from './lib/permisos.js'
+import { empleado, proveedor, movimiento, pagina } from './test/datosErp.jsx'
 
 const { auth, store } = vi.hoisted(() => ({
   auth: { getSession: vi.fn(), signInWithPassword: vi.fn(), signOut: vi.fn(), onAuthStateChange: vi.fn() },
@@ -62,6 +64,49 @@ async function loginForm() {
 }
 
 const submit = () => fireEvent.submit(screen.getByRole('form', { name: 'Inicio de sesión' }))
+
+it('presenta la misión y visión en la llegada pública sin consultar datos privados', async () => {
+  mount('/')
+  expect(await screen.findByRole('heading', { name: 'Nuestra misión' })).toBeVisible()
+  expect(screen.getByRole('heading', { name: 'Nuestra visión' })).toBeVisible()
+  expect(screen.getByText(/Para 2035, Arise Corp\./)).toBeVisible()
+  expect(screen.getByText(/En Arise Corp\. diseñamos y fabricamos/)).toBeVisible()
+  expect(fetch).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('link', { name: 'Iniciar sesión', exact: true }))
+  await screen.findByRole('heading', { name: 'Bienvenido de nuevo' })
+  fireEvent.click(screen.getByRole('link', { name: 'Volver al inicio' }))
+  expect(screen.getByRole('heading', { name: 'Nuestra misión' })).toBeVisible()
+})
+
+it('ofrece volver al panel desde la llegada cuando hay una sesión vigente', async () => {
+  store.session = session
+  mount('/')
+  expect(await screen.findByRole('link', { name: 'Ir al panel' })).toHaveAttribute('href', '/panel')
+  expect(fetch).not.toHaveBeenCalled()
+})
+
+it('abre un solo grupo del sidebar y permite cerrar el grupo activo', async () => {
+  store.session = session
+  fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ ...profile, role: 'ADMINISTRADOR' }) })
+  mount('/perfil')
+  await screen.findByText(profile.email)
+  const crm = screen.getByRole('button', { name: 'CRM', exact: true })
+  const erp = screen.getByRole('button', { name: 'ERP', exact: true })
+  expect(crm).toHaveAttribute('aria-expanded', 'false')
+  expect(erp).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByRole('link', { name: 'Clientes', exact: true })).toBeNull()
+  fireEvent.click(crm)
+  expect(crm).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.getByRole('link', { name: 'Clientes', exact: true })).toBeVisible()
+  fireEvent.click(erp)
+  expect(crm).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByRole('link', { name: 'Clientes', exact: true })).toBeNull()
+  expect(screen.getByRole('link', { name: 'Empleados', exact: true })).toBeVisible()
+  expect(document.getElementById(erp.getAttribute('aria-controls'))).toContainElement(screen.getByRole('link', { name: 'Empleados', exact: true }))
+  fireEvent.click(erp)
+  expect(erp).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByRole('link', { name: 'Empleados', exact: true })).toBeNull()
+})
 
 it('redirige una ruta privada sin sesión sin mostrar el perfil', async () => {
   mount('/perfil')
@@ -275,22 +320,30 @@ it('retira la suscripción de autenticación al desmontar', async () => {
 })
 
 it.each([
-  ['ADMINISTRADOR', ['Clientes', 'Cuentas corporativas', 'Resumen comercial', 'Contratos', 'Usuarios y roles']],
+  ['ADMINISTRADOR', ['Clientes', 'Cuentas corporativas', 'Resumen comercial', 'Contratos', 'Usuarios y roles', ...OPCIONES_ERP.map(o => o.texto)]],
   ['COMERCIAL', ['Clientes', 'Cuentas corporativas', 'Resumen comercial', 'Contratos']],
   ['OPERACIONES', ['Clientes', 'Contratos']],
-  ['FINANZAS_RRHH', ['Clientes']],
+  ['FINANZAS_RRHH', ['Clientes', ...OPCIONES_ERP.map(o => o.texto)]],
   [null, []],
 ])('comparte el perfil con el menú de %s bajo StrictMode', async (role, opciones) => {
   store.session = session
   fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
   mount('/perfil', true)
   await screen.findByText(profile.email)
-  expect(screen.getAllByRole('link')).toHaveLength(opciones.length + (role ? 2 : 1))
+  expect(screen.getByRole('link', { name: 'Inicio', exact: true })).toHaveAttribute('href', '/')
+  expect(screen.queryByRole('link', { name: 'Clientes', exact: true })).toBeNull()
+  expect(screen.queryByRole('link', { name: 'Empleados', exact: true })).toBeNull()
   const destinos = {
     Contratos: '/crm/contratos', 'Usuarios y roles': '/admin/usuarios', Perfil: '/perfil', Clientes: '/crm/clientes',
     'Cuentas corporativas': '/crm/cuentas-corporativas', 'Resumen comercial': '/crm/resumen',
+    ...Object.fromEntries(OPCIONES_ERP.map(({ texto, ruta }) => [texto, ruta])),
   }
   for (const nombre of ['Perfil', ...opciones]) {
+    const grupo = OPCIONES_ERP.some(o => o.texto === nombre) ? 'ERP' : nombre !== 'Perfil' && nombre !== 'Usuarios y roles' ? 'CRM' : null
+    if (grupo) {
+      const control = screen.getByRole('button', { name: grupo, exact: true })
+      if (control.getAttribute('aria-expanded') === 'false') fireEvent.click(control)
+    }
     expect(screen.getByRole('link', { name: nombre })).toHaveAttribute('href', destinos[nombre])
   }
   expect(screen.getByRole('link', { name: 'Perfil' })).toHaveAttribute('aria-current', 'page')
@@ -359,6 +412,7 @@ it('abre las tres vistas desde el menú comercial compartiendo una sola consulta
   store.session = session
   mount('/perfil')
   await screen.findByText(profile.email)
+  fireEvent.click(screen.getByRole('button', { name: 'CRM', exact: true }))
   const pagina = { content: [], page: 0, totalPages: 0 }
   const resumen = {
     clientes: { activos: 1, inactivos: 2, total: 3 },
@@ -414,4 +468,84 @@ it('deniega el acceso directo a usuarios y roles para una cuenta comercial', asy
   expect(await screen.findByRole('alert')).toHaveTextContent('No tienes permisos')
   expect(screen.queryByRole('button', { name: 'Guardar rol' })).toBeNull()
   expect(fetch).toHaveBeenCalledTimes(1)
+})
+
+it.each(['ADMINISTRADOR', 'FINANZAS_RRHH', 'COMERCIAL', 'OPERACIONES'])('Feature: 003-erp-empleados-proveedores-finanzas, Property 21: El menú y el panel ERP derivan del rol (%s)', async role => {
+  store.session = session
+  fetch.mockImplementation(async url => ({ ok: true, status: 200, json: async () => url.endsWith('/me') ? { ...profile, role } : {
+    clientes: { activos: 0, inactivos: 0 }, contratos: { porEstado: { ACTIVO: 0, BORRADOR: 0 } }, totalElements: 0,
+    content: [], page: 0, totalPages: 0,
+  } }))
+  mount('/panel')
+  await screen.findByRole('heading', { name: 'Tu operación, conectada.' })
+  const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
+  const permitido = ['ADMINISTRADOR', 'FINANZAS_RRHH'].includes(role)
+  if (permitido) fireEvent.click(within(nav).getByRole('button', { name: 'ERP', exact: true }))
+  for (const { texto, ruta, accion } of OPCIONES_ERP) {
+    if (permitido) {
+      expect(within(nav).getByRole('link', { name: texto })).toHaveAttribute('href', ruta)
+      expect(screen.getByRole('link', { name: accion + ' →' })).toHaveAttribute('href', ruta)
+    } else {
+      expect(within(nav).queryByRole('link', { name: texto })).toBeNull()
+      expect(screen.queryByRole('link', { name: accion + ' →' })).toBeNull()
+    }
+  }
+  if (role === 'FINANZAS_RRHH') {
+    fireEvent.click(within(nav).getByRole('button', { name: 'CRM', exact: true }))
+    fireEvent.click(within(nav).getByRole('link', { name: 'Clientes' }))
+    await screen.findByRole('heading', { name: 'Clientes' })
+    expect(screen.queryByRole('link', { name: 'Nuevo cliente' })).toBeNull()
+  }
+})
+
+it.each(['COMERCIAL', 'OPERACIONES', null, 'DESCONOCIDO'])('deniega las rutas ERP a %s sin consultar sus datos', async role => {
+  store.session = session
+  fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
+  mount('/erp/empleados')
+  expect(await screen.findByRole('alert')).toHaveTextContent('No tienes permisos para acceder a esta sección.')
+  expect(fetch).toHaveBeenCalledExactlyOnceWith('http://localhost:8080/api/me', expect.anything())
+})
+
+it('presenta el 403 de una vista ERP y conserva la sesión', async () => {
+  store.session = session
+  fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ...profile, role: 'FINANZAS_RRHH' }) })
+    .mockResolvedValueOnce({ ok: false, status: 403 })
+  mount('/erp/empleados')
+  expect(await screen.findByRole('alert')).toHaveTextContent('No tienes permisos para consultar esta información.')
+  expect(screen.queryByRole('button', { name: 'Reintentar' })).toBeNull()
+  expect(fetch).toHaveBeenLastCalledWith('http://localhost:8080/api/erp/empleados', expect.anything())
+  fireEvent.click(screen.getByRole('link', { name: 'Perfil' }))
+  expect(await screen.findByText(profile.email)).toBeVisible()
+  expect(auth.signOut).not.toHaveBeenCalled()
+  expect(fetch).toHaveBeenCalledTimes(2)
+})
+
+it.each([
+  ['/erp/empleados', 'Empleados'], ['/erp/empleados/nuevo', 'Nuevo empleado'],
+  ['/erp/empleados/' + empleado.id, empleado.nombre], ['/erp/empleados/' + empleado.id + '/editar', 'Editar empleado'],
+  ['/erp/proveedores', 'Proveedores'], ['/erp/proveedores/nuevo', 'Nuevo proveedor'],
+  ['/erp/proveedores/' + proveedor.id, proveedor.nombre], ['/erp/proveedores/' + proveedor.id + '/editar', 'Editar proveedor'],
+  ['/erp/movimientos', 'Movimientos financieros'], ['/erp/movimientos/nuevo', 'Nuevo movimiento'],
+  ['/erp/movimientos/' + movimiento.id, 'Detalle del movimiento'], ['/erp/movimientos/' + movimiento.id + '/editar', 'Editar movimiento'],
+  ['/erp/resumen', 'Panel financiero'],
+])('registra la ruta %s con carga diferida y acceso para FINANZAS_RRHH', async (ruta, titulo) => {
+  store.session = session
+  fetch.mockImplementation(async url => {
+    const pathname = new URL(url).pathname
+    const datos = pathname.endsWith('/me') ? { ...profile, role: 'FINANZAS_RRHH' }
+      : pathname === '/api/erp/empleados/' + empleado.id ? empleado
+      : pathname === '/api/erp/proveedores/' + proveedor.id ? proveedor
+      : pathname === '/api/erp/movimientos/' + movimiento.id ? movimiento
+      : pathname === '/api/erp/resumen' ? {
+        desde: null, hasta: null, saldoPagado: '0.00',
+        porTipo: Object.fromEntries(['INGRESO', 'EGRESO'].map(tipo => [tipo, { cantidad: 0,
+          porEstado: Object.fromEntries(['PENDIENTE', 'PAGADO', 'ANULADO'].map(estado => [estado, { cantidad: 0, suma: '0.00' }])),
+        }])),
+      } : pagina([])
+    return { ok: true, status: 200, json: async () => datos }
+  })
+  mount(ruta)
+  expect(await screen.findByRole('heading', { name: titulo, level: 1 })).toBeVisible()
+  await waitFor(() => expect(screen.queryByRole('status')).toBeNull())
+  expect(auth.signOut).not.toHaveBeenCalled()
 })

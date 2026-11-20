@@ -1,5 +1,18 @@
 import { expect, it } from 'vitest'
 import { esEstadoFinal, opcionesMenu, puedeGestionarCrm, puedeLeerClientes, puedeLeerContratos, TRANSICIONES } from './permisos.js'
+import { esMovimientoEditable, opcionesMenuErp, OPCIONES_ERP, puedeGestionarErp, TRANSICIONES_MOVIMIENTO } from './permisos.js'
+
+it.each(['PENDIENTE', 'PAGADO', 'ANULADO'])('Feature: 003-erp-empleados-proveedores-finanzas, Property 12: Solo se aceptan las dos transiciones permitidas (%s)', estado => {
+  expect(TRANSICIONES_MOVIMIENTO[estado]).toEqual(estado === 'PENDIENTE' ? ['PAGADO', 'ANULADO'] : [])
+  expect(esMovimientoEditable(estado)).toBe(estado === 'PENDIENTE')
+})
+
+it.each(['ADMINISTRADOR', 'FINANZAS_RRHH', 'COMERCIAL', 'OPERACIONES', null, 'DESCONOCIDO'])('Feature: 003-erp-empleados-proveedores-finanzas, Property 21: El menú y el panel ERP derivan del rol (%s)', rol => {
+  const permitido = ['ADMINISTRADOR', 'FINANZAS_RRHH'].includes(rol)
+  expect(puedeGestionarErp(rol)).toBe(permitido)
+  expect(opcionesMenuErp(rol)).toEqual(permitido ? OPCIONES_ERP : [])
+  expect(OPCIONES_ERP.map(opcion => opcion.ruta)).toEqual(['/erp/empleados', '/erp/proveedores', '/erp/movimientos', '/erp/resumen'])
+})
 
 it.each([
   ['BORRADOR', ['ACTIVO', 'CANCELADO'], false],

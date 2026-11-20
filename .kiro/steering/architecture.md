@@ -14,10 +14,10 @@ Etiquetas de estado: ver `product.md`. El diagrama general de componentes está 
 ## Componentes y responsabilidades
 | Componente | Responsabilidades | No debe | Estado |
 |---|---|---|---|
-| SPA React (Vite, Tailwind CSS, React Router) | Gestiona la sesión, comparte el perfil de `GET /api/me`, presenta las vistas según el rol y envía las consultas y escrituras del CRM a Spring Boot con el token vigente | Acceder directamente a tablas de negocio, decidir la autorización definitiva o ejecutar reglas de negocio del servidor | [Implementado] Acceso, perfil, clientes, contratos, cuentas corporativas y resumen comercial |
+| SPA React (Vite, Tailwind CSS, React Router) | Gestiona la sesión, comparte el perfil de `GET /api/me`, presenta las vistas según el rol y envía las consultas y escrituras del CRM y ERP a Spring Boot con el token vigente | Acceder directamente a tablas de negocio, decidir la autorización definitiva o ejecutar reglas de negocio del servidor | [Implementado] Acceso, perfil, CRM y vistas ERP: empleados, proveedores, movimientos y panel financiero. ERP verificado con API simulada; la validación con Supabase real queda pendiente (spec 003, tareas 30.x) |
 | Supabase Auth | Inicio y cierre de sesión, emisión y renovación de JWT (ES256), publicación de las claves públicas (JWKS) | Almacenar datos de negocio | [Implementado] e integrado; flujo validado manualmente en `arise-corp-dev` |
-| API Spring Boot | Validar JWT, autorizar por rol, validar entradas, reglas de negocio, transacciones y persistencia | Renderizar vistas; delegar permisos al frontend | JWT, `/api/me`, perfil, autorización por rol, administración de perfiles, Problem Details y CRM implementados (clientes, contratos, cuentas corporativas y resumen) |
-| Supabase PostgreSQL | Persistencia e integridad relacional | Ser modificado por Hibernate; exponer tablas de negocio al frontend | [Implementado] `app.perfiles_usuario` y las tablas de CRM (`clientes`, `contratos`, `cuentas_corporativas`) |
+| API Spring Boot | Validar JWT, autorizar por rol, validar entradas, reglas de negocio, transacciones y persistencia | Renderizar vistas; delegar permisos al frontend | JWT, `/api/me`, perfil, autorización por rol, administración de perfiles, Problem Details, CRM (clientes, contratos, cuentas y resumen) y ERP (empleados, proveedores, movimientos y panel financiero) implementados |
+| Supabase PostgreSQL | Persistencia e integridad relacional | Ser modificado por Hibernate; exponer tablas de negocio al frontend | [Implementado] `app.perfiles_usuario`, las tablas de CRM (`clientes`, `contratos`, `cuentas_corporativas`) y las del ERP (`empleados`, `proveedores`, `movimientos_financieros`), aplicadas en `arise-corp-dev` |
 | Imagen Docker del backend | Empaquetar y ejecutar Spring Boot con configuración inyectada en ejecución | Incluir `.env`, credenciales o archivos locales | [Implementado] Dockerfile multi-stage y `docker-compose.yml` |
 | GitHub Actions (CI) | Ejecutar pruebas backend/frontend, la suite de integración y el build de la imagen | Publicar imágenes o desplegar | [Implementado] `backend-ci`, `integration-tests` y `frontend-ci` |
 
@@ -69,6 +69,8 @@ Justificación de que las entidades no salgan de la capa de servicio: con `sprin
 
 Todos los módulos dependen de la autorización por rol. ERP y SGA consultan CRM solo a través de sus servicios y para las lecturas cruzadas autorizadas en `product.md`. Las relaciones entre módulos conservan UUID y FK en PostgreSQL; no se crean asociaciones JPA entre módulos.
 
+DP-ARQ-01: los módulos consumidores leen clientes mediante `crm.service.ClienteReferenciaService`, que expone solo identificador, nombre y estado (solo lectura, en lote con una consulta y con bloqueo de lectura dentro de la transacción del llamador). El ERP define sus propios DTO de salida y nunca accede a la entidad `Cliente` ni a `ClienteRepository`.
+
 ### Orden de construcción [Aprobado, MVP §13]
 1. Constitución del proyecto: alcance, stack, arquitectura y convenciones (estos steering files).
 2. Especificación `001-foundation`: autenticación e integración técnica.
@@ -84,6 +86,7 @@ Todos los módulos dependen de la autorización por rol. ERP y SGA consultan CRM
 - React usa Supabase solo para autenticación.
 - Supabase Auth gestiona los usuarios en su propio esquema (`auth`). No crear tablas ni modificar objetos en ese esquema. El backend identifica al usuario por el claim `sub` del JWT (UUID).
 - El esquema se crea y modifica solo con migraciones (ver `tech.md`).
+- El esquema del ERP (`app.empleados`, `app.proveedores` y `app.movimientos_financieros`) se define en su migración; los movimientos referencian clientes por UUID con FK en PostgreSQL y el ERP lee clientes solo mediante `crm.service.ClienteReferenciaService`, sin asociaciones JPA entre módulos.
 - Los cambios de estado del paquete generan un registro de historial (SGA-04). Las cantidades de inventario cambian solo mediante operaciones controladas (SGA-03).
 
 ## Contenedorización y entrega [Implementado]

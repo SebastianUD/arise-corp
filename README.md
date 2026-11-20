@@ -2,7 +2,7 @@
 
 Plataforma web de gestión empresarial para centralizar los procesos comerciales, administrativos y operativos de Arise Corp., empresa colombiana orientada al transporte y entrega de paquetes mediante drones.
 
-> **Estado del proyecto:** `001-foundation` está completada y `002-crm-clientes-contratos` tiene el backend, el frontend, la migración, Docker y CI implementados; quedan la validación extremo a extremo y la entrega del PR. El resumen vigente y las próximas funcionalidades están en `.kiro/steering/product.md`.
+> **Estado del proyecto:** `001-foundation` está completada y `002-crm-clientes-contratos` tiene el backend, el frontend, la migración, Docker y CI implementados; quedan la validación extremo a extremo y la entrega del PR. `003-erp-empleados-proveedores-finanzas` tiene implementados el backend, el frontend y la migración, ya aplicada en `arise-corp-dev`; quedan la validación extremo a extremo, los checkpoints finales y el PR. El resumen vigente y las próximas funcionalidades están en `.kiro/steering/product.md`.
 
 ## 1. Objetivo del proyecto
 
@@ -100,7 +100,7 @@ Las versiones y dependencias adicionales que aún no estén aprobadas se definir
 
 ## 4. Estado actual del desarrollo
 
-El estado implementado y las próximas funcionalidades se mantienen en `.kiro/steering/product.md`. La spec `001-foundation` está cerrada y `002-crm-clientes-contratos` tiene implementados el backend, el frontend, la migración, Docker y CI; sus tareas pendientes son la validación extremo a extremo con Supabase real, los checkpoints finales y la entrega del PR. Las tareas y evidencias de verificación se conservan en `.kiro/specs/`. Este README concentra instalación y uso.
+El estado implementado y las próximas funcionalidades se mantienen en `.kiro/steering/product.md`. La spec `001-foundation` está cerrada y `002-crm-clientes-contratos` tiene implementados el backend, el frontend, la migración, Docker y CI; sus tareas pendientes son la validación extremo a extremo con Supabase real, los checkpoints finales y la entrega del PR. `003-erp-empleados-proveedores-finanzas` tiene implementados el backend del ERP (empleados, proveedores, movimientos y panel financiero), sus vistas, la migración ya aplicada en `arise-corp-dev` y las pruebas unitarias, MockMvc y de integración; quedan la validación extremo a extremo, los checkpoints finales y el PR. Las tareas y evidencias de verificación se conservan en `.kiro/specs/`. Este README concentra instalación y uso.
 
 El proyecto se ejecuta localmente (`localhost`) con el backend en Docker Compose o con Maven, y el frontend con Vite. No incluye CD, publicación de imágenes ni entornos remotos.
 
@@ -120,7 +120,8 @@ arise-corp/
 │   ├── steering/                       # Reglas permanentes del proyecto
 │   └── specs/
 │       ├── 001-foundation/             # Autenticación, perfil y errores (cerrada)
-│       └── 002-crm-clientes-contratos/ # CRM de clientes, cuentas y contratos
+│       ├── 002-crm-clientes-contratos/ # CRM de clientes, cuentas y contratos
+│       └── 003-erp-empleados-proveedores-finanzas/ # ERP: empleados, proveedores y finanzas
 │
 ├── backend/
 │   ├── .env                            # Local; no versionar
@@ -134,9 +135,10 @@ arise-corp/
 │       ├── main/
 │       │   ├── java/com/arise/corp/
 │       │   │   ├── AriseBackendApplication.java
-│       │   │   ├── config/                    # SecurityConfig, CORS y converter JWT de rol
+│       │   │   ├── config/                    # SecurityConfig, CORS, reloj y converter JWT de rol
 │       │   │   ├── login/                     # Perfil y administración de usuarios
-│       │   │   ├── crm/                       # clientes, contratos y cuentas corporativas
+│       │   │   ├── crm/                       # clientes, contratos, cuentas y ClienteReferenciaService
+│       │   │   ├── erp/                       # empleados, proveedores, movimientos y panel
 │       │   │   └── shared/                    # error, normalizacion, paginacion y validacion
 │       │   └── resources/
 │       │       └── application.properties
@@ -147,12 +149,13 @@ arise-corp/
 │
 ├── frontend/
 │   ├── package.json                   # React/Vite y herramientas de prueba
-│   └── src/                            # login, perfil, sesión y vistas CRM
+│   └── src/                            # login, perfil, sesión y vistas CRM y ERP
 │
 ├── supabase/
 │   └── migrations/
 │       ├── 20261108000000_app_perfiles_usuario.sql
-│       └── 20261111120000_app_crm_clientes_contratos.sql
+│       ├── 20261111120000_app_crm_clientes_contratos.sql
+│       └── 20261118095500_app_erp_empleados_proveedores_movimientos.sql
 │
 ├── docs/
 │   └── def_MVP/
@@ -164,6 +167,8 @@ arise-corp/
 ```
 
 Los Steering Files de `.kiro/steering/` contienen las reglas permanentes del proyecto; las especificaciones funcionales se desarrollan en `.kiro/specs/`.
+
+Piezas añadidas por `003-erp-empleados-proveedores-finanzas`: `crm/service/ClienteReferenciaService` (lectura de clientes para otros módulos, sin dependencia inversa), `shared/error/ParametroInvalidoException`, `shared/validacion` ampliado con `@FechaNoFutura` y `@ValorCopPositivo`, el módulo `erp/` con sus capas `controller`, `service`, `repository`, `entity` y `dto`, las pruebas `erp/` y `MigracionesErpIT`, las vistas `frontend/src/pages/erp/`, `components/SelectorRegistro.jsx`, `lib/validacionErp.js`, `services/erpApi.js` y la migración `20261118095500_app_erp_empleados_proveedores_movimientos.sql`.
 
 ## 6. Equipo y responsabilidades
 
@@ -382,6 +387,8 @@ Dependencias fijadas en `package.json` y `package-lock.json`; usar `npm ci` para
 
 #### Vistas del CRM por rol
 
+La ruta pública `/` presenta la misión y visión de Arise Corp., tomadas del documento de constitución (páginas 2 y 3), y ofrece acceso al login o al panel para una sesión vigente. El login y el menú privado incluyen un enlace a Inicio. Los grupos CRM y ERP del menú lateral comienzan cerrados: pulsar el encabezado abre sus opciones y cierra el otro grupo; pulsarlo de nuevo las oculta. Las opciones mantienen los permisos de cada rol. Detalles y validación en `docs/interfaz-inicio.md`.
+
 Al iniciar sesión, la SPA abre `/perfil` y construye el menú con el rol que devuelve `GET /api/me`. Los **gestores** (`ADMINISTRADOR` y `COMERCIAL`) ven Clientes, Cuentas corporativas y Resumen comercial. `OPERACIONES` y `FINANZAS_RRHH` entran por Clientes y consultan una vista reducida. Desde el detalle del cliente, Operaciones también puede abrir sus contratos. El CRM utiliza las tres variables públicas de esta sección.
 
 | Vista | Ruta en la SPA | Roles con acceso |
@@ -395,6 +402,30 @@ Al iniciar sesión, la SPA abre `/perfil` y construye el menú con el rol que de
 | Lista y detalle de cuentas corporativas con sus clientes asociados | `/crm/cuentas-corporativas`, `/crm/cuentas-corporativas/:id` | Gestores |
 | Alta y edición de cuentas corporativas | `/crm/cuentas-corporativas/nueva`, `/crm/cuentas-corporativas/:id/editar` | Gestores |
 | Resumen de clientes y contratos por estado | `/crm/resumen` | Gestores |
+
+#### Vistas del ERP por rol
+
+`ADMINISTRADOR` y `FINANZAS_RRHH` ven el grupo ERP del menú y sus cuatro tarjetas en `/panel`. Todas las rutas siguientes requieren uno de esos dos roles; Comercial y Operaciones reciben un mensaje de permisos antes de consultar datos del ERP.
+
+| Vista | Ruta en la SPA | Roles con acceso |
+|---|---|---|
+| Lista de empleados con búsqueda, estado y paginación | `/erp/empleados` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Alta de empleado | `/erp/empleados/nuevo` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Detalle y activación/desactivación de empleado | `/erp/empleados/:id` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Edición de empleado | `/erp/empleados/:id/editar` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Lista de proveedores con búsqueda, estado y paginación | `/erp/proveedores` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Alta de proveedor | `/erp/proveedores/nuevo` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Detalle, activación/desactivación y movimientos del proveedor | `/erp/proveedores/:id` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Edición de proveedor | `/erp/proveedores/:id/editar` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Lista de movimientos con filtros y paginación | `/erp/movimientos` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Alta de movimiento | `/erp/movimientos/nuevo` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Detalle y cambios irreversibles a pagado o anulado | `/erp/movimientos/:id` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Edición de movimiento pendiente | `/erp/movimientos/:id/editar` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+| Panel financiero con cantidades, sumas por estado y saldo pagado | `/erp/resumen` | `ADMINISTRADOR`, `FINANZAS_RRHH` |
+
+Finanzas/RR. HH. conserva la consulta de clientes del CRM en modo lectura para asociarlos a ingresos. Los egresos permiten asociar proveedores. Las búsquedas ofrecen registros activos; al editar se puede conservar una asociación actual inactiva, señalada en el selector. Los importes se envían como texto decimal, por ejemplo `2500000.50`, y se muestran en COP. La fecha de ingreso se valida con la fecha calendario de Colombia.
+
+El frontend ERP se verifica con `npm test`, `npm run build` y `npm run check:secrets`, sin dependencias ni variables de entorno nuevas. Las pruebas simulan la API aprobada en la spec 003. El uso contra Supabase real requiere completar el backend ERP y aplicar su migración (tarea 15.1); la validación manual 30.1 permanece pendiente hasta disponer de esas precondiciones.
 
 ### 11.7 Validar la integración de autenticación
 

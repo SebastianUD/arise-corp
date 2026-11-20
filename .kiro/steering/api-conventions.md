@@ -16,15 +16,24 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 | POST, PUT | `/api/crm/contratos`, `/api/crm/contratos/{id}` | JWT de Administrador o Comercial | 201 con `Location` o 200 |
 | PATCH | `/api/crm/contratos/{id}/estado` | JWT de Administrador o Comercial | 200 con el estado y su auditoría actualizados |
 | GET | `/api/crm/resumen` | JWT de Administrador o Comercial | 200 con los conteos de clientes y contratos |
+| GET | `/api/erp/empleados`, `/api/erp/empleados/{id}` | JWT de Administrador o Finanzas/RRHH | 200 con la lista paginada o el empleado |
+| POST, PUT, PATCH | `/api/erp/empleados`, `/api/erp/empleados/{id}` | JWT de Administrador o Finanzas/RRHH | 201 con `Location` o 200 con el empleado |
+| GET | `/api/erp/proveedores`, `/api/erp/proveedores/{id}` | JWT de Administrador o Finanzas/RRHH | 200 con la lista paginada o el proveedor |
+| POST, PUT, PATCH | `/api/erp/proveedores`, `/api/erp/proveedores/{id}` | JWT de Administrador o Finanzas/RRHH | 201 con `Location` o 200 con el proveedor |
+| GET | `/api/erp/movimientos`, `/api/erp/movimientos/{id}` | JWT de Administrador o Finanzas/RRHH | 200 con la lista paginada o el movimiento |
+| POST, PUT | `/api/erp/movimientos`, `/api/erp/movimientos/{id}` | JWT de Administrador o Finanzas/RRHH | 201 con `Location` o 200 con el movimiento |
+| PATCH | `/api/erp/movimientos/{id}/estado` | JWT de Administrador o Finanzas/RRHH | 200 con el estado y su auditoría actualizados |
+| GET | `/api/erp/resumen` | JWT de Administrador o Finanzas/RRHH | 200 con el panel financiero de los dos tipos y los tres estados |
 
 - Sin token, o con un token inválido o vencido, el backend responde 401 Problem Details con el encabezado `WWW-Authenticate` (DP-API-02).
 - El campo `role` de `/api/me` refleja el rol empresarial del perfil activo en `app.perfiles_usuario`; un perfil ausente o inactivo produce 403. El claim técnico `role` de Supabase no autoriza operaciones (tarea 16 de `001-foundation`).
 - `PUT` recibe `{ "rol": "<ROL>" }`; `PATCH` recibe `{ "activo": true|false }`. El identificador de ruta es el UUID de Supabase Auth y los campos de auditoría los asigna el servidor. Respuestas: 201/200 según corresponda, 400 por cuerpo inválido, 403 si el actor no es Administrador o no tiene perfil activo, 404 si el perfil o la identidad de Auth no existe.
 - No existen endpoints públicos. La ruta `/api/public/**` está reservada para ellos en `SecurityConfig`.
-- El manejo global de errores está implementado en `shared.error`: todos los 400/401/403/404/405/409/415/500 usan el mismo formato Problem Details (tarea 18 de `001-foundation`, ampliado en `002-crm-clientes-contratos`).
+- El manejo global de errores está implementado en `shared.error`: todos los 400/401/403/404/405/409/415/500 usan el mismo formato Problem Details (tarea 18 de `001-foundation`, ampliado en `002-crm-clientes-contratos` y `003-erp-empleados-proveedores-finanzas`).
 - Los 409 del CRM incluyen la extensión `conflicto` (por ejemplo `CLIENTE_DUPLICADO`, `CLIENTE_INACTIVO_EXISTENTE`, `CUENTA_INACTIVA`, `CUENTA_NIT_DUPLICADO`, `CONTRATO_CODIGO_DUPLICADO`, `CONTRATO_NO_EDITABLE`, `TRANSICION_NO_PERMITIDA`) y, cuando corresponde, `campo` (`documento`, `nit`, `codigo`) o datos adicionales como `clienteId`, `estadoActual` y `estadoSolicitado`.
-- Un 404 de recurso referenciado incluye `campo` con el nombre del campo del cuerpo que lo originó (`cuentaCorporativaId`, `clienteId`); un `{id}` de ruta no UUID responde 400 con `errors[0].field = "id"`.
-- `DELETE /api/crm/clientes/{id}` responde 405 con `Allow` para los gestores; el mensaje es "La operación no está disponible para este recurso.". Un `Content-Type` distinto de `application/json` responde 415 con mensaje en español.
+- Los 409 del ERP incluyen la extensión `conflicto` (`EMPLEADO_DUPLICADO`, `EMPLEADO_INACTIVO_EXISTENTE` con `empleadoId`, `PROVEEDOR_DUPLICADO`, `PROVEEDOR_INACTIVO_EXISTENTE` con `proveedorId`, `CLIENTE_INACTIVO`, `PROVEEDOR_INACTIVO`, `MOVIMIENTO_NO_EDITABLE` con `estadoActual` y `TRANSICION_NO_PERMITIDA` con `estadoActual` y `estadoSolicitado`) y, cuando corresponde, `campo` (`numeroDocumento`, `clienteId`, `proveedorId` o `estado`).
+- Un 404 de recurso referenciado incluye `campo` con el nombre del campo del cuerpo que lo originó (`cuentaCorporativaId`, `clienteId` en el CRM; `clienteId` y `proveedorId` en el ERP); un `{id}` de ruta no UUID responde 400 con `errors[0].field = "id"`. Un `clienteId` o `proveedorId` inexistente en los filtros de `GET /api/erp/movimientos` responde 200 con lista vacía, sin comprobar su existencia.
+- `DELETE /api/crm/clientes/{id}` responde 405 con `Allow` para los gestores; el mensaje es "La operación no está disponible para este recurso.". Los `DELETE` del ERP (`/api/erp/empleados/{id}`, `/api/erp/proveedores/{id}` y `/api/erp/movimientos/{id}`) responden 405 con `Allow` (`GET`, `PUT` y `PATCH` en empleados y proveedores; `GET` y `PUT` en movimientos) para los gestores, porque un registro se desactiva o se anula, no se elimina. Un `Content-Type` distinto de `application/json` responde 415 con mensaje en español.
 - Los 400 de validación mantienen la extensión `errors` con `field` y `message`; los mensajes son comprensibles para el usuario y no exponen SQL ni trazas.
 
 ## Rutas
@@ -78,6 +87,8 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 ## Validaciones
 - Los DTO de entrada se validan con Bean Validation: `@Valid` en el `@RequestBody` y anotaciones como `@NotNull`, `@NotBlank`, `@Size`, `@Email` o `@Positive` en los campos. Los parámetros de ruta y de consulta se validan con la validación de métodos integrada de Spring MVC, con las restricciones (`@Min`, `@Max`, `@Pattern`, etc.) directamente en los `@RequestParam` y `@PathVariable`, sin `@Validated` a nivel de clase (D8).
 - Las reglas que dependen de datos (duplicados, existencia y estado de los recursos referenciados, transiciones válidas, existencias de inventario) se comprueban en el servicio y producen 404 o 409.
+- Las reglas entre parámetros de consulta (por ejemplo `desde ≤ hasta`) lanzan `ParametroInvalidoException` desde el DTO o record que recibe los parámetros y responden 400 con `errors` en el parámetro afectado (D9).
+- La "fecha actual" de una regla de negocio es la fecha calendario en `America/Bogota`, calculada con el `Clock` de la aplicación (`LocalDate.now(clock.withZone(ZONA_COLOMBIA))`), nunca con `LocalDate.now()` ni con la zona por defecto del servidor (DP-API-04, D7).
 - No confiar en identificadores enviados por el cliente: comprobar que el recurso referenciado existe y está activo antes de usarlo (por ejemplo, el cliente al que se asocia un paquete).
 - Las restricciones de PostgreSQL son la última defensa (NF-03). Una `DataIntegrityViolationException` se traduce a 409 sin exponer el mensaje de la base.
 - El frontend valida para mejorar la usabilidad (NF-06), pero la validación que vale es la del backend.

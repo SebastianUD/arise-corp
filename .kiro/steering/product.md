@@ -97,6 +97,7 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - Spring Security como OAuth2 Resource Server que valida JWT de Supabase Auth (ES256, JWKS, issuer y audiencia).
 - Frontend React con login, sesión, rutas protegidas, cliente HTTP y perfil; cobertura automática de 35 pruebas frontend y 58 backend documentada en `001-foundation/tasks.md`.
 - Vistas CRM del frontend disponibles para Administración y Comercial: gestión de clientes y cuentas corporativas, creación de contratos desde clientes activos, edición de borradores, cambios de estado y resumen comercial. Finanzas/RR. HH. consulta clientes y Operaciones consulta clientes y contratos.
+- Vistas ERP del frontend implementadas para Administración y Finanzas/RR. HH. (ERP-01 a ERP-05): empleados, proveedores, movimientos, asociaciones con clientes/proveedores y panel financiero; menú y tarjetas por rol, trece rutas protegidas, validación local y pruebas con API simulada. La validación con Supabase real (003, tareas 30.1 y 30.2) espera las cuentas y los datos ficticios de la prueba manual; la migración ya está aplicada (15.1).
 - Endpoint protegido `GET /api/me` con identidad y rol empresarial del perfil activo.
 - Autorización por rol en backend: `PerfilJwtAuthenticationConverter` deriva `ROLE_<ROL>` del perfil activo y `SecurityConfig` aplica la matriz de módulos y las lecturas cruzadas mínimas de ERP-05/SGA-05 (tarea 17).
 - Administración de perfiles por el rol Administrador mediante `PUT /api/admin/usuarios/{id}/perfil` y `PATCH /api/admin/usuarios/{id}/estado`.
@@ -105,14 +106,15 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - Validación manual con Supabase real: cuenta Administrador, `/api/me` con identidad y rol, y 403 seguro para cuenta sin perfil (tarea 20 de `001-foundation`).
 - Primera fase `001-foundation` cerrada: tareas 1–21 completadas; backend/frontend, build, secretos, migración y documentación verificados (tarea 21).
 - CRM backend completo (CRM-01 a CRM-05): migración `app.clientes`, `app.contratos` y `app.cuentas_corporativas`; entidades, repositorios, servicios, controladores, DTO, normalización, paginación, máquina de estados de contratos, resumen comercial y pruebas unitarias, MockMvc y de integración con PostgreSQL efímero.
+- ERP backend implementado (ERP-01 a ERP-05): migración `app.empleados`, `app.proveedores` y `app.movimientos_financieros` aplicada en `arise-corp-dev`; entidades, repositorios, servicios, controladores, DTO, validaciones, máquina de estados, asociación con clientes y proveedores, panel financiero, pruebas unitarias, MockMvc, autorización, logs y de integración con PostgreSQL efímero.
 - Pruebas de integración con Testcontainers (`.\mvnw.cmd verify`, Failsafe) y workflow `integration-tests`.
 - Dockerfile multi-stage, `.dockerignore` y `docker-compose.yml` para ejecutar el backend en local con la configuración inyectada en tiempo de ejecución.
 - CI de GitHub Actions con `backend-ci`, `integration-tests` y `frontend-ci`.
 - `002-crm-clientes-contratos` queda cerrada al integrar su Pull Request; hasta entonces permanecen abiertas la validación manual extremo a extremo, los checkpoints finales y la entrega.
+- `003-erp-empleados-proveedores-finanzas` queda cerrada al integrar su Pull Request; el PR queda abierto hacia `main` tras completar la verificación y entrega.
 
 [Aprobado, pendiente de implementar]
-- Migraciones de negocio para ERP y SGA.
-- Módulos ERP y SGA, sus interfaces y sus tareas de `.kiro/specs/`.
+- Módulo SGA y sus interfaces; tareas pendientes en `.kiro/specs/`.
 
 ## Idioma
 - Documentación, especificaciones y steering files: español (práctica de todo el repositorio).

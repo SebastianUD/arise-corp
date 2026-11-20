@@ -72,7 +72,7 @@ arise-corp/
 
 ## Backend
 ### Organización de paquetes
-- Actual [Implementado]: `com.arise.corp.config` para seguridad transversal, `com.arise.corp.login` con capas `controller`, `entity`, `repository`, `service` y `dto`, `com.arise.corp.crm` con la misma separación y `com.arise.corp.shared` para error, normalización, paginación y validación.
+- Actual [Implementado]: `com.arise.corp.config` para seguridad transversal y reloj, `com.arise.corp.login` con capas `controller`, `entity`, `repository`, `service` y `dto`, `com.arise.corp.crm` con la misma separación (incluido `service/ClienteReferenciaService` para los módulos consumidores), `com.arise.corp.erp` con `controller`, `service`, `repository`, `entity` y `dto`, y `com.arise.corp.shared` para error (`ParametroInvalidoException` incluida), normalización, paginación y validación ampliada (`@FechaNoFutura`, `@ValorCopPositivo`).
 - Objetivo [Aprobado, MVP §9 y NF-04]: monolito modular con los módulos `login`, `crm`, `erp` y `sga`, y separación Controller → Service → Repository dentro de cada módulo.
 - Distribución adoptada (DP-EST-01):
 
@@ -88,7 +88,12 @@ com.arise.corp
 │   ├── repository/
 │   ├── entity/
 │   └── dto/
-├── erp/              # misma estructura que crm
+├── erp/
+│   ├── controller/
+│   ├── service/
+│   ├── repository/
+│   ├── entity/
+│   └── dto/
 └── sga/              # misma estructura que crm
 ```
 
@@ -104,30 +109,37 @@ com.arise.corp
 - Comentarios y encabezados de sección de `application.properties` en español.
 
 ## Frontend [Aprobado, MVP §9]
-La SPA organiza las vistas de acceso, perfil y CRM en `frontend/src/`. La sección 11.6 del README enumera las rutas disponibles por rol.
+La SPA organiza las vistas de acceso, perfil, CRM y ERP en `frontend/src/`. La sección 11.6 del README enumera las rutas disponibles por rol. El frontend ERP está implementado sobre el contrato de la spec 003; su validación con Supabase real sigue pendiente del backend y la migración.
 
 ```text
 frontend/
 ├── .env.example      # solo variables VITE_* públicas
+├── public/assets/erp.svg           # icono estático del menú ERP
 └── src/
     ├── App.jsx                    # registro de rutas y agrupación por permiso
     ├── pages/                     # Login.jsx y Perfil.jsx
-    │   └── crm/                   # clientes, contratos, cuentas corporativas y resumen
+    │   ├── crm/                   # clientes, contratos, cuentas corporativas y resumen
+    │   └── erp/                   # empleados, proveedores, movimientos y panel financiero
+    │       └── RegistroCompartido.jsx # lista, formulario y detalle comunes de empleados/proveedores
     ├── context/
     │   ├── AuthContext.jsx        # sesión de Supabase
     │   └── PerfilContext.jsx      # perfil y rol compartidos de GET /api/me
     ├── components/
-    │   └── AppLayout.jsx          # cabecera privada, menú por rol y salida de sesión
+    │   ├── AppLayout.jsx          # cabecera privada, menú CRM/ERP por rol y salida de sesión
+    │   ├── SelectorRegistro.jsx   # búsqueda y asociación de cliente/proveedor, conserva inactivos actuales
+    │   └── EstadoMovimientoEtiqueta.jsx # pendiente, pagado o anulado
     ├── routes/
     │   ├── ProtectedRoute.jsx     # comprueba la sesión
     │   └── RolRoute.jsx           # comprueba el rol antes de montar la vista
     ├── services/
     │   ├── apiClient.js           # cliente HTTP autenticado y errores de la API
-    │   └── crmApi.js              # consultas y escrituras del CRM
+    │   ├── crmApi.js              # consultas y escrituras del CRM
+    │   └── erpApi.js              # consultas y escrituras del ERP con importes como texto
     └── lib/
         ├── supabase.js            # cliente de autenticación
         ├── permisos.js            # menú, permisos y transiciones visibles
         ├── validacionCrm.js       # normalización y validación de formularios
+        ├── validacionErp.js       # documentos, importes positivos, asociaciones y fechas de Colombia
         └── formato.js             # importes en COP, fechas e instantes en es-CO
 ```
 
@@ -139,7 +151,7 @@ frontend/
 - No incluir archivos `.env` ni secretos dentro de la imagen Docker, del contexto de construcción ni en archivos YAML versionados.
 
 ## Pruebas
-- Backend: pruebas unitarias en `backend/src/test/java/`; pruebas de integración con PostgreSQL aislado/efímero. Las pruebas unitarias y de contexto usan el sufijo `Tests` y van en el paquete de la clase probada (práctica de `001-foundation`); el paquete `unit` no se usa. Las pruebas PostgreSQL usan el paquete `integration`, el sufijo `IT` y Maven Failsafe (DP-EST-05, D19).
+- Backend: pruebas unitarias en `backend/src/test/java/`; pruebas de integración con PostgreSQL aislado/efímero. Las pruebas unitarias y de contexto usan el sufijo `Tests` y van en el paquete de la clase probada (práctica de `001-foundation`); el paquete `unit` no se usa. Las pruebas PostgreSQL usan el paquete `integration`, el sufijo `IT` y Maven Failsafe (DP-EST-05, D19). El ERP añade pruebas en `erp/` (DTO, entidad, servicio, controlador, repositorios, especificaciones y `ErpDatosPrueba`) y la IT de su migración; las migraciones del ERP viven en `supabase/migrations/`.
 - Frontend: pruebas unitarias y de integración junto a los componentes o bajo una carpeta `tests/`, junto a los módulos bajo `frontend/src/`.
 - Los workflows de GitHub Actions ejecutan los comandos de prueba documentados por cada proyecto.
 

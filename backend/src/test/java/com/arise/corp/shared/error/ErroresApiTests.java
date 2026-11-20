@@ -256,6 +256,26 @@ class ErroresApiTests {
     }
 
     @Test
+    @DisplayName("Feature: 003-erp-empleados-proveedores-finanzas, "
+            + "Property 19: Los errores del ERP no exponen información interna "
+            + "ni datos personales")
+    void parametroInvalidoDelErpDevuelve400ConCampoYMensaje() throws Exception {
+        mvc.perform(get("/api/test/errores/parametro-invalido").with(jwt()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status", is(400)))
+                .andExpect(jsonPath("$.title", is("Solicitud inválida")))
+                .andExpect(jsonPath("$.detail",
+                        is("Los parámetros de la solicitud no son válidos.")))
+                .andExpect(jsonPath("$.errors.length()", is(1)))
+                .andExpect(jsonPath("$.errors[0].field", is("hasta")))
+                .andExpect(jsonPath("$.errors[0].message",
+                        is("debe ser posterior o igual a la fecha inicial")))
+                .andExpect(content().string(not(containsString("Exception"))))
+                .andExpect(content().string(not(containsString("detalle-interno"))));
+    }
+
+    @Test
     void metodoNoSoportadoDevuelve405ConAllowYEnEspanol() throws Exception {
         mvc.perform(delete("/api/test/errores/validacion").with(jwt()))
                 .andExpect(status().isMethodNotAllowed())
@@ -485,6 +505,12 @@ class ErroresApiTests {
         @GetMapping("/api/test/errores/concurrencia")
         String concurrencia() {
             throw new CannotAcquireLockException("detalle-interno");
+        }
+
+        @GetMapping("/api/test/errores/parametro-invalido")
+        String parametroInvalido() {
+            throw new ParametroInvalidoException(
+                    "hasta", "debe ser posterior o igual a la fecha inicial");
         }
     }
 

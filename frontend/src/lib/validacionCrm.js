@@ -1,17 +1,17 @@
-const texto = valor => valor?.trim() || null
+export const texto = valor => valor?.trim() || null
 export const normalizarDocumento = valor => texto(valor)?.replace(/[\s.-]/gu, '').toUpperCase() || null
 export const normalizarCodigo = valor => texto(valor)?.toUpperCase() || null
 
 const tiposDocumento = ['CC', 'CE', 'NIT', 'PASAPORTE']
-const maximo = limite => valor => valor.length > limite && `debe tener como máximo ${limite} caracteres`
+export const maximo = limite => valor => valor.length > limite && `debe tener como máximo ${limite} caracteres`
 const uuid = valor => !/^[\da-f]{8}(-[\da-f]{4}){3}-[\da-f]{12}$/i.test(valor)
   && 'debe ser un identificador UUID válido'
-const correo = valor => (valor.length > 254 || !/^[^\s@.]+(?:\.[^\s@.]+)*@[^\s@.]+(?:\.[^\s@.]+)+$/u.test(valor))
+export const correo = valor => (valor.length > 254 || !/^[^\s@.]+(?:\.[^\s@.]+)*@[^\s@.]+(?:\.[^\s@.]+)+$/u.test(valor))
   && 'debe ser un correo válido de máximo 254 caracteres'
-const telefono = valor => !/^[\d +()-]{7,20}$/.test(valor)
+export const telefono = valor => !/^[\d +()-]{7,20}$/.test(valor)
   && 'debe tener entre 7 y 20 caracteres: dígitos, espacios, +, - o paréntesis'
 
-function fecha(valor) {
+export function fecha(valor) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
     const dia = new Date(valor + 'T00:00:00Z')
     if (Number.isFinite(dia.getTime()) && dia.toISOString().startsWith(valor + 'T')) return
@@ -19,7 +19,7 @@ function fecha(valor) {
   return 'debe ser una fecha válida con formato AAAA-MM-DD'
 }
 
-function revisar(errores, campo, valor, obligatorio, regla) {
+export function revisar(errores, campo, valor, obligatorio, regla) {
   const mensaje = valor == null || valor === ''
     ? obligatorio && 'es obligatorio'
     : regla(valor)
