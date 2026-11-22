@@ -66,6 +66,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - FK `cliente_id → app.clientes`, `contrato_id → app.contratos`, `dron_id → app.drones` (paquetes e historial), `paquete_id → app.paquetes` y `articulo_id → app.articulos_inventario`; índice único parcial `paquetes_dron_en_curso_uk` sobre `dron_id` en `ASIGNADO` y `EN_TRANSITO`; índices de `cliente_id`, `contrato_id`, `dron_id` y `(articulo_id, registrado_en)`; `secuencia smallint` (D11); `existencia`, `existencia_anterior` y `existencia_resultante` como `bigint` (D5); auditoría `timestamptz` y `uuid not null` sin FK a `auth.users`; comentarios de tabla
     - Habilitar RLS en las cinco tablas y ejecutar `revoke all ... from anon, authenticated`. Sin `insert`, UUID personales, secretos ni sentencias que no admitan transacción
     - Anotar en este `tasks.md` el nombre real del archivo
+    - Archivo real: `20261121120000_app_sga_drones_paquetes_inventario.sql`
     - _Requisitos: 2.1–2.13, SGA-01, SGA-02, SGA-03, SGA-04, SGA-05, NF-01, NF-03, NF-05, DP-SEG-05, DP-SEG-06, DP-API-04_
 
   - [ ] 2.2 Registrar la migración en `supabase/migrations/README.md`
