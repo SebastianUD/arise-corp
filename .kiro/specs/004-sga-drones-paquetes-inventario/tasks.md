@@ -51,7 +51,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Se hace antes de la tarea 3.1 (`sdd-workflow.md`, "Registro de decisiones"; Requirement 29.2) y se confirma con `docs(crm): registrar ContratoReferenciaService en DP-ARQ-01`. El estado [Implementado] del SGA se actualiza en las tareas 17.2 y 28.1
     - _Requisitos: 1.5, 1.6, 29.2, NF-05, DP-ARQ-01_
 
-  - [ ] 1.3 Registrar en `api-conventions.md` los ajustes de contrato que adopta el diseño
+  - [x] 1.3 Registrar en `api-conventions.md` los ajustes de contrato que adopta el diseño
     - Área: documentación · Responsable: Davidson
     - DP-API-04: las cantidades enteras se reciben como número JSON y se validan como enteros sin truncar (`BigDecimal` con `@CantidadEntera` en el DTO), porque Jackson 3 trunca decimales en campos `int` por defecto (D5)
     - DP-API-05: `POST .../estados` y `POST .../movimientos` responden 201 con el registro creado y el encabezado `Location` de la colección donde se consulta; el historial del paquete se devuelve completo como arreglo JSON, sin paginación, como excepción a DP-API-03 (interpretación 12)
@@ -59,7 +59,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - _Requisitos: 12.1, 15.1, 20.2, NF-05, DP-API-04, DP-API-05_
 
 - [ ] 2. Crear y revisar la migración del SGA
-  - [ ] 2.1 Crear `supabase/migrations/<timestamp>_app_sga_drones_paquetes_inventario.sql`
+  - [x] 2.1 Crear `supabase/migrations/<timestamp>_app_sga_drones_paquetes_inventario.sql`
     - Área: base de datos · Responsable: Davidson
     - Generar el archivo con `supabase migration new app_sga_drones_paquetes_inventario`; el timestamp debe ser posterior a `20261118095500`. Si Supabase CLI no está disponible, crear el archivo con el mismo formato `<timestamp>_<nombre>.sql`, como en `003`. No modificar las migraciones existentes
     - Escribir el SQL de "Migración SGA" del diseño: `app.drones`, `app.paquetes`, `app.historial_estados_paquete`, `app.articulos_inventario` y `app.movimientos_inventario` en orden de dependencia, con `create table` sin `if not exists`; PK UUID; `UNIQUE` de los tres códigos y de `(paquete_id, secuencia)`; `CHECK` de formato de código `^[A-Z0-9-]{3,30}$`, longitudes, estados, categorías, unidades, `stock_minimo`, existencia no negativa, coherencia de `dron_id` con el estado del paquete (`paquetes_dron_estado_ck`), alta y dron del historial, rangos de cantidad por tipo, aritmética de cada tipo y observación del `AJUSTE`
@@ -69,7 +69,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Archivo real: `20261121120000_app_sga_drones_paquetes_inventario.sql`
     - _Requisitos: 2.1–2.13, SGA-01, SGA-02, SGA-03, SGA-04, SGA-05, NF-01, NF-03, NF-05, DP-SEG-05, DP-SEG-06, DP-API-04_
 
-  - [ ] 2.2 Registrar la migración en `supabase/migrations/README.md`
+  - [x] 2.2 Registrar la migración en `supabase/migrations/README.md`
     - Área: base de datos · Responsable: Davidson
     - Añadir la fila de la Migracion_SGA a la tabla "Migraciones" con su nombre real, la descripción y `004-sga-drones-paquetes-inventario`. Las reglas de revisión y aplicación de DP-TEC-03 ya están en el archivo y no cambian
     - _Requisitos: 29.5, NF-05, DP-TEC-03_
@@ -94,65 +94,65 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - `@SpringBootTest` con H2 y `CrmDatosPrueba`: `buscar` con contrato existente (`clienteId` y `codigo` correctos) e inexistente; `activo()` en los cuatro Estado_Contrato; `buscarTodos` con colección vacía (sin consulta), ids mezclados, repetidos e inexistentes; `buscarParaAsociar` dentro de un `TransactionTemplate`; fuera de transacción lanza `IllegalTransactionStateException`
     - _Requisitos: 1.6, 7.12, NF-07_
 
-- [ ] 4. Implementar las enumeraciones y las máquinas de estado del SGA
-  - [ ] 4.1 Crear las enumeraciones de `sga.entity`
+- [x] 4. Implementar las enumeraciones y las máquinas de estado del SGA
+  - [x] 4.1 Crear las enumeraciones de `sga.entity`
     - Área: backend · Responsable: Davidson
     - `EstadoPaquete` con `EN_CURSO`, `transicionesPermitidas()`, `puedeTransicionarA`, `esFinal`, `esEditable` y `efectoSobreDron(destino)`; `EstadoDron` con `transicionesManuales()` y `puedeCambiarManualmenteA`; `TipoMovimientoInventario` con `existenciaResultante(long anterior, int cantidad)` y `cantidadMinima()`; `CategoriaArticulo { REPUESTO, BATERIA, EMPAQUE, OTRO }` y `UnidadArticulo { UNIDAD, CAJA, JUEGO, ROLLO }`, según el código del diseño (D7, D8, D12)
     - No se reutilizan enumeraciones del CRM ni del ERP
     - _Requisitos: 6.1, 6.2, 9.3, 10.2, 11.7, 11.9, 11.10, 13.4, 15.2–15.4, DP-API-04, DP-API-05_
 
-  - [ ] 4.2 Escribir `sga/entity/EstadoPaqueteTests`
+  - [x] 4.2 Escribir `sga/entity/EstadoPaqueteTests`
     - Área: backend · Responsable: Davidson
     - `@ParameterizedTest` exhaustivo sobre los 36 pares de origen y destino, `esFinal`, `esEditable` y `EN_CURSO`; `efectoSobreDron` para los 36 pares: solo `ASIGNADO→EN_TRANSITO` devuelve `EN_MISION` y solo `EN_TRANSITO→ENTREGADO` y `EN_TRANSITO→DEVUELTO` devuelven `DISPONIBLE`
     - **Property 1: Solo se aplican las transiciones permitidas del paquete** (nivel enumeración) · **Validates: Requirements 10.2, 25.2**
     - **Property 4: El estado del dron sigue al de su paquete** (`efectoSobreDron`) · **Validates: Requirements 11.7, 11.9, 11.10**
     - _Requisitos: 25.2, NF-07_
 
-  - [ ] 4.3 Escribir `sga/entity/EstadoDronTests`
+  - [x] 4.3 Escribir `sga/entity/EstadoDronTests`
     - Área: backend · Responsable: Davidson
     - `@ParameterizedTest` exhaustivo sobre los 16 pares: `EN_MISION` no tiene transiciones manuales ni es destino manual y el mismo estado no es una transición
     - **Property 2: El dron solo cambia a mano entre sus estados manuales y sin paquete en curso** (nivel enumeración) · **Validates: Requirements 6.1, 6.2, 25.2**
     - _Requisitos: 25.2, NF-07_
 
-- [ ] 5. Implementar las entidades y los repositorios JPA del SGA
-  - [ ] 5.1 Implementar la entidad `Dron`
+- [x] 5. Implementar las entidades y los repositorios JPA del SGA
+  - [x] 5.1 Implementar la entidad `Dron`
     - Área: backend · Responsable: Davidson
     - Mapeo según "Entidades JPA (`sga.entity`)": `@Table(name = "drones")` sin esquema con `uniqueConstraints` `drones_codigo_uk`, `@Id @GeneratedValue(strategy = GenerationType.UUID)`, `@Enumerated(EnumType.STRING)`, `creadoEn` con `updatable = false` y auditoría de datos y de estado
     - Sin setters públicos: `static crear(codigo, modelo, observaciones, UUID actor, Instant ahora)` en `DISPONIBLE` con la auditoría de datos y de estado iguales; `actualizarDatos(...)` solo cambia los datos y `actualizado_*`; `cambiarEstadoManual(destino, actor, ahora)` con defensa `IllegalStateException` si `!puedeCambiarManualmenteA(destino)`; `sincronizarConPaquete(destino, actor, ahora)` con defensa que solo admite `DISPONIBLE→EN_MISION` y `EN_MISION→DISPONIBLE`. Los cambios de estado solo tocan `estado` y su auditoría (D8, D14)
     - _Requisitos: 1.1, 2.2, 2.14, 4.1, 4.8, 6.1, 6.5, 11.7, 11.9, DP-SEG-06_
 
-  - [ ] 5.2 Implementar las entidades `Paquete` y `HistorialEstadoPaquete`
+  - [x] 5.2 Implementar las entidades `Paquete` y `HistorialEstadoPaquete`
     - Área: backend · Responsable: Davidson
     - `Paquete`: `codigo` y `clienteId` con `updatable = false`; `clienteId` y `contratoId` como `UUID` sin asociación JPA (D1, DP-ARQ-01); `@ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "dron_id") Dron dron` sin colecciones inversas; `static crear(...)` en `REGISTRADO` sin dron con la auditoría de datos y de estado iguales; `actualizarDatos(descripcion, direccion, contratoId, actor, ahora)` con defensa `esEditable`
     - `Paquete.aplicarTransicion(destino, dron, actor, ahora)` con los cinco pasos del diseño: `IllegalStateException` si la transición no está permitida; con `ASIGNADO`, `IllegalArgumentException` sin dron y asignación del dron; con otro destino, `IllegalArgumentException` si el dron recibido no es el asignado; actualización solo de `estado` y su auditoría; y llamada a `dron.sincronizarConPaquete` con el mismo instante y actor cuando `efectoSobreDron(destino)` tiene valor
     - `HistorialEstadoPaquete` con `@Immutable`, `@ManyToOne(fetch = LAZY)` a `Paquete` y a `Dron` (opcional), `secuencia`, `static alta(paquete, observacion, actor, ahora)` (secuencia 1, anterior `null`, nuevo `REGISTRADO`) y `static transicion(paquete, secuencia, anterior, nuevo, dron, observacion, actor, ahora)`
     - _Requisitos: 1.7, 2.3, 2.4, 2.6, 2.14, 7.1, 9.1, 9.4, 10.1, 10.7, 11.6, 11.11, 12.2, DP-ARQ-01, DP-SEG-06_
 
-  - [ ] 5.3 Implementar las entidades `ArticuloInventario` y `MovimientoInventario`
+  - [x] 5.3 Implementar las entidades `ArticuloInventario` y `MovimientoInventario`
     - Área: backend · Responsable: Davidson
     - `ArticuloInventario`: `stockMinimo` `int` y `existencia` `long`; `static crear(...)` con existencia 0; `actualizarDatos(...)` sin recibir la existencia; `long aplicarMovimiento(tipo, cantidad)` con defensa de resultado ≥ 0 y sin tocar `actualizado_*`; `boolean bajoStockMinimo()` con `existencia < stockMinimo`
     - `MovimientoInventario` con `@Immutable`, `@ManyToOne(fetch = LAZY)` a `ArticuloInventario` y `static registrar(articulo, tipo, cantidad, anterior, resultante, observacion, actor, ahora)`
     - _Requisitos: 2.7, 2.8, 2.14, 13.1, 13.8, 14.6, 15.1–15.4, 15.12, 15.15, DP-SEG-06_
 
-  - [ ] 5.4 Crear los repositorios del SGA
+  - [x] 5.4 Crear los repositorios del SGA
     - Área: backend · Responsable: Davidson
     - Firmas del diseño: `DronRepository` (`findByCodigo`, `findParaModificarById` con `PESSIMISTIC_WRITE` y `contarPorEstado`), `PaqueteRepository` (`findByCodigo`, `findAll(Specification, Pageable)` con `@EntityGraph("dron")`, `findConDronById`, `findParaModificarById`, `findFirstByDronIdAndEstadoIn`, `findByDronIdInAndEstadoIn` y `contarPorEstado`), `HistorialEstadoPaqueteRepository` (`findByPaqueteIdOrderBySecuenciaAsc` con `@EntityGraph("dron")` y `countByPaqueteId`), `ArticuloInventarioRepository` (`findByCodigo`, `findParaModificarById` y `contarArticulos`) y `MovimientoInventarioRepository` (`findByArticuloId` paginado)
     - Proyecciones `ConteoPorEstado<E>` (`getClave()`, `getTotal()`) y `ConteoArticulos` (`getTotal()`, `getBajoStockMinimo()`) en `sga.repository`; no se reutiliza `crm.repository.ConteoPorClave`. Las consultas con bloqueo no hacen *fetch join* (D10)
     - _Requisitos: 1.5, 5.7, 8.1, 11.12, 12.1, 15.10, 15.11, 16.1, 16.3, 16.4_
 
-  - [ ] 5.5 Crear `sga.repository.EspecificacionesSga`
+  - [x] 5.5 Crear `sga.repository.EspecificacionesSga`
     - Área: backend · Responsable: Davidson
     - `codigoOTextoContiene(q, campoTexto)` genérica para `modelo`, `descripcion` o `nombre`; `estadoIgual`, `categoriaIgual`, `clienteIgual`, `contratoIgual` y `dronIgual` (`dron.id`, sin *join*); `asignable(Boolean)` con `estado = DISPONIBLE` y `not exists` de un paquete del dron en `EN_CURSO`, y su negación con `false`; `bajoStockMinimo(Boolean)` con `cb.lt(existencia, stockMinimo)` y su negación
     - JPQL portable con `LIKE ... ESCAPE '\'`, `NormalizadorTexto.codigo` y `NormalizadorTexto.patronContiene`; un filtro ausente devuelve `Specification.unrestricted()`
     - _Requisitos: 5.3–5.5, 8.2–8.5, 14.2–14.4, SGA-01, SGA-02, SGA-03, SGA-05_
 
-  - [ ] 5.6 Crear `GeneradoresSga` en el paquete de prueba `com.arise.corp.sga`
+  - [x] 5.6 Crear `GeneradoresSga` en el paquete de prueba `com.arise.corp.sga`
     - Área: backend · Responsable: Davidson
     - `SEMILLA = 20261125L` y `nuevoRandom()`; generadores de secuencias de movimientos (tipos, cantidades válidas y salidas que a veces superan la existencia), de valores numéricos de cantidad (enteros, decimales con parte fraccionaria, negativos, notación exponencial y los bordes 0, 1, 1000000 y 1000001) y de conteos por estado de paquetes y drones con estados ausentes (D17)
     - Solo datos ficticios
     - _Requisitos: 25.3, NF-07_
 
-  - [ ] 5.7 Crear `SgaDatosPrueba` en el paquete de prueba `com.arise.corp.sga`
+  - [x] 5.7 Crear `SgaDatosPrueba` en el paquete de prueba `com.arise.corp.sga`
     - Área: backend · Responsable: Davidson
     - Componente de prueba que se importa con `@Import({CrmDatosPrueba.class, SgaDatosPrueba.class})`: crea drones, paquetes en cualquier estado (aplicando `aplicarTransicion` de la entidad y creando su historial), artículos y movimientos ficticios; su `limpiar()` borra movimientos, artículos, historial, paquetes y drones y después llama a `CrmDatosPrueba.limpiar()`. Los perfiles, clientes y contratos se crean con `CrmDatosPrueba`; la autenticación usa `AutenticacionPerfilTestSupport.como(...)` con el `PerfilJwtAuthenticationConverter` real
     - _Requisitos: 25.4, 25.5, NF-07_
