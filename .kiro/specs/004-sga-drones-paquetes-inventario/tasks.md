@@ -80,8 +80,8 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - No la apliques tú: la aplicación controlada es la tarea 15.1 y la realiza Davidson, autor de la migración, después de `MigracionesSgaIT` (14.2) y de esta revisión
     - _Requisitos: 2.1–2.13, 29.8, DP-TEC-03, DP-SEG-05_
 
-- [ ] 3. Ofrecer la lectura de contratos del CRM a otros módulos
-  - [ ] 3.1 Crear `crm.dto.ContratoReferencia`, `ContratoRepository.findParaAsociarById` y `crm.service.ContratoReferenciaService`
+- [x] 3. Ofrecer la lectura de contratos del CRM a otros módulos
+  - [x] 3.1 Crear `crm.dto.ContratoReferencia`, `ContratoRepository.findParaAsociarById` y `crm.service.ContratoReferenciaService`
     - Área: backend · Responsable: Sebastián
     - `record ContratoReferencia(UUID id, UUID clienteId, String codigo, String estado)` con `static desde(Contrato)` (`estado = contrato.getEstado().name()` y `clienteId` tomado del proxy `LAZY` sin inicializarlo) y `boolean activo()`, que compara con `EstadoContrato.ACTIVO.name()` (D2)
     - `ContratoRepository.findParaAsociarById(UUID)` con `@Lock(LockModeType.PESSIMISTIC_READ)` y sin *fetch join*, como `findParaContratoById` de clientes
@@ -89,7 +89,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - `ContratoService`, los controladores y los endpoints CRM no cambian; el CRM no importa nada de `sga` ni de `erp`
     - _Requisitos: 1.5, 1.6, 1.8, 7.12, 8.8, DP-ARQ-01, SGA-05_
 
-  - [ ] 3.2 Escribir `crm/service/ContratoReferenciaServiceTests`
+  - [x] 3.2 Escribir `crm/service/ContratoReferenciaServiceTests`
     - Área: backend · Responsable: Sebastián
     - `@SpringBootTest` con H2 y `CrmDatosPrueba`: `buscar` con contrato existente (`clienteId` y `codigo` correctos) e inexistente; `activo()` en los cuatro Estado_Contrato; `buscarTodos` con colección vacía (sin consulta), ids mezclados, repetidos e inexistentes; `buscarParaAsociar` dentro de un `TransactionTemplate`; fuera de transacción lanza `IllegalTransactionStateException`
     - _Requisitos: 1.6, 7.12, NF-07_
@@ -679,5 +679,21 @@ Alcance respetado:
 - No se modificaron `MigracionesSupabase`, `PostgresContenedorConfig`, el Script_Preparacion_IT ni `pom.xml`.
 - Sin credenciales, tokens, UUID ni datos personales en este registro.
 
-Commits: pendientes de registrar.
+Commits: `22bab61` (`docs(sga)`).
+
+### Lectura de contratos del CRM para otros módulos (tareas 3.1 y 3.2)
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 3.1 | `crm.dto.ContratoReferencia`, `ContratoRepository.findParaAsociarById`, `crm.service.ContratoReferenciaService` | El `record ContratoReferencia(UUID id, UUID clienteId, String codigo, String estado)` convierte con `desde(Contrato)` tomando `clienteId` del proxy `LAZY` sin inicializarlo y `estado` con `getEstado().name()`; `activo()` compara con `EstadoContrato.ACTIVO.name()`. `findParaAsociarById` usa `@Lock(PESSIMISTIC_READ)` y no hace *fetch join*. El servicio es `@Transactional(readOnly = true)` con `buscar`, `buscarTodos` (una consulta con `findAllById`; colección vacía devuelve mapa vacío sin consultar) y `buscarParaAsociar` con `Propagation.MANDATORY`. `ContratoService`, los controladores y los endpoints del CRM no cambian; el CRM no importa nada de `sga` ni de `erp` |
+| 3.2 | `crm/service/ContratoReferenciaServiceTests` | `.\mvnw.cmd -B -Dtest=ContratoReferenciaServiceTests test` → **10 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**. Cubre `buscar` con contrato existente (id, `clienteId`, `codigo` y `estado`) e inexistente; `activo()` en los cuatro `EstadoContrato` con `@EnumSource`; `buscarTodos` con colección vacía sin consultar (`verify(..., never())`), ids mezclados, repetidos e inexistentes en una sola consulta; `buscarParaAsociar` dentro de `TransactionTemplate` y fuera de transacción lanza `IllegalTransactionStateException` |
+
+Alcance respetado:
+
+- Solo se tocó el CRM en la puerta de lectura nueva; no se modificaron `ContratoService`, sus controladores ni sus endpoints, y no se importó nada del SGA ni del ERP.
+- El repositorio conserva sus consultas con bloqueo sin *fetch join* (D9).
+- Sin credenciales, tokens, UUID ni datos personales en este registro.
+
+Commits: pendiente de registrar.
+
 

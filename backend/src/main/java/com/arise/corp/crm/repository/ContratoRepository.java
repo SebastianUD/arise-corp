@@ -43,6 +43,13 @@ public interface ContratoRepository
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Contrato> findParaModificarById(UUID id);
 
+    /**
+     * Carga el contrato con bloqueo de lectura para asociarlo a un paquete del
+     * SGA (D2, D10).
+     */
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    Optional<Contrato> findParaAsociarById(UUID id);
+
     @Query("select c.estado as clave, count(c) as total from Contrato c group by c.estado")
     List<ConteoPorClave<EstadoContrato>> contarPorEstado();
 }
