@@ -45,7 +45,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Comprobar con `git status` que ningún archivo `.env` queda preparado para commit
     - _Requisitos: 29.7, DP-SDD-03, DP-SDD-04, DP-SDD-05, NF-01_
 
-  - [ ] 1.2 Registrar `ContratoReferenciaService` en `architecture.md` (DP-ARQ-01)
+  - [x] 1.2 Registrar `ContratoReferenciaService` en `architecture.md` (DP-ARQ-01)
     - Área: documentación · Responsable: Sebastián
     - DP-ARQ-01: los módulos consumidores leen contratos mediante `crm.service.ContratoReferenciaService`, que expone solo identificador, cliente, código y estado (solo lectura, en lote y con bloqueo de lectura dentro de la transacción del llamador), junto a `ClienteReferenciaService`. El SGA define sus propios DTO de salida y nunca accede a `Contrato`, `EstadoContrato` ni `ContratoRepository` (D2, D3)
     - Se hace antes de la tarea 3.1 (`sdd-workflow.md`, "Registro de decisiones"; Requirement 29.2) y se confirma con `docs(crm): registrar ContratoReferenciaService en DP-ARQ-01`. El estado [Implementado] del SGA se actualiza en las tareas 17.2 y 28.1
@@ -58,7 +58,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Se hace antes del código que aplica estas reglas y se confirma con `docs(sga): registrar en steering los ajustes de la spec 004`. Los endpoints y los códigos de conflicto del SGA se añaden en la tarea 17.3
     - _Requisitos: 12.1, 15.1, 20.2, NF-05, DP-API-04, DP-API-05_
 
-- [ ] 2. Crear y revisar la migración del SGA
+- [x] 2. Crear y revisar la migración del SGA
   - [x] 2.1 Crear `supabase/migrations/<timestamp>_app_sga_drones_paquetes_inventario.sql`
     - Área: base de datos · Responsable: Davidson
     - Generar el archivo con `supabase migration new app_sga_drones_paquetes_inventario`; el timestamp debe ser posterior a `20261118095500`. Si Supabase CLI no está disponible, crear el archivo con el mismo formato `<timestamp>_<nombre>.sql`, como en `003`. No modificar las migraciones existentes
@@ -74,7 +74,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Añadir la fila de la Migracion_SGA a la tabla "Migraciones" con su nombre real, la descripción y `004-sga-drones-paquetes-inventario`. Las reglas de revisión y aplicación de DP-TEC-03 ya están en el archivo y no cambian
     - _Requisitos: 29.5, NF-05, DP-TEC-03_
 
-  - [ ] 2.3 Revisar la migración en la rama antes de aplicarla
+  - [x] 2.3 Revisar la migración en la rama antes de aplicarla
     - Área: base de datos · Responsable: Sebastián
     - Contrastar el SQL con "Migración SGA" y "Entidades JPA (`sga.entity`)" del diseño: columnas, tipos, `CHECK`, `UNIQUE`, FK, índice único parcial, índices, comentarios, RLS, `revoke` y ausencia de datos. Los cambios que pida la revisión se hacen en el mismo archivo, porque todavía no está aplicado
     - No la apliques tú: la aplicación controlada es la tarea 15.1 y la realiza Davidson, autor de la migración, después de `MigracionesSgaIT` (14.2) y de esta revisión
@@ -661,3 +661,23 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
   ]
 }
 ```
+
+## Verificación de las tareas realizadas
+
+Fecha: 2026-11-23 · Rama: `feature/sga-drones-paquetes-inventario`
+
+### Registro de la lectura de contratos y revisión de la migración (tareas 1.2 y 2.3)
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 1.2 | `architecture.md`, DP-ARQ-01 | El párrafo de DP-ARQ-01 registra `crm.service.ContratoReferenciaService` junto a `ClienteReferenciaService`, con identificador, cliente, código y estado, solo lectura, en lote y con bloqueo de lectura dentro de la transacción del llamador. El ERP y el SGA definen sus DTO y no acceden a `Cliente`, `Contrato`, `EstadoContrato` ni a sus repositorios; el CRM no depende del ERP ni del SGA |
+| 2.3 | Revisión de `20261121120000_app_sga_drones_paquetes_inventario.sql` | El SQL coincide línea a línea con el bloque "Migración SGA" del diseño (la única diferencia es la cerca de código del documento). Las cinco tablas, columnas y tipos coinciden con "Entidades JPA"; incluye los `CHECK`, `UNIQUE`, FK, el índice único parcial `paquetes_dron_en_curso_uk`, los índices de FK y de movimientos, los comentarios, RLS y `revoke` para `anon` y `authenticated`, y no inserta datos. No se requirieron cambios en la migración |
+
+Alcance respetado:
+
+- No se aplicó la migración a `arise-corp-dev`: la aplicación controlada sigue siendo la tarea 15.1 de Davidson, tras `MigracionesSgaIT` (14.2).
+- No se modificaron `MigracionesSupabase`, `PostgresContenedorConfig`, el Script_Preparacion_IT ni `pom.xml`.
+- Sin credenciales, tokens, UUID ni datos personales en este registro.
+
+Commits: pendientes de registrar.
+
