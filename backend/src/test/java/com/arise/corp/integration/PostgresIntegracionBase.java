@@ -30,7 +30,9 @@ public abstract class PostgresIntegracionBase {
 
     @BeforeEach
     void vaciarTablas() {
-        jdbc.execute("truncate table app.movimientos_financieros, app.proveedores, app.empleados,"
+        jdbc.execute("truncate table app.movimientos_inventario, app.articulos_inventario,"
+                + " app.historial_estados_paquete, app.paquetes, app.drones,"
+                + " app.movimientos_financieros, app.proveedores, app.empleados,"
                 + " app.contratos, app.clientes, app.cuentas_corporativas,"
                 + " app.perfiles_usuario, auth.users cascade");
     }
