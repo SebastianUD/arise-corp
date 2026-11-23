@@ -37,8 +37,8 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
 
 ## Tasks
 
-- [ ] 1. Preparar la rama y las reglas de la spec
-  - [ ] 1.1 Crear la rama `feat/sga-drones-paquetes-inventario` desde `main`
+- [x] 1. Preparar la rama y las reglas de la spec
+  - [x] 1.1 Crear la rama `feat/sga-drones-paquetes-inventario` desde `main`
     - Área: integración/Git · Responsable: Paula
     - Actualizar `main` (`git switch main` y `git pull`), crear la rama con `git switch -c feat/sga-drones-paquetes-inventario` y publicarla con `git push -u origin feat/sga-drones-paquetes-inventario`
     - Confirmar en la rama `requirements.md`, `design.md` y `tasks.md` de `.kiro/specs/004-sga-drones-paquetes-inventario/` con `docs(sga): agregar spec 004-sga-drones-paquetes-inventario`. `.config.kiro` es metadata local excluida por `.gitignore` y no se versiona
@@ -157,46 +157,46 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Componente de prueba que se importa con `@Import({CrmDatosPrueba.class, SgaDatosPrueba.class})`: crea drones, paquetes en cualquier estado (aplicando `aplicarTransicion` de la entidad y creando su historial), artículos y movimientos ficticios; su `limpiar()` borra movimientos, artículos, historial, paquetes y drones y después llama a `CrmDatosPrueba.limpiar()`. Los perfiles, clientes y contratos se crean con `CrmDatosPrueba`; la autenticación usa `AutenticacionPerfilTestSupport.como(...)` con el `PerfilJwtAuthenticationConverter` real
     - _Requisitos: 25.4, 25.5, NF-07_
 
-- [ ] 6. Implementar el catálogo de conflictos y los DTO del SGA
-  - [ ] 6.1 Crear `sga.service.ConflictosSga`
+- [x] 6. Implementar el catálogo de conflictos y los DTO del SGA
+  - [x] 6.1 Crear `sga.service.ConflictosSga`
     - Área: backend · Responsable: Sebastián
     - Clase `final` con una fábrica de `ConflictoNegocioException` por fila del catálogo de "Error Handling": `dronCodigoDuplicado()`, `paqueteCodigoDuplicado()`, `articuloCodigoDuplicado()`, `clienteInactivo()`, `contratoDeOtroCliente()`, `contratoNoActivo(String estado)`, `paqueteNoEditable(EstadoPaquete)`, `transicionNoPermitida(EstadoPaquete, EstadoPaquete)`, `dronNoDisponible(EstadoDron, String campo)`, `dronConPaqueteEnCurso(UUID paqueteId, String campo)`, `transicionDronNoPermitida(EstadoDron, EstadoDron)` y `existenciaInsuficiente(long existenciaActual, int cantidadSolicitada)`
     - Cada fábrica fija el código, `campo` (interpretación 5: `TRANSICION_DRON_NO_PERMITIDA` con `campo = "estado"`; `DRON_NO_DISPONIBLE` y `DRON_CON_PAQUETE_EN_CURSO` con el `campo` recibido, `"dronId"` al asignar y `null` en `EN_TRANSITO` y en el cambio manual), el `detail` del catálogo y las extensiones `estadoActual`, `estadoSolicitado`, `paqueteId`, `existenciaActual` y `cantidadSolicitada`, sin direcciones, observaciones ni nombres. Constantes propias, también `TRANSICION_NO_PERMITIDA`, sin importar las del ERP ni del CRM
     - _Requisitos: 17.4, 19.4, 19.5, CA-06, DP-API-02_
 
-  - [ ] 6.2 Crear `@CantidadEntera` en `sga.dto.validacion`
+  - [x] 6.2 Crear `@CantidadEntera` en `sga.dto.validacion`
     - Área: backend · Responsable: Sebastián
     - Anotación con su validador sobre `BigDecimal`, con `min` y `max = 1_000_000`; acepta `null`; informa "debe ser un número entero entre {min} y {max}" si `valor.stripTrailingZeros().scale() > 0` o el valor está fuera de rango; expone el predicado estático `esEnteroEnRango(BigDecimal, long min, long max)` (D5)
     - _Requisitos: 13.5, 15.7, DP-API-04_
 
-  - [ ] 6.3 Crear los DTO de drones
+  - [x] 6.3 Crear los DTO de drones
     - Área: backend · Responsable: Sebastián
     - `DronRequest` (POST y PUT) con `@JsonIgnoreProperties(ignoreUnknown = true)`, normalización en el constructor compacto (`NormalizadorTexto.codigo` y `NormalizadorTexto.texto`), `@NotNull` "es obligatorio" separado del formato, `@Pattern` `[A-Z0-9-]{3,30}` con el mensaje de código común, `@Size` de `modelo` (100) y `observaciones` (500) y `toString()` "DronRequest[datos protegidos]"
     - `EstadoDronRequest` con `estado` obligatorio; `PaqueteEnCursoRef(UUID id, String codigo, EstadoPaquete estado)` con `static desde(Paquete)` que devuelve `null` con entrada `null`; `DronResponse` con los 11 campos de Requirement 5.7, `static desde(Dron, Paquete enCurso)` y `toString()` protegido
     - _Requisitos: 3.1–3.4, 4.2–4.5, 4.7, 4.9, 5.7, 6.4, 17.1, 17.3, SGA-01_
 
-  - [ ] 6.4 Crear los DTO de paquetes e historial y `@DronSegunEstado`
+  - [x] 6.4 Crear los DTO de paquetes e historial y `@DronSegunEstado`
     - Área: backend · Responsable: Sebastián
     - `PaqueteCrearRequest`, `PaqueteActualizarRequest` (sin `codigo`, `clienteId`, `estado` ni `dronId`) y `TransicionPaqueteRequest` como el record del diseño, con normalización en el constructor compacto, mensajes en español y `toString()` protegido (D15)
     - Restricción de clase `@DronSegunEstado` en `sga.dto.validacion`: no informa nada si `estado` es `null`; con `ASIGNADO` y sin `dronId` informa "es obligatorio para asignar el paquete" y con otro estado y `dronId` informa "solo se admite en la transición a ASIGNADO", ambos sobre el nodo `dronId` (D6)
     - `ClienteAsociado.desde(ClienteReferencia)`, `ContratoAsociado.desde(ContratoReferencia)` y `DronAsociado.desde(Dron)` (estas dos devuelven `null` con entrada `null`), `DronRef(id, codigo)`, `PaqueteResponse.desde(Paquete, ClienteReferencia, ContratoReferencia)` con `Objects.requireNonNull` sobre las referencias cuando el paquete tiene `clienteId` o `contratoId` (interpretación 11) y `RegistroHistorialResponse.desde(HistorialEstadoPaquete)`; `toString()` protegido en `PaqueteResponse` y `RegistroHistorialResponse`
     - _Requisitos: 3.1, 3.4, 7.2–7.4, 7.11, 8.7, 8.8, 9.2, 9.4, 10.3, 10.4, 11.1, 11.2, 12.1, 17.1–17.3, SGA-02, SGA-04, SGA-05_
 
-  - [ ] 6.5 Crear los DTO de inventario y del resumen
+  - [x] 6.5 Crear los DTO de inventario y del resumen
     - Área: backend · Responsable: Sebastián
     - `ArticuloRequest` (POST y PUT) con `stockMinimo` `BigDecimal` y `@CantidadEntera(min = 0)`, `categoria` y `unidad` obligatorias; `ArticuloResponse` con los 11 campos de Requirement 14.6 y `bajoStockMinimo` desde la entidad
     - `MovimientoInventarioRequest` como el record del diseño, con `cantidadEntera()` y la restricción de clase `@MovimientoInventarioValido` (en `sga.dto.validacion`): rango de `cantidad` con `tipo.cantidadMinima()` (0 si `tipo` es `null`) sobre el nodo `cantidad` y "es obligatoria en un ajuste" sobre `observacion`, con un error por campo; `MovimientoInventarioResponse`; `toString()` protegido en ambos
     - `ResumenSgaResponse(ConteoEstados<EstadoPaquete> paquetes, ConteoEstados<EstadoDron> drones, ResumenArticulos articulos)` con `ConteoEstados(Map<E, Long> porEstado, long total)` y `ResumenArticulos(long bajoStockMinimo, long total)`; función pura `static desde(...)` que crea un `EnumMap` con todos los estados en 0, copia las filas y calcula cada `total` como la suma de sus cantidades (D13)
     - _Requisitos: 13.2–13.5, 13.7, 14.6, 15.1, 15.6–15.8, 16.1–16.4, 17.3, SGA-03, SGA-06, DP-API-04_
 
-  - [ ] 6.6 Escribir `sga/dto/SgaValidacionTests`
+  - [x] 6.6 Escribir `sga/dto/SgaValidacionTests`
     - Área: backend · Responsable: Sebastián
     - `jakarta.validation.Validator` y `GeneradoresSga`: `stockMinimo` y `cantidad` con valores generados y bordes (`1.5` rechazado sin truncar; `5`, `5.0` y `5E0` aceptados como 5), una violación por campo, mensajes en español y `AJUSTE` sin observación con el error en `observacion`; `@DronSegunEstado` en los 6 estados × `dronId` presente o ausente
     - **Property 8: Las cantidades se aceptan solo como enteros dentro del rango de su tipo** (backend) · **Validates: Requirements 13.5, 15.6, 15.7, 15.8**
     - **Property 3: Solo se asigna un dron asignable** (parte del DTO) · **Validates: Requirements 11.1, 11.2**
     - _Requisitos: 11.1, 11.2, 13.5, 15.7, 15.8, NF-07_
 
-  - [ ]* 6.7 Escribir `sga/dto/ResumenSgaResponseTests`
+  - [x]* 6.7 Escribir `sga/dto/ResumenSgaResponseTests`
     - Área: backend · Responsable: Sebastián
     - Conteos generados con `GeneradoresSga` (con estados ausentes) comparados con el cálculo directo; caso sin filas
     - **Property 9: Los indicadores son consistentes con los datos** (función pura) · **Validates: Requirements 16.1, 16.2, 16.3, 16.4**
@@ -695,5 +695,27 @@ Alcance respetado:
 - Sin credenciales, tokens, UUID ni datos personales en este registro.
 
 Commits: `461c48c` (`feat(crm)` para 3.1 y 3.2).
+
+### Catálogo de conflictos y DTO del SGA (tareas 6.1–6.7)
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 6.1 | `sga/service/ConflictosSga` | Clase `final` con las doce fábricas del catálogo: `dronCodigoDuplicado`, `paqueteCodigoDuplicado`, `articuloCodigoDuplicado`, `clienteInactivo`, `contratoDeOtroCliente`, `contratoNoActivo(String)`, `paqueteNoEditable`, `transicionNoPermitida`, `dronNoDisponible(EstadoDron, String campo)`, `dronConPaqueteEnCurso(UUID, String campo)`, `transicionDronNoPermitida` y `existenciaInsuficiente`. Cada una fija el código, el `campo`, el `detail` exacto del catálogo y las extensiones (`estadoActual`, `estadoSolicitado`, `paqueteId`, `existenciaActual`, `cantidadSolicitada`), sin nombres, direcciones ni observaciones. `TRANSICION_DRON_NO_PERMITIDA` usa `campo = "estado"`; `DRON_NO_DISPONIBLE` y `DRON_CON_PAQUETE_EN_CURSO` reciben el `campo` del llamador (`"dronId"` al asignar y `null` en `EN_TRANSITO` y en el cambio manual). Constantes propias, también `TRANSICION_NO_PERMITIDA` |
+| 6.2 | `sga/dto/validacion/CantidadEntera` | Anotación sobre `BigDecimal` con `min` y `max = 1_000_000`; acepta `null`; informa "debe ser un número entero entre {min} y {max}" si `stripTrailingZeros().scale() > 0` o el valor está fuera de rango. El predicado estático `esEnteroEnRango(BigDecimal, long, long)` se expone en `CantidadEntera.Validador` (un tipo anotación de Java no admite métodos estáticos; el diseño lo escribía como `CantidadEntera.esEnteroEnRango`) y lo reutiliza `@MovimientoInventarioValido` |
+| 6.3 | DTO de drones | `DronRequest` (normaliza código, modelo y observaciones; `@NotNull` separado del formato; patrón de código; `@Size` 100/500; `toString()` protegido), `EstadoDronRequest`, `PaqueteEnCursoRef` con `desde(Paquete)` nulo-seguro y `DronResponse` con los once campos de Requirement 5.7 y `desde(Dron, Paquete)` |
+| 6.4 | DTO de paquetes e historial y `@DronSegunEstado` | `PaqueteCrearRequest` (código, descripción, dirección, `clienteId`, `contratoId` y `observacion`; normalización y `toString()` protegido), `PaqueteActualizarRequest` sin `codigo`, `clienteId`, `estado` ni `dronId`, y `TransicionPaqueteRequest` con `@DronSegunEstado`: con `ASIGNADO` y sin dron informa "es obligatorio para asignar el paquete"; con otro estado y dron informa "solo se admite en la transición a ASIGNADO"; ambos en el nodo `dronId` y sin informar si `estado` es `null`. `ClienteAsociado`, `ContratoAsociado` y `DronAsociado` (los dos últimos nulo-seguros), `DronRef`, `PaqueteResponse.desde(...)` con `Objects.requireNonNull` sobre las referencias cuando el paquete tiene cliente o contrato y `RegistroHistorialResponse.desde(...)`; `toString()` protegido en `PaqueteResponse` y `RegistroHistorialResponse` |
+| 6.5 | DTO de inventario y del resumen | `ArticuloRequest` con `stockMinimo` `BigDecimal` y `@CantidadEntera(min = 0)`, categoría y unidad obligatorias; `ArticuloResponse` con los once campos de Requirement 14.6 y `bajoStockMinimo` desde la entidad; `MovimientoInventarioRequest` con `cantidadEntera()` y `@MovimientoInventarioValido` (rango según `tipo.cantidadMinima()`, `0` si `tipo` es `null`, y "es obligatoria en un ajuste" en `observacion`, un error por campo); `MovimientoInventarioResponse`; `toString()` protegido en ambos. `ResumenSgaResponse` con `ConteoEstados` (`EnumMap` completo e inmutable) y `ResumenArticulos`, y `desde(...)` puro que crea los ceros, copia las filas y calcula cada total |
+| 6.6 | `sga/dto/SgaValidacionTests` | `.\mvnw.cmd -B "-Dtest=SgaValidacionTests,ResumenSgaResponseTests" test` → **25 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**. Property 8 con los bordes y 120 valores generados para `stockMinimo` y para la cantidad de los tres tipos; `1.5` rechazado sin truncar y `5`, `5.0` y `5E0` aceptados como 5; una sola entrada por campo en artículos y movimientos; mensajes en español; `@DronSegunEstado` en los 6 estados × `dronId` presente o ausente; normalización y `toString()` protegido |
+| 6.7* | `sga/dto/ResumenSgaResponseTests` | Property 9 con 120 conteos generados (con estados ausentes) comparados con el cálculo directo; caso sin filas con los seis y cuatro estados en 0; el mapa de estados no se puede modificar |
+
+Alcance respetado:
+
+- Solo se crearon clases nuevas en `sga.service`, `sga.dto` y `sga.dto.validacion`; no se modificaron entidades, repositorios ni servicios de Davidson, ni el CRM, el ERP o `001-foundation`.
+- El CRM y el ERP no importan nada del SGA; el SGA solo consume `ClienteReferencia` y `ContratoReferencia` del CRM.
+- Sin credenciales, tokens, UUID ni datos personales en este registro.
+
+Regresión: `.\mvnw.cmd -B clean test` → **1084 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**.
+
+Commits: pendiente de registrar.
 
 
