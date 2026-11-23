@@ -716,6 +716,6 @@ Alcance respetado:
 
 Regresión: `.\mvnw.cmd -B clean test` → **1084 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**.
 
-Commits: pendiente de registrar.
+Commits: `65de4c5` (`feat(sga)` para 6.1–6.7).
 
 
