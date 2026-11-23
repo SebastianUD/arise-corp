@@ -686,7 +686,7 @@ Commits: `22bab61` (`docs(sga)`).
 | Tarea | Entregable | Verificación |
 |---|---|---|
 | 3.1 | `crm.dto.ContratoReferencia`, `ContratoRepository.findParaAsociarById`, `crm.service.ContratoReferenciaService` | El `record ContratoReferencia(UUID id, UUID clienteId, String codigo, String estado)` convierte con `desde(Contrato)` tomando `clienteId` del proxy `LAZY` sin inicializarlo y `estado` con `getEstado().name()`; `activo()` compara con `EstadoContrato.ACTIVO.name()`. `findParaAsociarById` usa `@Lock(PESSIMISTIC_READ)` y no hace *fetch join*. El servicio es `@Transactional(readOnly = true)` con `buscar`, `buscarTodos` (una consulta con `findAllById`; colección vacía devuelve mapa vacío sin consultar) y `buscarParaAsociar` con `Propagation.MANDATORY`. `ContratoService`, los controladores y los endpoints del CRM no cambian; el CRM no importa nada de `sga` ni de `erp` |
-| 3.2 | `crm/service/ContratoReferenciaServiceTests` | `.\mvnw.cmd -B -Dtest=ContratoReferenciaServiceTests test` → **10 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**. Cubre `buscar` con contrato existente (id, `clienteId`, `codigo` y `estado`) e inexistente; `activo()` en los cuatro `EstadoContrato` con `@EnumSource`; `buscarTodos` con colección vacía sin consultar (`verify(..., never())`), ids mezclados, repetidos e inexistentes en una sola consulta; `buscarParaAsociar` dentro de `TransactionTemplate` y fuera de transacción lanza `IllegalTransactionStateException` |
+| 3.2 | `crm/service/ContratoReferenciaServiceTests` | `.\mvnw.cmd -B -Dtest=ContratoReferenciaServiceTests test` → **10 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**. Cubre `buscar` con contrato existente (id, `clienteId`, `codigo` y `estado`) e inexistente; `activo()` en los cuatro `EstadoContrato` con `@EnumSource`; `buscarTodos` con colección vacía sin consultar (`verify(..., never())`), ids mezclados, repetidos e inexistentes en una sola consulta; `buscarParaAsociar` dentro de `TransactionTemplate` y fuera de transacción lanza `IllegalTransactionStateException`. Regresión: `.\mvnw.cmd -B clean test` → **1059 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS** |
 
 Alcance respetado:
 
@@ -694,6 +694,6 @@ Alcance respetado:
 - El repositorio conserva sus consultas con bloqueo sin *fetch join* (D9).
 - Sin credenciales, tokens, UUID ni datos personales en este registro.
 
-Commits: pendiente de registrar.
+Commits: `461c48c` (`feat(crm)` para 3.1 y 3.2).
 
 
