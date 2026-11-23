@@ -335,12 +335,12 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/` sin Docker, sin Supabase y sin `.env` (Requirement 25.10), con las pruebas de `001-foundation`, `002-crm-clientes-contratos` y `003-erp-empleados-proveedores-finanzas` en verde, incluidas `CrmAutorizacionTests` y `ClienteControllerTests` sin cambios (Requirement 25.9). Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
 - [ ] 14. Implementar las pruebas de integración del SGA con PostgreSQL efímero
-  - [ ] 14.1 Ampliar `PostgresIntegracionBase`
+  - [x] 14.1 Ampliar `PostgresIntegracionBase`
     - Área: backend · Responsable: Sebastián
     - El `truncate` de `@BeforeEach` incluye `app.movimientos_inventario`, `app.articulos_inventario`, `app.historial_estados_paquete`, `app.paquetes` y `app.drones` antes de las tablas del ERP, del CRM, `app.perfiles_usuario` y `auth.users`, con `cascade`, según el diseño. Requiere la migración de la tarea 2.1. `MigracionesSupabase`, `PostgresContenedorConfig`, el Script_Preparacion_IT y `pom.xml` no cambian
     - _Requisitos: 26.1, 26.10, 26.11, ENG-03_
 
-  - [ ] 14.2 Escribir `MigracionesSgaIT`
+  - [x] 14.2 Escribir `MigracionesSgaIT`
     - Área: backend · Responsable: Sebastián
     - `ddl-auto=validate` acepta las entidades del SGA; las cinco tablas están vacías tras migrar; `information_schema` confirma `uuid`, `integer`, `bigint`, `smallint`, `timestamptz` y `text`
     - Inserciones JDBC inválidas producen SQLState 23505 (códigos duplicados en las tres tablas, segundo paquete en curso con el mismo dron y `secuencia` repetida), 23514 (estados, categorías, unidades, formato de código, longitudes, dron incoherente con el estado del paquete, dron en un registro que no es `ASIGNADO`, alta sin `REGISTRADO`, existencia negativa, cantidad fuera de rango por tipo, aritmética incorrecta de cada tipo y `AJUSTE` sin observación) y 23503 (FK a `app.clientes`, `app.contratos`, `app.drones`, `app.paquetes` y `app.articulos_inventario`); dos paquetes `CANCELADO` con el mismo dron se aceptan
@@ -717,5 +717,22 @@ Alcance respetado:
 Regresión: `.\mvnw.cmd -B clean test` → **1084 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**.
 
 Commits: `65de4c5` (`feat(sga)` para 6.1–6.7).
+
+### Pruebas de integración de la migración del SGA (tareas 14.1 y 14.2)
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 14.1 | `integration/PostgresIntegracionBase` | El `truncate` de `@BeforeEach` incluye, en este orden y con `cascade`, `app.movimientos_inventario`, `app.articulos_inventario`, `app.historial_estados_paquete`, `app.paquetes` y `app.drones`, antes de las tablas del ERP, del CRM, `app.perfiles_usuario` y `auth.users`. No cambian `MigracionesSupabase`, `PostgresContenedorConfig`, el Script_Preparacion_IT ni `pom.xml` |
+| 14.2 | `integration/MigracionesSgaIT` | Nueve pruebas sobre PostgreSQL 17 efímero con las migraciones reales: `ddl-auto=validate` arranca con las entidades del SGA; las cinco tablas quedan vacías y ninguna migración inserta datos; `information_schema` confirma `uuid`, `integer`, `bigint`, `smallint`, `timestamptz` y `text`; SQLState 23505 para códigos duplicados en drones, paquetes y artículos, segundo paquete en curso con el mismo dron y `secuencia` repetida; 23514 para estados, categorías, unidades, formato y longitudes, existencia negativa, cantidad fuera de rango por tipo, aritmética de `ENTRADA`/`SALIDA`/`AJUSTE`, `AJUSTE` sin observación, `secuencia` fuera de 1–4, dron incoherente con el estado del paquete, dron en un registro que no es `ASIGNADO` y alta sin `REGISTRADO`; 23503 para las FK a clientes, contratos, drones, paquetes y artículos; dos paquetes `CANCELADO` con el mismo dron se aceptan; RLS activo y sin privilegios para `anon` y `authenticated` en las cinco tablas |
+
+Verificación: `.\mvnw.cmd -B clean verify "-Dit.test=MigracionesSgaIT"` desde `backend/` → **1084 pruebas unitarias y 9 de integración, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS** (PostgreSQL 17.10 en contenedor, `ddl-auto=validate` sobre el esquema migrado, sin credenciales ni red hacia Supabase).
+
+Alcance respetado:
+
+- Solo se amplió la base común de IT y se añadió una clase nueva; no se tocaron entidades, repositorios ni servicios del SGA, ni el CRM, el ERP o `001-foundation`.
+- La migración no se aplicó a `arise-corp-dev`: sigue pendiente la tarea 15.1 de Davidson, tras esta validación.
+- Sin credenciales, tokens, UUID personales ni datos personales en este registro.
+
+Commits: `645bd61` (`test(sga)` para 14.1–14.2).
 
 
