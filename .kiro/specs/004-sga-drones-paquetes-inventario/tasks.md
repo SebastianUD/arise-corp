@@ -371,7 +371,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - _Requisitos: 2.12, 29.8, DP-TEC-03, DP-SEG-05, NF-01_
 
 - [x] 16. Verificar la imagen Docker y los workflows con el SGA
-  - [ ] 16.1 Verificar la imagen y Compose
+  - [x] 16.1 Verificar la imagen y Compose
     - Área: backend/Docker · Responsable: Sebastián
     - `docker build -t arise-backend:local backend` sin credenciales ni conexión a Supabase; `docker run --rm --entrypoint sh arise-backend:local -c "find / -name '.env*' 2>/dev/null"` no devuelve nada y `docker history --no-trunc` no muestra valores de configuración. `backend/Dockerfile`, `backend/.dockerignore` y `docker-compose.yml` no cambian (D22)
     - Con un `backend/.env` válido y la migración aplicada (15.1), `docker compose up backend` y `curl -i http://localhost:8080/api/sga/drones` → 401 con `WWW-Authenticate`; al terminar, `docker compose down`
@@ -817,7 +817,7 @@ Alcance respetado:
 - No se añadieron dependencias, variables de entorno ni secretos, y no se copiaron datos de `.env`.
 - Los ejemplos usan códigos y estados ficticios; sin credenciales, tokens ni datos personales.
 
-### Verificación de la imagen Docker (primera mitad de la tarea 16.1)
+### Verificación de la imagen y Compose (tarea 16.1)
 
 | Comprobación | Resultado |
 |---|---|
@@ -827,12 +827,13 @@ Alcance respetado:
 | `docker image inspect arise-backend:local` | `User=arise` (uid y gid 999, sin privilegios) y `Config.Env` con las cinco variables de la imagen base |
 | Contenido de `/app` | Solo `app.jar`; sin `src/test`, sin `target` y sin archivos de configuración local |
 | `git diff main -- backend/Dockerfile backend/.dockerignore docker-compose.yml` | Sin cambios (D22) |
-
-Pendiente (segunda mitad): `docker compose up backend` con `backend/.env` y `curl -i http://localhost:8080/api/sga/drones` → 401 con `WWW-Authenticate`, bloqueado por la migración de la tarea 15.1 (Davidson). `spring.jpa.hibernate.ddl-auto=validate` hace fallar el arranque si faltan las tablas del SGA, así que la comprobación se hará cuando 15.1 esté aplicada.
+| `docker compose up -d backend` con `backend/.env` y la migración aplicada | Contenedor `arise-corp-backend-1` en ejecución; el backend arrancó con `ddl-auto=validate` contra `arise-corp-dev` |
+| `curl -i http://localhost:8080/api/sga/drones` | `HTTP/1.1 401`, `WWW-Authenticate: Bearer`, `Content-Type: application/problem+json;charset=UTF-8` y cuerpo Problem Details, sin token |
+| `docker compose down` | Contenedor y red `arise-corp_default` eliminados; sin servicios activos |
 
 Alcance respetado:
 
-- No se abrió, leyó ni mostró `backend/.env`; el build no recibe credenciales.
+- No se abrió, leyó ni mostró `backend/.env`; Compose lo inyecta y el build no recibe credenciales.
 - No se modificaron `backend/Dockerfile`, `backend/.dockerignore` ni `docker-compose.yml`.
 - Sin credenciales, tokens ni valores de configuración en este registro.
 
