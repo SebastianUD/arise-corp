@@ -607,7 +607,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Al terminar, restablecer los roles, poner el dron de la prueba en `FUERA_DE_SERVICIO` y registrar en este `tasks.md` fecha, pasos y resultado sin datos sensibles
     - _Requisitos: 30.3–30.6, AUTH-05, CA-03, NF-02, DP-PRO-01_
 
-- [ ] 31. Checkpoint final
+- [x] 31. Checkpoint final
   - Área: verificación · Responsable: Sebastián
   - Ejecutar `.\mvnw.cmd clean test` y `.\mvnw.cmd verify` desde `backend/`; `npm test`, `npm run build` y `npm run check:secrets` desde `frontend/`; y `docker compose build backend` desde la raíz. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
@@ -864,6 +864,25 @@ Alcance respetado:
 - Solo se consultó la configuración; no se modificaron reglas, workflows ni el repositorio.
 - La credencial se usó desde el almacén local y no se escribió, mostró ni registró.
 - Sin tokens, credenciales ni UUID en este registro.
+
+### Checkpoint final (tarea 31)
+
+Ejecución del 2026-11-24 sobre el commit `58f3ad4`, con Docker en ejecución:
+
+| Comando | Resultado |
+|---|---|
+| `.\mvnw.cmd -B clean test` (desde `backend/`) | **1418 pruebas, 0 fallos, 0 errores, 0 omitidas**, BUILD SUCCESS |
+| `.\mvnw.cmd -B verify` (desde `backend/`) | **1418 unitarias y 52 de integración, 0 fallos, 0 errores, 0 omitidas**, BUILD SUCCESS; Failsafe ejecutó `MigracionesCrmIT`, `MigracionesErpIT`, `MigracionesSgaIT`, `FlujoSgaIT`, `SgaTransaccionIT`, `FlujoCrmIT`, `FlujoErpIT`, `ConsultasCrmIT`, `ConsultasErpIT`, `ContratoTransaccionIT`, `MovimientoTransaccionIT`, `ResumenComercialIT` y `ResumenFinancieroIT` |
+| `npm test` (desde `frontend/`) | **40 archivos y 376 pruebas aprobadas**, 0 fallos |
+| `npm run build` (desde `frontend/`) | Build de Vite aprobado |
+| `npm run check:secrets` (desde `frontend/`) | "Verificación aprobada: sin patrones de credenciales privadas en fuente, plantilla y bundle." |
+| `docker compose build backend` (desde la raíz) | Imagen `arise-backend:local` construida con el `docker-compose.yml` vigente |
+
+Alcance respetado:
+
+- No se modificó código, configuración ni pruebas; el checkpoint solo ejecuta y registra.
+- No se abrió ni mostró `backend/.env`; el build de Compose no recibe credenciales en la imagen.
+- Sin credenciales, tokens, UUID ni datos personales en este registro.
 
 
 
