@@ -496,32 +496,32 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - **Property 2: El dron solo cambia a mano entre sus estados manuales y sin paquete en curso** (botones ofrecidos en el detalle) · **Validates: Requirements 21.9, 21.10**
     - _Requisitos: 21.8–21.12, 27.5, 27.7_
 
-- [ ] 24. Implementar las vistas de paquetes
-  - [ ] 24.1 Implementar `pages/sga/PaquetesLista.jsx`
+- [x] 24. Implementar las vistas de paquetes
+  - [x] 24.1 Implementar `pages/sga/PaquetesLista.jsx`
     - Área: frontend · Responsable: Paula
     - Filtro por Estado_Paquete, búsqueda por código o descripción y paginación en la URL; columnas código, descripción, cliente, dron ("—" sin dron) y estado con `EstadoPaqueteEtiqueta`; "Nuevo paquete"; "No hay paquetes para los criterios elegidos."; carga con `EstadoConsulta`
     - _Requisitos: 22.1–22.3, SGA-02, DP-API-03_
 
-  - [ ] 24.2 Implementar `pages/sga/PaqueteFormulario.jsx`
+  - [x] 24.2 Implementar `pages/sga/PaqueteFormulario.jsx`
     - Área: frontend · Responsable: Paula
     - Alta: `codigo`, `descripcion`, `direccionEntrega` y cliente obligatorios; `SelectorRegistro` de clientes con `textoVacio="Selecciona un cliente"` y `q => listarClientes({ activo: true, q, size: 20, sort: 'nombre,asc' })` de `crmApi.js`; `<select>` de contrato con "Sin contrato" y los contratos `ACTIVO` del cliente elegido (`listarContratos({ clienteId, estado: 'ACTIVO', size: 100, sort: 'codigo,asc' })`); observación opcional. Cambiar de cliente quita la selección de contrato
     - Edición solo en Estado_Editable_Paquete (si no, "Solo se editan paquetes registrados o asignados." con enlace al detalle): código y cliente en lectura; si el contrato actual ya no está en `ACTIVO`, aparece seleccionado como "{código} ({estado})" con el texto "El contrato asociado ya no está activo; puedes conservarlo"
     - Validación local con `validarPaquete` o `validarEdicionPaquete`; `fieldset` deshabilitado durante el envío; errores 400, 404 y 409 con `campo` junto al campo (también bajo los selectores) con los valores conservados; un 409 sin campo (`PAQUETE_NO_EDITABLE`) muestra el mensaje y vuelve a cargar el paquete
     - _Requisitos: 22.4–22.10, 22.17, SGA-02, SGA-05, NF-06_
 
-  - [ ] 24.3 Implementar `pages/sga/PaqueteDetalle.jsx`
+  - [x] 24.3 Implementar `pages/sga/PaqueteDetalle.jsx`
     - Área: frontend · Responsable: Paula
     - Datos, estado, enlaces a `/crm/clientes/{id}`, `/crm/contratos/{id}` y `/sga/drones/{id}`, y tabla del Historial_Paquete en orden con estado anterior, estado nuevo, dron, observación, fecha y hora (`formatoInstante`) y actor
     - Fuera de un Estado_Final_Paquete: "Editar" solo si es editable y una sección "Cambiar estado" con las opciones de `TRANSICIONES_PAQUETE[estado]` (etiquetas del diseño) y una observación opcional; al elegir `ASIGNADO` carga `listarDrones({ asignable: true, size: 100, sort: 'codigo,asc' })` y exige elegir uno; un destino final abre `DialogoConfirmacion` con "Este cambio es irreversible."; envía `cambiarEstadoPaquete`
     - Un 201 o un 409 vuelven a cargar el paquete y el historial; el 409 muestra el mensaje en `role="alert"`. En estado final no muestra edición ni transiciones
     - _Requisitos: 22.11–22.17, SGA-04, SGA-05, CA-05, DP-API-05_
 
-  - [ ] 24.4 Escribir `pages/sga/PaqueteFormulario.test.jsx`
+  - [x] 24.4 Escribir `pages/sga/PaqueteFormulario.test.jsx`
     - Área: frontend · Responsable: Paula
     - Selector de contratos `ACTIVO` del cliente elegido, limpieza del contrato al cambiar de cliente, contrato actual no activo conservado en la edición, validación local sin petición y errores 400, 404 y 409 por campo con los valores conservados
     - _Requisitos: 22.4–22.10, 27.3, 27.7_
 
-  - [ ] 24.5 Escribir `pages/sga/PaqueteDetalle.test.jsx`
+  - [x] 24.5 Escribir `pages/sga/PaqueteDetalle.test.jsx`
     - Área: frontend · Responsable: Paula
     - Elección obligatoria de un dron asignable para `ASIGNADO`, confirmación irreversible en los destinos finales, recarga tras 201 y tras 409, historial en orden y enlaces al cliente, al contrato y al dron
     - **Property 1: Solo se aplican las transiciones permitidas del paquete** (transiciones y edición ofrecidas en cada estado con `it.each`) · **Validates: Requirements 22.12, 22.15**
