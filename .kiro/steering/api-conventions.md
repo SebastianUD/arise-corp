@@ -24,6 +24,18 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 | POST, PUT | `/api/erp/movimientos`, `/api/erp/movimientos/{id}` | JWT de Administrador o Finanzas/RRHH | 201 con `Location` o 200 con el movimiento |
 | PATCH | `/api/erp/movimientos/{id}/estado` | JWT de Administrador o Finanzas/RRHH | 200 con el estado y su auditoría actualizados |
 | GET | `/api/erp/resumen` | JWT de Administrador o Finanzas/RRHH | 200 con el panel financiero de los dos tipos y los tres estados |
+| GET | `/api/sga/drones`, `/api/sga/drones/{id}` | JWT de Administrador u Operaciones | 200 con la lista paginada o el dron |
+| POST, PUT | `/api/sga/drones`, `/api/sga/drones/{id}` | JWT de Administrador u Operaciones | 201 con `Location` o 200 con el dron |
+| PATCH | `/api/sga/drones/{id}/estado` | JWT de Administrador u Operaciones | 200 con el dron y la auditoría del estado actualizada |
+| GET | `/api/sga/paquetes`, `/api/sga/paquetes/{id}` | JWT de Administrador u Operaciones | 200 con la lista paginada o el paquete |
+| POST, PUT | `/api/sga/paquetes`, `/api/sga/paquetes/{id}` | JWT de Administrador u Operaciones | 201 con `Location` o 200 con el paquete |
+| GET | `/api/sga/paquetes/{id}/estados` | JWT de Administrador u Operaciones | 200 con el historial completo como arreglo, sin paginación |
+| POST | `/api/sga/paquetes/{id}/estados` | JWT de Administrador u Operaciones | 201 con el registro del historial y `Location` |
+| GET | `/api/sga/articulos`, `/api/sga/articulos/{id}` | JWT de Administrador u Operaciones | 200 con la lista paginada o el artículo |
+| POST, PUT | `/api/sga/articulos`, `/api/sga/articulos/{id}` | JWT de Administrador u Operaciones | 201 con `Location` o 200 con el artículo |
+| GET | `/api/sga/articulos/{id}/movimientos` | JWT de Administrador u Operaciones | 200 con la lista paginada de movimientos del artículo |
+| POST | `/api/sga/articulos/{id}/movimientos` | JWT de Administrador u Operaciones | 201 con el movimiento y `Location` |
+| GET | `/api/sga/resumen` | JWT de Administrador u Operaciones | 200 con los conteos de paquetes y drones y los artículos bajo stock mínimo |
 
 - Sin token, o con un token inválido o vencido, el backend responde 401 Problem Details con el encabezado `WWW-Authenticate` (DP-API-02).
 - El campo `role` de `/api/me` refleja el rol empresarial del perfil activo en `app.perfiles_usuario`; un perfil ausente o inactivo produce 403. El claim técnico `role` de Supabase no autoriza operaciones (tarea 16 de `001-foundation`).
@@ -32,8 +44,14 @@ Etiquetas de estado: ver `product.md`. La protección de endpoints y los roles e
 - El manejo global de errores está implementado en `shared.error`: todos los 400/401/403/404/405/409/415/500 usan el mismo formato Problem Details (tarea 18 de `001-foundation`, ampliado en `002-crm-clientes-contratos` y `003-erp-empleados-proveedores-finanzas`).
 - Los 409 del CRM incluyen la extensión `conflicto` (por ejemplo `CLIENTE_DUPLICADO`, `CLIENTE_INACTIVO_EXISTENTE`, `CUENTA_INACTIVA`, `CUENTA_NIT_DUPLICADO`, `CONTRATO_CODIGO_DUPLICADO`, `CONTRATO_NO_EDITABLE`, `TRANSICION_NO_PERMITIDA`) y, cuando corresponde, `campo` (`documento`, `nit`, `codigo`) o datos adicionales como `clienteId`, `estadoActual` y `estadoSolicitado`.
 - Los 409 del ERP incluyen la extensión `conflicto` (`EMPLEADO_DUPLICADO`, `EMPLEADO_INACTIVO_EXISTENTE` con `empleadoId`, `PROVEEDOR_DUPLICADO`, `PROVEEDOR_INACTIVO_EXISTENTE` con `proveedorId`, `CLIENTE_INACTIVO`, `PROVEEDOR_INACTIVO`, `MOVIMIENTO_NO_EDITABLE` con `estadoActual` y `TRANSICION_NO_PERMITIDA` con `estadoActual` y `estadoSolicitado`) y, cuando corresponde, `campo` (`numeroDocumento`, `clienteId`, `proveedorId` o `estado`).
-- Un 404 de recurso referenciado incluye `campo` con el nombre del campo del cuerpo que lo originó (`cuentaCorporativaId`, `clienteId` en el CRM; `clienteId` y `proveedorId` en el ERP); un `{id}` de ruta no UUID responde 400 con `errors[0].field = "id"`. Un `clienteId` o `proveedorId` inexistente en los filtros de `GET /api/erp/movimientos` responde 200 con lista vacía, sin comprobar su existencia.
-- `DELETE /api/crm/clientes/{id}` responde 405 con `Allow` para los gestores; el mensaje es "La operación no está disponible para este recurso.". Los `DELETE` del ERP (`/api/erp/empleados/{id}`, `/api/erp/proveedores/{id}` y `/api/erp/movimientos/{id}`) responden 405 con `Allow` (`GET`, `PUT` y `PATCH` en empleados y proveedores; `GET` y `PUT` en movimientos) para los gestores, porque un registro se desactiva o se anula, no se elimina. Un `Content-Type` distinto de `application/json` responde 415 con mensaje en español.
+- Los 409 del SGA incluyen la extensión `conflicto` y, cuando corresponde, `campo` y sus extensiones:
+  - `DRON_CODIGO_DUPLICADO`, `PAQUETE_CODIGO_DUPLICADO` y `ARTICULO_CODIGO_DUPLICADO` con `campo = "codigo"`.
+  - `CLIENTE_INACTIVO` con `campo = "clienteId"`; `CONTRATO_DE_OTRO_CLIENTE` y `CONTRATO_NO_ACTIVO` con `campo = "contratoId"` y `estadoActual` en el segundo.
+  - `PAQUETE_NO_EDITABLE` con `estadoActual`; `TRANSICION_NO_PERMITIDA` con `campo = "estado"`, `estadoActual` y `estadoSolicitado`.
+  - `DRON_NO_DISPONIBLE` con `estadoActual`; `DRON_CON_PAQUETE_EN_CURSO` con `paqueteId`; `TRANSICION_DRON_NO_PERMITIDA` con `campo = "estado"`, `estadoActual` y `estadoSolicitado`.
+  - `EXISTENCIA_INSUFICIENTE` con `campo = "cantidad"`, `existenciaActual` y `cantidadSolicitada`.
+- Un 404 de recurso referenciado incluye `campo` con el nombre del campo del cuerpo que lo originó (`cuentaCorporativaId`, `clienteId` en el CRM; `clienteId` y `proveedorId` en el ERP; `clienteId` y `contratoId` en el alta o la edición de paquetes y `dronId` en la transición a `ASIGNADO` del SGA); un `{id}` de ruta no UUID responde 400 con `errors[0].field = "id"`. Un `clienteId` o `proveedorId` inexistente en los filtros de `GET /api/erp/movimientos` responde 200 con lista vacía, sin comprobar su existencia; lo mismo ocurre con `clienteId`, `contratoId` y `dronId` en los filtros de `GET /api/sga/paquetes`.
+- `DELETE /api/crm/clientes/{id}` responde 405 con `Allow` para los gestores; el mensaje es "La operación no está disponible para este recurso.". Los `DELETE` del ERP (`/api/erp/empleados/{id}`, `/api/erp/proveedores/{id}` y `/api/erp/movimientos/{id}`) responden 405 con `Allow` (`GET`, `PUT` y `PATCH` en empleados y proveedores; `GET` y `PUT` en movimientos) para los gestores, porque un registro se desactiva o se anula, no se elimina. En el SGA, el `DELETE` de drones, paquetes y artículos responde 405 con `Allow` (`GET`, `PUT`), y los métodos no mapeados de `/api/sga/paquetes/{id}/estados` y `/api/sga/articulos/{id}/movimientos` responden 405 con `Allow` (`GET`, `POST`); un dron se desactiva con `FUERA_DE_SERVICIO`, un paquete se cancela y un error de inventario se corrige con un movimiento nuevo. Un `Content-Type` distinto de `application/json` responde 415 con mensaje en español.
 - Los 400 de validación mantienen la extensión `errors` con `field` y `message`; los mensajes son comprensibles para el usuario y no exponen SQL ni trazas.
 
 ## Rutas

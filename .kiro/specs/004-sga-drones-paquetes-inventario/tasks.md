@@ -398,7 +398,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Los ajustes de reglas quedaron registrados en las tareas 1.2 y 1.3; aquí solo se comprueba que el código los cumple
     - _Requisitos: 29.4, CA-07, NF-05_
 
-  - [ ] 17.3 Actualizar los steering de API y seguridad
+  - [x] 17.3 Actualizar los steering de API y seguridad
     - Área: documentación · Responsable: Sebastián
     - `api-conventions.md`: endpoints del SGA en "Endpoints existentes" con sus roles y respuestas; códigos de conflicto del SGA con sus extensiones; `campo` en los 404 de `clienteId`, `contratoId` y `dronId`; lista vacía cuando un filtro de `GET /api/sga/paquetes` no tiene registro; 405 con `Allow` de los `DELETE` y de los métodos no mapeados de `.../estados` y `.../movimientos`
     - `security.md`: `/api/sga/**` sin lecturas cruzadas; el SGA lee clientes y contratos solo mediante `ClienteReferenciaService` y `ContratoReferenciaService`; dirección de entrega, observaciones y nombre del cliente fuera de logs y de `detail`; una sola representación para los gestores del SGA; DTO con `toString()` protegido y `SgaLogsTests` como verificación
@@ -795,6 +795,21 @@ Alcance respetado:
 - Solo se añadieron `FlujoSgaIT` y `SgaTransaccionIT`; no se modificaron las entidades, servicios, repositorios, controladores ni migraciones del SGA, ni los módulos anteriores.
 - Las IT usan el PostgreSQL efímero de `PostgresContenedorConfig` y todas las migraciones de `supabase/migrations/`, sin copiarlas, sin red hacia Supabase y sin `.env` ni credenciales de `arise-corp-dev`.
 - Sin credenciales, tokens, UUID personales ni datos personales en este registro.
+
+### Steering de API y seguridad del SGA (tarea 17.3)
+
+| Archivo | Cambio |
+|---|---|
+| `.kiro/steering/api-conventions.md` | Doce filas nuevas en "Endpoints existentes" para `/api/sga/drones`, `/api/sga/paquetes`, `/api/sga/paquetes/{id}/estados`, `/api/sga/articulos`, `/api/sga/articulos/{id}/movimientos` y `/api/sga/resumen`, con los roles Administrador y Operaciones y la respuesta de éxito de cada uno. Un bloque con los doce códigos de conflicto del SGA (`DRON_CODIGO_DUPLICADO`, `PAQUETE_CODIGO_DUPLICADO`, `ARTICULO_CODIGO_DUPLICADO`, `CLIENTE_INACTIVO`, `CONTRATO_DE_OTRO_CLIENTE`, `CONTRATO_NO_ACTIVO`, `PAQUETE_NO_EDITABLE`, `TRANSICION_NO_PERMITIDA`, `DRON_NO_DISPONIBLE`, `DRON_CON_PAQUETE_EN_CURSO`, `TRANSICION_DRON_NO_PERMITIDA`, `EXISTENCIA_INSUFICIENTE`) con su `campo` y sus extensiones. `campo` en los 404 de `clienteId`, `contratoId` y `dronId`. Lista vacía en `GET /api/sga/paquetes` cuando un filtro no tiene registro. 405 con `Allow` (`GET`, `PUT`) en los `DELETE` de drones, paquetes y artículos y con `Allow` (`GET`, `POST`) en los métodos no mapeados de `/estados` y `/movimientos` |
+| `.kiro/steering/security.md` | `/api/sga/**` sin lecturas cruzadas, con una sola representación para Administrador y Operaciones. El SGA lee clientes y contratos solo mediante `ClienteReferenciaService` y `ContratoReferenciaService`, dentro de su transacción y sin acceso a entidades ni repositorios del CRM. Dirección de entrega, observaciones y nombre del cliente fuera de logs y de `detail`; `toString()` protegido en los DTO del paquete, del historial y de los movimientos, con `SgaLogsTests` como verificación |
+
+Verificación: revisión de los dos archivos contra `ConflictosSga`, los cuatro controladores del SGA, `SecurityConfig` y `SgaLogsTests`; `git diff --check` sin espacios sobrantes. No se ejecutaron pruebas porque la tarea solo modifica documentación de steering.
+
+Alcance respetado:
+
+- Solo se modificaron `api-conventions.md`, `security.md` y este registro; no se tocó código de producción ni de pruebas.
+- No se añadieron dependencias, variables de entorno ni secretos, y no se copiaron datos de `.env`.
+- Los ejemplos usan códigos y estados ficticios; sin credenciales, tokens ni datos personales.
 
 
 
