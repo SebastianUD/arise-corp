@@ -549,13 +549,13 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - `AJUSTE` sin observación bloqueado localmente sin petición, existencia resultante tras el 201 y 409 `EXISTENCIA_INSUFICIENTE` junto a la cantidad con los valores conservados
     - _Requisitos: 23.8–23.11, 27.5, 27.7_
 
-- [ ] 26. Implementar la vista de indicadores del SGA
-  - [ ] 26.1 Implementar `pages/sga/IndicadoresSga.jsx`
+- [x] 26. Implementar la vista de indicadores del SGA
+  - [x] 26.1 Implementar `pages/sga/IndicadoresSga.jsx`
     - Área: frontend · Responsable: Paula
     - Tres secciones: paquetes con los seis estados y el total, drones con los cuatro estados y el total, y artículos bajo stock mínimo sobre el total con el enlace "Ver artículos bajo stock mínimo" a `/sga/inventario?bajoStockMinimo=true`; los estados con 0 se muestran; carga con `EstadoConsulta` y error con "Reintentar"
     - _Requisitos: 24.1–24.5, SGA-06, NF-06_
 
-  - [ ] 26.2 Escribir `pages/sga/IndicadoresSga.test.jsx`
+  - [x] 26.2 Escribir `pages/sga/IndicadoresSga.test.jsx`
     - Área: frontend · Responsable: Paula
     - Estados con 0 visibles, totales, enlace a los artículos bajo stock mínimo, y carga y error con "Reintentar"
     - _Requisitos: 24.1–24.5, 27.5, 27.7_
