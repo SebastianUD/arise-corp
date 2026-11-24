@@ -361,12 +361,13 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Concurrencia con dos hilos y un `CountDownLatch` (D10): dos asignaciones del mismo dron a paquetes distintos terminan en un 201 y un 409, con un solo paquete en curso; dos `SALIDA` de 7 sobre una existencia de 10 terminan en un 201 y un 409 `EXISTENCIA_INSUFICIENTE`, con existencia final 3
     - _Requisitos: 10.5, 11.12, 15.9, 15.10, 26.7, 26.8, DP-SEG-06, ENG-03_
 
-- [ ] 15. Aplicar la migración del SGA en `arise-corp-dev`
-  - [ ] 15.1 Aplicar la migración revisada de forma controlada
+- [x] 15. Aplicar la migración del SGA en `arise-corp-dev`
+  - [x] 15.1 Aplicar la migración revisada de forma controlada
     - Área: base de datos · Responsable: Davidson
     - Requisitos previos: revisión 2.3 aprobada y `MigracionesSgaIT` (14.2) en verde. Aplicar con el mismo procedimiento controlado de la tarea 15.1 de `003-erp-empleados-proveedores-finanzas` (D21)
     - Ejecutar las consultas de verificación del diseño (`pg_class.relrowsecurity` y `has_table_privilege` de `anon` y `authenticated` sobre las cinco tablas) y confirmar en Supabase (Settings → Data API → Exposed schemas) que `app` sigue fuera de la lista
     - Registrar en este `tasks.md` solo resultado, fecha y entorno, sin UUID, credenciales ni datos personales. Desde aquí la migración no se edita; un cambio de esquema llega en una migración nueva
+    - Evidencia (2026-11-24): aplicada en `arise-corp-dev` y registrada en `supabase_migrations.schema_migrations` con la versión `20261121120000` y el nombre `app_sga_drones_paquetes_inventario`. Verificado sobre las cinco tablas: están vacías, tienen RLS activo (`pg_class.relrowsecurity`), no conceden `select`, `insert`, `update` ni `delete` a `anon` ni a `authenticated` (`has_table_privilege`), usan `uuid`, `smallint`, `integer`, `bigint` y `timestamptz`, y conservan las FK a `app.clientes`, `app.contratos`, `app.drones`, `app.paquetes` y `app.articulos_inventario` y los índices previstos (incluido el único parcial `paquetes_dron_en_curso_uk`). El backend de la rama arrancó con `docker compose up backend` contra `arise-corp-dev` (`ddl-auto=validate`) y `GET /api/sga/drones` respondió 401 con `WWW-Authenticate`. La comprobación de "Exposed schemas" en el panel de Supabase queda manual.
     - _Requisitos: 2.12, 29.8, DP-TEC-03, DP-SEG-05, NF-01_
 
 - [x] 16. Verificar la imagen Docker y los workflows con el SGA
