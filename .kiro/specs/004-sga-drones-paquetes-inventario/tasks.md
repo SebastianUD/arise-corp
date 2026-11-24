@@ -450,14 +450,14 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - **Property 2: El dron solo cambia a mano entre sus estados manuales y sin paquete en curso** (`transicionesManualesDron` para cuatro estados × con y sin paquete en curso) · **Validates: Requirements 21.9, 21.10**
     - _Requisitos: 27.2, NF-07_
 
-- [ ] 20. Incorporar el menú y las tarjetas del SGA
-  - [ ] 20.1 Ampliar `components/AppLayout.jsx` con el grupo SGA
+- [x] 20. Incorporar el menú y las tarjetas del SGA
+  - [x] 20.1 Ampliar `components/AppLayout.jsx` con el grupo SGA
     - Área: frontend · Responsable: Paula
     - Crear `frontend/public/assets/sga.svg`, un SVG estático propio sin datos ni referencias externas
     - `const sga = opcionesMenuSga(rol)`; si no está vacío, `GrupoMenu` "SGA" con el icono y los cuatro enlaces debajo del grupo ERP; sección "SGA" en la ruta de navegación cuando `pathname.startsWith('/sga/')`; título de la página buscado en `[...opciones, ...erp, ...sga]`. Los menús CRM y ERP no cambian; OPERACIONES conserva Clientes y Contratos en modo consulta
     - _Requisitos: 20.5–20.7, 20.11, DP-PRO-01_
 
-  - [ ] 20.2 Ampliar `pages/Panel.jsx` con las tarjetas SGA
+  - [x] 20.2 Ampliar `pages/Panel.jsx` con las tarjetas SGA
     - Área: frontend · Responsable: Paula
     - Si `puedeGestionarSga(rol)`, una tarjeta por cada elemento de `OPCIONES_SGA` con `<small>SGA</small>`, el título y el enlace `accion →`; ninguna tarjeta SGA para COMERCIAL ni FINANZAS_RRHH
     - _Requisitos: 20.7, 20.8, SGA-06_

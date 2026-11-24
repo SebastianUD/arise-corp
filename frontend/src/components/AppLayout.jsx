@@ -2,7 +2,7 @@ import { Suspense, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import { PerfilProvider, usePerfil } from '../context/PerfilContext.jsx'
-import { etiquetasRol, opcionesMenu, opcionesMenuErp, puedeLeerClientes } from '../lib/permisos.js'
+import { etiquetasRol, opcionesMenu, opcionesMenuErp, opcionesMenuSga, puedeLeerClientes } from '../lib/permisos.js'
 import GrupoMenu from './GrupoMenu.jsx'
 
 function EspacioTrabajo() {
@@ -14,10 +14,11 @@ function EspacioTrabajo() {
   const [grupoAbierto, setGrupoAbierto] = useState(null)
   const opciones = opcionesMenu(rol)
   const erp = opcionesMenuErp(rol)
+  const sga = opcionesMenuSga(rol)
   const crm = opciones.filter(opcion => opcion.ruta.startsWith('/crm/'))
   const usuarios = opciones.find(opcion => opcion.ruta === '/admin/usuarios')
-  const seccion = pathname.startsWith('/erp/') ? 'ERP' : pathname.startsWith('/crm/') ? 'CRM' : pathname.startsWith('/admin/') ? 'Seguridad' : 'Inicio'
-  const actual = [...opciones, ...erp].find(opcion => pathname === opcion.ruta || pathname.startsWith(opcion.ruta + '/'))
+  const seccion = pathname.startsWith('/sga/') ? 'SGA' : pathname.startsWith('/erp/') ? 'ERP' : pathname.startsWith('/crm/') ? 'CRM' : pathname.startsWith('/admin/') ? 'Seguridad' : 'Inicio'
+  const actual = [...opciones, ...erp, ...sga].find(opcion => pathname === opcion.ruta || pathname.startsWith(opcion.ruta + '/'))
   const titulo = actual?.texto ?? (pathname === '/panel' ? 'Panel general' : 'Perfil')
 
   function cambiarTema() {
@@ -38,6 +39,9 @@ function EspacioTrabajo() {
         {erp.length > 0 && <GrupoMenu nombre="ERP" icono="/assets/erp.svg" opciones={erp}
           abierto={grupoAbierto === 'ERP'} activo={seccion === 'ERP'}
           onToggle={() => setGrupoAbierto(grupoAbierto === 'ERP' ? null : 'ERP')} />}
+        {sga.length > 0 && <GrupoMenu nombre="SGA" icono="/assets/sga.svg" opciones={sga}
+          abierto={grupoAbierto === 'SGA'} activo={seccion === 'SGA'}
+          onToggle={() => setGrupoAbierto(grupoAbierto === 'SGA' ? null : 'SGA')} />}
       </nav>
       <div className="nav-tools">
         {usuarios && <NavLink to={usuarios.ruta} className="nav-item"><img src="/assets/usuarios.svg" alt="" />{usuarios.texto}</NavLink>}
