@@ -334,7 +334,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
   - Área: verificación · Responsable: Sebastián
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/` sin Docker, sin Supabase y sin `.env` (Requirement 25.10), con las pruebas de `001-foundation`, `002-crm-clientes-contratos` y `003-erp-empleados-proveedores-finanzas` en verde, incluidas `CrmAutorizacionTests` y `ClienteControllerTests` sin cambios (Requirement 25.9). Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
-- [ ] 14. Implementar las pruebas de integración del SGA con PostgreSQL efímero
+- [x] 14. Implementar las pruebas de integración del SGA con PostgreSQL efímero
   - [x] 14.1 Ampliar `PostgresIntegracionBase`
     - Área: backend · Responsable: Sebastián
     - El `truncate` de `@BeforeEach` incluye `app.movimientos_inventario`, `app.articulos_inventario`, `app.historial_estados_paquete`, `app.paquetes` y `app.drones` antes de las tablas del ERP, del CRM, `app.perfiles_usuario` y `auth.users`, con `cascade`, según el diseño. Requiere la migración de la tarea 2.1. `MigracionesSupabase`, `PostgresContenedorConfig`, el Script_Preparacion_IT y `pom.xml` no cambian
@@ -347,7 +347,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - RLS activo (`relrowsecurity = true`) y `has_table_privilege` falso para `anon` y `authenticated` en `select`, `insert`, `update` y `delete` sobre las cinco tablas
     - _Requisitos: 2.1–2.14, 26.1–26.4, DP-SEG-05, ENG-03_
 
-  - [ ] 14.3 Escribir `FlujoSgaIT`
+  - [x] 14.3 Escribir `FlujoSgaIT`
     - Área: backend · Responsable: Sebastián
     - Por MockMvc contra PostgreSQL: cliente activo con contrato `ACTIVO` creados por COMERCIAL; dron y paquete asociado a ambos creados por OPERACIONES; transiciones `ASIGNADO`, `EN_TRANSITO` y `ENTREGADO`; historial con cuatro registros encadenados y el `sub` del actor; dron en `DISPONIBLE`, `EN_MISION` y de nuevo `DISPONIBLE`; conteos del resumen (CA-05)
     - Recorridos `EN_TRANSITO→DEVUELTO` y `ASIGNADO→CANCELADO` con el dron de nuevo asignable; con un conjunto pequeño de datos, filtros de paquetes por estado, cliente y dron, `asignable` de drones (cuatro estados × con y sin paquete en curso) y `bajoStockMinimo` de artículos (existencia menor, igual y mayor que el mínimo, y mínimo 0); el nombre del cliente cambiado en el CRM se refleja en el detalle del paquete
@@ -355,7 +355,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - **Property 5: El historial está encadenado** (contra PostgreSQL) · **Validates: Requirements 12.2, 12.3, 12.5**
     - _Requisitos: 8.8, 26.5, 26.6, 26.9, CA-04, CA-05, ENG-03_
 
-  - [ ] 14.4 Escribir `SgaTransaccionIT`
+  - [x] 14.4 Escribir `SgaTransaccionIT`
     - Área: backend · Responsable: Sebastián
     - Un `TransactionTemplate` que llama a `PaqueteService.cambiarEstado` (`ASIGNADO→EN_TRANSITO`) y después lanza una excepción deja el estado, el historial y el dron anteriores; lo mismo con `MovimientoInventarioService.registrar` y la existencia
     - Concurrencia con dos hilos y un `CountDownLatch` (D10): dos asignaciones del mismo dron a paquetes distintos terminan en un 201 y un 409, con un solo paquete en curso; dos `SALIDA` de 7 sobre una existencia de 10 terminan en un 201 y un 409 `EXISTENCIA_INSUFICIENTE`, con existencia final 3
@@ -780,6 +780,21 @@ Alcance respetado:
 
 - No se cambió código de producción ni pruebas de los módulos anteriores; el checkpoint solo ejecuta y registra la regresión.
 - Sin credenciales, tokens ni datos personales en este registro.
+
+### Pruebas de integración del SGA con PostgreSQL efímero (tareas 14.3 y 14.4)
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 14.3 | `integration/FlujoSgaIT` | 4 pruebas por MockMvc contra PostgreSQL 17 efímero, con perfiles COMERCIAL y OPERACIONES persistidos y el `PerfilJwtAuthenticationConverter` real. Flujo completo: cliente y contrato creados por COMERCIAL y activado el contrato, dron y paquete asociados creados por OPERACIONES, transiciones `ASIGNADO` → `EN_TRANSITO` → `ENTREGADO`, dron `DISPONIBLE` → `DISPONIBLE` → `EN_MISION` → `DISPONIBLE`, historial de cuatro registros encadenados con el `sub` del actor y el dron solo en `ASIGNADO`, y conteos del resumen. Recorridos `EN_TRANSITO → DEVUELTO` y `ASIGNADO → CANCELADO` con el dron de nuevo asignable. Filtros de paquetes por `estado`, `clienteId` y `dronId`; `asignable` con los cuatro estados de dron con y sin paquete en curso (solo el `DISPONIBLE` sin paquete resulta asignable) y `bajoStockMinimo` con existencia menor, igual y mayor que el mínimo y mínimo 0. El nombre del cliente actualizado por el CRM se refleja en el detalle del paquete |
+| 14.4 | `integration/SgaTransaccionIT` | 4 pruebas: un `TransactionTemplate` que llama a `PaqueteService.cambiarEstado` (`ASIGNADO → EN_TRANSITO`) y después lanza una excepción conserva el estado `ASIGNADO`, los dos registros del historial y el dron `DISPONIBLE`; lo mismo con `MovimientoInventarioService.registrar` y la existencia 10 con un solo movimiento. Con dos hilos y un `CountDownLatch`, dos asignaciones del mismo dron a paquetes distintos dejan un 201 y un 409 de dron (`DRON_CON_PAQUETE_EN_CURSO` o `DRON_NO_DISPONIBLE`), un solo paquete en curso y el otro en `REGISTRADO`; dos `SALIDA` de 7 sobre una existencia de 10 dejan un 201 y un 409 `EXISTENCIA_INSUFICIENTE`, existencia final 3 y una sola salida registrada |
+
+Verificación: `.\mvnw.cmd -B verify "-Dit.test=FlujoSgaIT,SgaTransaccionIT"` desde `backend/` → **8 pruebas de integración, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS** con Docker y `postgres:17-alpine`. Regresión completa: `.\mvnw.cmd -B verify` → **1418 pruebas unitarias y 52 pruebas de integración, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**, incluidas `MigracionesSgaIT`, `FlujoSgaIT` y `SgaTransaccionIT` en la misma ejecución de Failsafe.
+
+Alcance respetado:
+
+- Solo se añadieron `FlujoSgaIT` y `SgaTransaccionIT`; no se modificaron las entidades, servicios, repositorios, controladores ni migraciones del SGA, ni los módulos anteriores.
+- Las IT usan el PostgreSQL efímero de `PostgresContenedorConfig` y todas las migraciones de `supabase/migrations/`, sin copiarlas, sin red hacia Supabase y sin `.env` ni credenciales de `arise-corp-dev`.
+- Sin credenciales, tokens, UUID personales ni datos personales en este registro.
 
 
 
