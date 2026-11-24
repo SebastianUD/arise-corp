@@ -811,5 +811,24 @@ Alcance respetado:
 - No se añadieron dependencias, variables de entorno ni secretos, y no se copiaron datos de `.env`.
 - Los ejemplos usan códigos y estados ficticios; sin credenciales, tokens ni datos personales.
 
+### Verificación de la imagen Docker (primera mitad de la tarea 16.1)
+
+| Comprobación | Resultado |
+|---|---|
+| `docker build -t arise-backend:local backend` | Imagen construida sin credenciales ni conexión a Supabase, con la etapa Maven y `-Dmaven.test.skip=true`; `arise-backend:local`, 591 MB |
+| `docker run --rm --entrypoint sh arise-backend:local -c "find / -name '.env*' 2>/dev/null"` | Sin resultados: la imagen no contiene `.env` ni `.env.*` |
+| `docker history --no-trunc arise-backend:local` | Solo aparecen los `ENV` de la imagen base (`JAVA_VERSION`, `LANG`, `PATH`, `JAVA_HOME`) y los comandos del `Dockerfile`; ningún valor de configuración de la aplicación |
+| `docker image inspect arise-backend:local` | `User=arise` (uid y gid 999, sin privilegios) y `Config.Env` con las cinco variables de la imagen base |
+| Contenido de `/app` | Solo `app.jar`; sin `src/test`, sin `target` y sin archivos de configuración local |
+| `git diff main -- backend/Dockerfile backend/.dockerignore docker-compose.yml` | Sin cambios (D22) |
+
+Pendiente (segunda mitad): `docker compose up backend` con `backend/.env` y `curl -i http://localhost:8080/api/sga/drones` → 401 con `WWW-Authenticate`, bloqueado por la migración de la tarea 15.1 (Davidson). `spring.jpa.hibernate.ddl-auto=validate` hace fallar el arranque si faltan las tablas del SGA, así que la comprobación se hará cuando 15.1 esté aplicada.
+
+Alcance respetado:
+
+- No se abrió, leyó ni mostró `backend/.env`; el build no recibe credenciales.
+- No se modificaron `backend/Dockerfile`, `backend/.dockerignore` ni `docker-compose.yml`.
+- Sin credenciales, tokens ni valores de configuración en este registro.
+
 
 
