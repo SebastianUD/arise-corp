@@ -233,14 +233,15 @@
 .sga-panel dd { margin-top: 6px; white-space: pre-wrap; }
 .sga-panel table { min-width: 540px; }
 .sga-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 24px; }
-.sga-checkbox { display: flex; align-items: center; gap: 10px; min-height: 44px; }
-.sga-checkbox input { accent-color: var(--link); }
+.sga-checkbox { display: flex; align-items: center; gap: 10px; min-height: 44px; flex: 1 1 200px; }
+.sga-checkbox input { accent-color: var(--link); width: 18px; height: 18px; min-height: 18px; padding: 0; flex: 0 0 18px; }
 .sga-vacio { padding: 40px 24px; text-align: center; color: var(--muted); }
 .sga-vacio h2 { color: var(--ink); }
 .sga-panel :is(button,a,input,select,textarea):focus-visible { outline: 2px solid var(--link); outline-offset: 3px; }
 .sga-panel button:disabled { opacity: .6; cursor: wait; }
 @media (max-width: 540px) {
   .sga-panel .crm-filtros > div { width: 100%; }
+  .sga-panel .sga-checkbox { flex-basis: 100%; }
   .sga-panel .crm-cabecera > .button { width: 100%; }
   .sga-panel .surface,.sga-panel > form,.sga-panel > dl { padding: 18px; }
 }

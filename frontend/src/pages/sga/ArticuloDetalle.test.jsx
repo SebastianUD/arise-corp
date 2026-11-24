@@ -27,10 +27,10 @@ it('muestra la existencia resultante y recarga artículo y movimientos tras el 2
   escribir(/^Cantidad/, '10')
   api.obtenerArticulo.mockResolvedValue({ ...articulo, existencia: 16, bajoStockMinimo: false })
   fireEvent.click(screen.getByRole('button', { name: 'Registrar movimiento' }))
-  expect(await screen.findByRole('status')).toHaveTextContent('Existencia resultante: 16')
+  expect(await screen.findByText('Existencia resultante: 16')).toHaveAttribute('role', 'status')
   await waitFor(() => expect(api.listarMovimientosInventario).toHaveBeenCalledTimes(2))
   expect(api.obtenerArticulo).toHaveBeenCalledTimes(2)
-  expect(screen.queryByText('Bajo stock')).not.toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByText('Bajo stock')).not.toBeInTheDocument())
 })
 it('muestra EXISTENCIA_INSUFICIENTE bajo cantidad y conserva los valores tras recargar', async () => {
   api.registrarMovimientoInventario.mockRejectedValue({ status: 409, conflicto: 'EXISTENCIA_INSUFICIENTE', message: 'Solo hay 6 unidades disponibles.' })

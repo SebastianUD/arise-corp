@@ -10,6 +10,6 @@ const columnas = [
   { titulo: 'Stock mínimo', valor: a => numeroSga(a.stockMinimo) },
 ]
 export default function ArticulosLista() {
-  return <VistaListaSga titulo="Inventario" descripcion="Controla las existencias y anticipa las necesidades de tu operación." ruta="/sga/inventario" nuevo="Nuevo artículo"
+  return <VistaListaSga titulo="Inventario" descripcion="Controla las existencias y anticipa las necesidades de tu operación." ruta="/sga/inventario" nuevo="Nuevo artículo" etiquetaBusqueda="Buscar por código o nombre"
     consultar={listarArticulos} filtro={{ etiqueta: 'Categoría', campo: 'categoria', valores: CATEGORIAS_ARTICULO }} columnas={columnas} vacio="No hay artículos para los criterios elegidos." inventario />
 }

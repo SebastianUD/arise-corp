@@ -10,6 +10,6 @@ const columnas = [
   { titulo: 'Estado', valor: dron => <EstadoDronEtiqueta estado={dron.estado} /> },
 ]
 export default function DronesLista() {
-  return <VistaListaSga titulo="Drones" descripcion="Consulta tu flota y su disponibilidad para las entregas." ruta="/sga/drones" nuevo="Nuevo dron"
+  return <VistaListaSga titulo="Drones" descripcion="Consulta tu flota y su disponibilidad para las entregas." ruta="/sga/drones" nuevo="Nuevo dron" etiquetaBusqueda="Buscar por código o modelo"
     consultar={listarDrones} filtro={{ etiqueta: 'Estado', campo: 'estado', valores: ESTADOS_DRON }} columnas={columnas} vacio="No hay drones para los criterios elegidos." />
 }

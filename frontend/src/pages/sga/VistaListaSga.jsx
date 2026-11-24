@@ -13,7 +13,7 @@ export const erroresCampos = error => ({
   ...(error.campo ? { [error.campo]: error.message } : {}),
 })
 
-export default function VistaListaSga({ titulo, descripcion, ruta, nuevo, consultar, filtro, columnas, vacio, inventario = false }) {
+export default function VistaListaSga({ titulo, descripcion, ruta, nuevo, consultar, filtro, columnas, vacio, inventario = false, etiquetaBusqueda = 'Buscar por código o descripción' }) {
   const [params, setParams] = useSearchParams()
   const consulta = useConsulta(useCallback(() => consultar(Object.fromEntries(params)), [consultar, params]))
   const pagina = consulta.datos
@@ -32,7 +32,7 @@ export default function VistaListaSga({ titulo, descripcion, ruta, nuevo, consul
     <header className="crm-cabecera"><div><p className="sga-eyebrow">SGA · Operaciones</p><h1>{titulo}</h1><p>{descripcion}</p></div>
       <Link className="button" to={ruta + '/nuevo'}>{nuevo}</Link></header>
     <form className="crm-filtros" key={params.toString()} onSubmit={filtrar}>
-      <Campo etiqueta="Buscar por código o descripción"><input type="search" name="q" maxLength={100} defaultValue={params.get('q') ?? ''} placeholder="Escribe para buscar" /></Campo>
+      <Campo etiqueta={etiquetaBusqueda}><input type="search" name="q" maxLength={100} defaultValue={params.get('q') ?? ''} placeholder="Escribe para buscar" /></Campo>
       <Campo etiqueta={filtro.etiqueta}><select name={filtro.campo} defaultValue={params.get(filtro.campo) ?? ''}>
         <option value="">Todos</option>{filtro.valores.map(valor => <option key={valor} value={valor}>{etiquetaSga(valor)}</option>)}
       </select></Campo>

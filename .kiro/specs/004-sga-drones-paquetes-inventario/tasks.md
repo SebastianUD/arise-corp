@@ -578,9 +578,11 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - `structure.md`: `pages/sga`, `components/EstadoPaqueteEtiqueta`, `components/EstadoDronEtiqueta`, `SelectorRegistro` con `textoVacio`, `services/sgaApi.js`, `lib/validacionSga.js` y `public/assets/sga.svg`. `architecture.md`: la SPA presenta las vistas SGA. `product.md`: vistas SGA del frontend implementadas en "Estado actual"
     - _Requisitos: 29.3, 29.4, CA-01, CA-07_
 
-- [ ] 29. Checkpoint del frontend
+- [x] 29. Checkpoint del frontend
   - Área: verificación · Responsable: Paula
   - Ejecutar desde `frontend/` `npm test`, `npm run build` y `npm run check:secrets` (Requirements 27.8, 27.9). Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
+  - Verificación (2026-11-24): `npm test -- --reporter=dot`, 39 archivos y 375 pruebas aprobadas; `npm run build` y `npm run check:secrets` aprobados. Se incluyen las suites anteriores de autenticación, CRM y ERP.
+  - Revisión en navegador con sesión y API ficticias: las 13 rutas SGA a 390 × 844 sin desbordamiento de página; detalle del paquete a 768 × 1024; listas e indicadores en escritorio; temas claro/oscuro, campos, etiquetas y tablas con desplazamiento dentro de su contenedor. Comprobada la validación de dron obligatorio. Ajustadas la casilla de bajo stock en móvil y las etiquetas de búsqueda. Configuración temporal de QA retirada.
 
 - [ ] 30. Validar el SGA y el flujo integrado de extremo a extremo con Supabase real
   - [ ] 30.1 Validar el flujo cliente → contrato → paquete → estado y trazabilidad (CA-05)
