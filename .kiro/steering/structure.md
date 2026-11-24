@@ -58,7 +58,7 @@ arise-corp/
 │           ├── crm/                          # pruebas *Tests en el paquete de la clase probada
 │           ├── sga/                          # pruebas *Tests y datos ficticios del SGA
 │           └── integration/                  # pruebas PostgreSQL *IT (Failsafe)
-├── frontend/                                # SPA React con acceso, perfil y vistas CRM y ERP
+├── frontend/                                # SPA React con acceso, perfil y vistas CRM, ERP y SGA
 ├── supabase/migrations/                     # migraciones de perfiles, CRM, ERP y SGA      [Implementado]
 │   ├── 20261108000000_app_perfiles_usuario.sql
 │   ├── 20261111120000_app_crm_clientes_contratos.sql
@@ -118,12 +118,12 @@ com.arise.corp
 - Comentarios y encabezados de sección de `application.properties` en español.
 
 ## Frontend [Aprobado, MVP §9]
-La SPA organiza las vistas de acceso, perfil, CRM y ERP en `frontend/src/`. La sección 11.6 del README enumera las rutas disponibles por rol. El frontend ERP está implementado sobre el contrato de la spec 003; su validación con Supabase real sigue pendiente del backend y la migración. Las vistas del SGA (`pages/sga`, `services/sgaApi.js`, `lib/validacionSga.js`, las etiquetas de estado y el icono `public/assets/sga.svg`) se implementan en las tareas 19–28 de la spec 004.
+La SPA organiza las vistas de acceso, perfil, CRM, ERP y SGA en `frontend/src/`. La sección 11.6 del README enumera las rutas disponibles por rol. El frontend ERP está implementado sobre el contrato de la spec 003; su validación con Supabase real sigue pendiente del backend y la migración. Las vistas del SGA están implementadas (tareas 19–28 de la spec 004), con API simulada en las pruebas y validación real pendiente. `pages/sga/` contiene diez páginas y los componentes internos `VistaListaSga` (búsqueda, filtros, tabla y paginación) y `FormularioRegistroSga` (alta/edición de drones y artículos). `SelectorRegistro` acepta `textoVacio` (por defecto «Sin asociación»). `EstadoPaqueteEtiqueta` y `EstadoDronEtiqueta` usan las clases de estado existentes. El menú usa `public/assets/sga.svg`.
 
 ```text
 frontend/
 ├── .env.example      # solo variables VITE_* públicas
-├── public/assets/erp.svg           # icono estático del menú ERP
+├── public/assets/{erp,sga}.svg     # iconos estáticos de los menús ERP y SGA
 └── src/
     ├── App.jsx                    # registro de rutas y agrupación por permiso
     ├── pages/                     # Login.jsx y Perfil.jsx
@@ -135,8 +135,10 @@ frontend/
     │   ├── AuthContext.jsx        # sesión de Supabase
     │   └── PerfilContext.jsx      # perfil y rol compartidos de GET /api/me
     ├── components/
-    │   ├── AppLayout.jsx          # cabecera privada, menú CRM/ERP por rol y salida de sesión
-    │   ├── SelectorRegistro.jsx   # búsqueda y asociación de cliente/proveedor, conserva inactivos actuales
+    │   ├── AppLayout.jsx          # cabecera privada, menú CRM/ERP/SGA por rol y salida de sesión
+    │   ├── SelectorRegistro.jsx   # búsqueda y asociación de cliente/proveedor, conserva inactivos actuales; prop textoVacio
+    │   ├── EstadoPaqueteEtiqueta.jsx # seis estados del paquete
+    │   ├── EstadoDronEtiqueta.jsx    # cuatro estados del dron
     │   └── EstadoMovimientoEtiqueta.jsx # pendiente, pagado o anulado
     ├── routes/
     │   ├── ProtectedRoute.jsx     # comprueba la sesión
@@ -145,13 +147,13 @@ frontend/
     │   ├── apiClient.js           # cliente HTTP autenticado y errores de la API
     │   ├── crmApi.js              # consultas y escrituras del CRM
     │   ├── erpApi.js              # consultas y escrituras del ERP con importes como texto
-    │   └── sgaApi.js              # consultas y escrituras del SGA (spec 004, tareas 19-28)
+    │   └── sgaApi.js              # 18 operaciones del contrato del SGA
     └── lib/
         ├── supabase.js            # cliente de autenticación
         ├── permisos.js            # menú, permisos y transiciones visibles
         ├── validacionCrm.js       # normalización y validación de formularios
         ├── validacionErp.js       # documentos, importes positivos, asociaciones y fechas de Colombia
-        ├── validacionSga.js       # validación del SGA (spec 004, tareas 19-28)
+        ├── validacionSga.js       # códigos, UUID, transiciones y cantidades enteras del SGA
         └── formato.js             # importes en COP, fechas e instantes en es-CO
 ```
 

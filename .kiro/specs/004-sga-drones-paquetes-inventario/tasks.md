@@ -571,8 +571,8 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Menú y tarjetas SGA por rol; una ruta `/sga/*` con COMERCIAL o FINANZAS_RRHH muestra el mensaje de permisos sin peticiones a la API; OPERACIONES conserva Clientes y Contratos y no ve el ERP; las pruebas existentes siguen en verde
     - _Requisitos: 20.5–20.9, 27.6, 27.7, 27.8_
 
-- [ ] 28. Documentar el frontend del SGA
-  - [ ] 28.1 Actualizar la documentación del frontend
+- [x] 28. Documentar el frontend del SGA
+  - [x] 28.1 Actualizar la documentación del frontend
     - Área: documentación · Responsable: Paula
     - README §11.6: subsección "Vistas del SGA por rol" con la tabla de rutas `/sga/*` y sus roles (ADMINISTRADOR y OPERACIONES) y la nota de que OPERACIONES consulta clientes y contratos en modo lectura para asociarlos a paquetes; comandos `npm test`, `npm run build` y `npm run check:secrets`, sin variables nuevas
     - `structure.md`: `pages/sga`, `components/EstadoPaqueteEtiqueta`, `components/EstadoDronEtiqueta`, `SelectorRegistro` con `textoVacio`, `services/sgaApi.js`, `lib/validacionSga.js` y `public/assets/sga.svg`. `architecture.md`: la SPA presenta las vistas SGA. `product.md`: vistas SGA del frontend implementadas en "Estado actual"
