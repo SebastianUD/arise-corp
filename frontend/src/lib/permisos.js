@@ -21,6 +21,26 @@ export const OPCIONES_ERP = [
 ]
 export const opcionesMenuErp = rol => puedeGestionarErp(rol) ? OPCIONES_ERP : []
 
+export const puedeGestionarSga = rol => rol === 'ADMINISTRADOR' || rol === 'OPERACIONES'
+export const TRANSICIONES_PAQUETE = {
+  REGISTRADO: ['ASIGNADO', 'CANCELADO'], ASIGNADO: ['EN_TRANSITO', 'CANCELADO'],
+  EN_TRANSITO: ['ENTREGADO', 'DEVUELTO'], ENTREGADO: [], CANCELADO: [], DEVUELTO: [],
+}
+export const esPaqueteFinal = estado => (TRANSICIONES_PAQUETE[estado] ?? []).length === 0
+export const esPaqueteEditable = estado => estado === 'REGISTRADO' || estado === 'ASIGNADO'
+export const TRANSICIONES_MANUALES_DRON = {
+  DISPONIBLE: ['MANTENIMIENTO', 'FUERA_DE_SERVICIO'], MANTENIMIENTO: ['DISPONIBLE', 'FUERA_DE_SERVICIO'],
+  FUERA_DE_SERVICIO: ['DISPONIBLE', 'MANTENIMIENTO'], EN_MISION: [],
+}
+export const transicionesManualesDron = dron => dron.paqueteEnCurso ? [] : TRANSICIONES_MANUALES_DRON[dron.estado] ?? []
+export const OPCIONES_SGA = [
+  { texto: 'Drones', ruta: '/sga/drones', accion: 'Gestionar drones' },
+  { texto: 'Paquetes', ruta: '/sga/paquetes', accion: 'Registrar y seguir paquetes' },
+  { texto: 'Inventario', ruta: '/sga/inventario', accion: 'Controlar inventario' },
+  { texto: 'Indicadores SGA', ruta: '/sga/resumen', accion: 'Ver indicadores' },
+]
+export const opcionesMenuSga = rol => puedeGestionarSga(rol) ? OPCIONES_SGA : []
+
 export const TRANSICIONES = {
   BORRADOR: ['ACTIVO', 'CANCELADO'],
   ACTIVO: ['FINALIZADO', 'CANCELADO'],

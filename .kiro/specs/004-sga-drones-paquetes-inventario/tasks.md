@@ -413,37 +413,37 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
   - Ejecutar desde `backend/` `.\mvnw.cmd clean test` y, con Docker en ejecución, `.\mvnw.cmd verify` (Requirement 26.12); desde la raíz, `docker compose build backend`. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
   - Evidencia (2026-11-24): `.\mvnw.cmd -B clean verify` con Docker: 1418 pruebas unitarias y 52 de integración, 0 fallos; `docker compose build backend` construye `arise-backend:local` sin errores.
 
-- [ ] 19. Implementar el servicio y las reglas de interfaz del SGA
-  - [ ] 19.1 Crear `services/sgaApi.js`
+- [x] 19. Implementar el servicio y las reglas de interfaz del SGA
+  - [x] 19.1 Crear `services/sgaApi.js`
     - Área: frontend · Responsable: Paula
     - Las 18 funciones de la tabla "Servicio del SGA" del diseño sobre `apiRequest` de `apiClient.js`, con una función local `listar(ruta, filtros)` igual a la de `erpApi.js`: solo añade a `URLSearchParams` los filtros con valor no nulo y no vacío después de `trim`
     - Exportar `cuerpoTransicion` (`dronId` solo con `ASIGNADO`) y `cuerpoMovimientoInventario` (`cantidad` como número entero); `crearArticulo` y `actualizarArticulo` envían `stockMinimo: Number(...)`. Se trabaja sobre el contrato de `design.md`, sin esperar al backend; `crmApi.js` no cambia
     - _Requisitos: 20.1–20.3, AUTH-03, DP-API-03, DP-API-04_
 
-  - [ ] 19.2 Escribir `services/sgaApi.test.js`
+  - [x] 19.2 Escribir `services/sgaApi.test.js`
     - Área: frontend · Responsable: Paula
     - `fetch` simulado con `vi.stubGlobal` y Supabase con `vi.mock('../lib/supabase.js')`: ruta, método, consulta sin parámetros vacíos y cuerpo JSON de cada función, sin llamadas de red reales; cantidades y stock mínimo como enteros JSON
     - **Property 3: Solo se asigna un dron asignable** (lado frontend: `cuerpoTransicion` incluye `dronId` si y solo si el estado es `ASIGNADO`, para los seis estados) · **Validates: Requirements 20.2**
     - **Property 8: Las cantidades se aceptan solo como enteros dentro del rango de su tipo** (cuerpo enviado como número entero JSON) · **Validates: Requirements 20.2**
     - _Requisitos: 27.1, 27.7, NF-07_
 
-  - [ ] 19.3 Crear `lib/validacionSga.js`
+  - [x] 19.3 Crear `lib/validacionSga.js`
     - Área: frontend · Responsable: Paula
     - `esCodigoValido`, `esEnteroEnRango(valor, min, max)` (texto sin espacios exteriores con `/^\d{1,7}$/` y `min ≤ n ≤ max`), `validarDron`, `validarPaquete`, `validarEdicionPaquete`, `validarTransicion`, `validarArticulo` y `validarMovimientoInventario`, con los límites y mensajes del contrato de API, a partir de `texto`, `revisar`, `maximo` y `normalizarCodigo` de `lib/validacionCrm.js`, que no cambia (D19)
     - _Requisitos: 21.5, 22.9, 22.13, 23.6, 23.9, NF-06_
 
-  - [ ] 19.4 Escribir `lib/validacionSga.test.js`
+  - [x] 19.4 Escribir `lib/validacionSga.test.js`
     - Área: frontend · Responsable: Paula
     - Con los generadores de `src/test/generadores.js` (sin cambios): textos de cantidad generados por tipo y bordes; reglas de código (también con espacios y minúsculas), longitudes, `dronId` obligatorio con `ASIGNADO` y observación obligatoria en `AJUSTE`
     - **Property 8: Las cantidades se aceptan solo como enteros dentro del rango de su tipo** (frontend) · **Validates: Requirements 23.6, 23.9**
     - _Requisitos: 27.2, NF-07_
 
-  - [ ] 19.5 Ampliar `lib/permisos.js`
+  - [x] 19.5 Ampliar `lib/permisos.js`
     - Área: frontend · Responsable: Paula
     - `puedeGestionarSga`, `TRANSICIONES_PAQUETE`, `esPaqueteFinal`, `esPaqueteEditable`, `TRANSICIONES_MANUALES_DRON`, `transicionesManualesDron`, `OPCIONES_SGA` y `opcionesMenuSga(rol)` según el diseño; `opcionesMenu(rol)` y el resto de funciones no cambian (D7, D18)
     - _Requisitos: 20.5–20.8, 21.9, 21.10, 22.7, 22.12, 22.15, DP-PRO-01_
 
-  - [ ] 19.6 Ampliar `lib/permisos.test.js`
+  - [x] 19.6 Ampliar `lib/permisos.test.js`
     - Área: frontend · Responsable: Paula
     - `puedeGestionarSga` y `opcionesMenuSga` para los cuatro roles, sin perfil y con un valor desconocido; los casos existentes no cambian
     - **Property 1: Solo se aplican las transiciones permitidas del paquete** (`TRANSICIONES_PAQUETE`, `esPaqueteEditable` y `esPaqueteFinal`) · **Validates: Requirements 22.7, 22.12, 22.15**

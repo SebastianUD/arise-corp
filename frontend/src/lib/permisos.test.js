@@ -43,3 +43,24 @@ it.each([
   expect(puedeLeerContratos(rol)).toBe(leeContratos)
   expect(opcionesMenu(rol)).toEqual(menu)
 })
+
+import { puedeGestionarSga, opcionesMenuSga, OPCIONES_SGA, TRANSICIONES_PAQUETE, esPaqueteEditable, esPaqueteFinal, transicionesManualesDron } from './permisos.js'
+
+it.each(['ADMINISTRADOR', 'OPERACIONES', 'COMERCIAL', 'FINANZAS_RRHH', null, 'DESCONOCIDO'])('aplica el acceso SGA a %s', rol => {
+  const permite = ['ADMINISTRADOR', 'OPERACIONES'].includes(rol)
+  expect(puedeGestionarSga(rol)).toBe(permite)
+  expect(opcionesMenuSga(rol)).toEqual(permite ? OPCIONES_SGA : [])
+})
+
+const destinos = { REGISTRADO: ['ASIGNADO', 'CANCELADO'], ASIGNADO: ['EN_TRANSITO', 'CANCELADO'], EN_TRANSITO: ['ENTREGADO', 'DEVUELTO'], ENTREGADO: [], CANCELADO: [], DEVUELTO: [] }
+it.each(Object.keys(destinos))('Feature: 004-sga-drones-paquetes-inventario, Property 1: Solo se aplican las transiciones permitidas del paquete (%s)', estado => {
+  expect(TRANSICIONES_PAQUETE[estado]).toEqual(destinos[estado])
+  expect(esPaqueteEditable(estado)).toBe(['REGISTRADO', 'ASIGNADO'].includes(estado))
+  expect(esPaqueteFinal(estado)).toBe(['ENTREGADO', 'CANCELADO', 'DEVUELTO'].includes(estado))
+})
+
+it.each(['DISPONIBLE', 'EN_MISION', 'MANTENIMIENTO', 'FUERA_DE_SERVICIO'].flatMap(estado => [false, true].map(ocupado => [estado, ocupado])))('Feature: 004-sga-drones-paquetes-inventario, Property 2: El dron solo cambia a mano entre sus estados manuales y sin paquete en curso (%s, %s)', (estado, ocupado) => {
+  expect(transicionesManualesDron({ estado, paqueteEnCurso: ocupado ? { id: 'p' } : null })).toEqual(
+    ocupado || estado === 'EN_MISION' ? [] : ['DISPONIBLE', 'MANTENIMIENTO', 'FUERA_DE_SERVICIO'].filter(destino => destino !== estado),
+  )
+})
