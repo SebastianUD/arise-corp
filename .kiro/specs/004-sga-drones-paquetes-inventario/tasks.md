@@ -474,23 +474,23 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
   - Ejecutar `npm test` desde `frontend/`: las pruebas nuevas del servicio y de las reglas pasan junto con las de `001-foundation`, `002-crm-clientes-contratos` y `003-erp-empleados-proveedores-finanzas`. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
   - Verificación (2026-11-24): `npm test -- --reporter=dot`, 33 archivos y 317 pruebas aprobadas, incluidas las suites de las specs anteriores. Sin cambios en backend ni dependencias.
 
-- [ ] 23. Implementar las vistas de drones
-  - [ ] 23.1 Implementar `pages/sga/DronesLista.jsx`
+- [x] 23. Implementar las vistas de drones
+  - [x] 23.1 Implementar `pages/sga/DronesLista.jsx`
     - Área: frontend · Responsable: Paula
     - Búsqueda `q`, filtro por Estado_Dron y paginación en la URL (`useSearchParams`), como `EmpleadosLista`; columnas código, modelo y estado con `EstadoDronEtiqueta`; "Nuevo dron"; "No hay drones para los criterios elegidos." si la página está vacía; carga con `EstadoConsulta`
     - _Requisitos: 21.1–21.3, SGA-01, DP-API-03_
 
-  - [ ] 23.2 Implementar `pages/sga/DronFormulario.jsx`
+  - [x] 23.2 Implementar `pages/sga/DronFormulario.jsx`
     - Área: frontend · Responsable: Paula
     - Alta y edición con `codigo` y `modelo` marcados con `*` y `observaciones` opcional; validación local con `validarDron` antes de enviar; `fieldset` deshabilitado y "Guardando…" durante el envío; errores 400 y 409 junto al campo (`errors[].field` o `campo`) sin perder lo escrito
     - _Requisitos: 21.4–21.7, SGA-01, NF-06_
 
-  - [ ] 23.3 Implementar `pages/sga/DronDetalle.jsx`
+  - [x] 23.3 Implementar `pages/sga/DronDetalle.jsx`
     - Área: frontend · Responsable: Paula
     - Datos, estado, auditoría del último cambio de estado con `formatoInstante` y enlace a `/sga/paquetes/{id}` del Paquete_En_Curso; botones de `transicionesManualesDron(dron)` ("Marcar como disponible", "Enviar a mantenimiento", "Poner fuera de servicio") con `DialogoConfirmacion` y `cambiarEstadoDron`; con `EN_MISION` o paquete en curso no muestra botones e indica "El dron tiene el paquete {código} en curso"; al recibir 200 muestra el nuevo estado; un 409 muestra el mensaje en `role="alert"` y vuelve a cargar el dron
     - _Requisitos: 21.8–21.12, SGA-01, SGA-05_
 
-  - [ ] 23.4 Escribir `pages/sga/DronDetalle.test.jsx`
+  - [x] 23.4 Escribir `pages/sga/DronDetalle.test.jsx`
     - Área: frontend · Responsable: Paula
     - Cambio manual oculto con paquete en curso o en `EN_MISION` y enlace al paquete; confirmación y `PATCH` con el nuevo estado tras el 200; recarga tras un 409
     - **Property 2: El dron solo cambia a mano entre sus estados manuales y sin paquete en curso** (botones ofrecidos en el detalle) · **Validates: Requirements 21.9, 21.10**

@@ -223,6 +223,27 @@
 .badge.inactivo { background: #fff0f1; color: #a31b39; }
 .badge.borrador { background: #fff3dc; color: #834b00; }
 .badge.finalizado { background: #eaf2ff; color: #1755a9; }
+.sga-panel { font-size: 1rem; }
+.sga-panel .sga-eyebrow { margin: 0 0 8px; color: var(--link); font-size: .875rem; font-weight: 600; }
+.sga-panel :is(label,.button,.secondary,table,.badge) { font-size: .875rem; }
+.sga-panel :is(input,select,textarea,fieldset) { min-width: 0; max-width: 100%; }
+.sga-panel :is(input:not([type="checkbox"]),select,textarea) { width: 100%; }
+.sga-panel :is(th,dt) { font-size: .875rem; color: var(--muted); }
+.sga-panel :is(td,dd,p) { overflow-wrap: anywhere; }
+.sga-panel dd { margin-top: 6px; white-space: pre-wrap; }
+.sga-panel table { min-width: 540px; }
+.sga-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 24px; }
+.sga-checkbox { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.sga-checkbox input { accent-color: var(--link); }
+.sga-vacio { padding: 40px 24px; text-align: center; color: var(--muted); }
+.sga-vacio h2 { color: var(--ink); }
+.sga-panel :is(button,a,input,select,textarea):focus-visible { outline: 2px solid var(--link); outline-offset: 3px; }
+.sga-panel button:disabled { opacity: .6; cursor: wait; }
+@media (max-width: 540px) {
+  .sga-panel .crm-filtros > div { width: 100%; }
+  .sga-panel .crm-cabecera > .button { width: 100%; }
+  .sga-panel .surface,.sga-panel > form,.sga-panel > dl { padding: 18px; }
+}
 .app-shell[data-tema="oscuro"] :is(.bg-white,dialog) { background: var(--panel); color: var(--ink); }
 .app-shell[data-tema="oscuro"] :is(.text-slate-600,.text-slate-900) { color: var(--muted); }
 .app-shell[data-tema="oscuro"] :is(.border-slate-200,.border-slate-300) { border-color: var(--line); }
