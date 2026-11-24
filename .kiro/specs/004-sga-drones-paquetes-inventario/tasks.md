@@ -527,24 +527,24 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - **Property 1: Solo se aplican las transiciones permitidas del paquete** (transiciones y edición ofrecidas en cada estado con `it.each`) · **Validates: Requirements 22.12, 22.15**
     - _Requisitos: 22.11–22.17, 27.4, 27.7_
 
-- [ ] 25. Implementar las vistas de inventario
-  - [ ] 25.1 Implementar `pages/sga/ArticulosLista.jsx`
+- [x] 25. Implementar las vistas de inventario
+  - [x] 25.1 Implementar `pages/sga/ArticulosLista.jsx`
     - Área: frontend · Responsable: Paula
     - Búsqueda, filtro por Categoria_Articulo y casilla "Solo bajo stock mínimo" (`bajoStockMinimo=true`) en la URL; columnas código, nombre, categoría, existencia con su unidad (`toLocaleString('es-CO')`), stock mínimo y la etiqueta "Bajo stock" cuando corresponde; "Nuevo artículo"; "No hay artículos para los criterios elegidos."; carga con `EstadoConsulta`
     - _Requisitos: 23.1–23.4, SGA-03, DP-API-03_
 
-  - [ ] 25.2 Implementar `pages/sga/ArticuloFormulario.jsx`
+  - [x] 25.2 Implementar `pages/sga/ArticuloFormulario.jsx`
     - Área: frontend · Responsable: Paula
     - `codigo`, `nombre`, selectores de categoría y unidad y `stockMinimo` (`inputMode="numeric"`), todos obligatorios y sin campo de existencia; validación local con `validarArticulo`; mismo tratamiento del envío y de los errores 400 y 409 que `DronFormulario`
     - _Requisitos: 23.5–23.7, SGA-03, NF-06_
 
-  - [ ] 25.3 Implementar `pages/sga/ArticuloDetalle.jsx`
+  - [x] 25.3 Implementar `pages/sga/ArticuloDetalle.jsx`
     - Área: frontend · Responsable: Paula
     - Datos, existencia con su unidad y etiqueta "Bajo stock"; formulario de movimiento con tipo, cantidad y observación que, con `AJUSTE`, muestra "La cantidad es la existencia contada y la observación es obligatoria."; validación local con `validarMovimientoInventario` y envío con `registrarMovimientoInventario`
     - Un 201 muestra "Existencia resultante: {n}" y vuelve a cargar el artículo y los movimientos; un 409 `EXISTENCIA_INSUFICIENTE` muestra el mensaje junto a la cantidad, conserva lo escrito y vuelve a cargar el artículo; tabla paginada de movimientos con fecha y hora, tipo, cantidad, existencia anterior, existencia resultante y observación
     - _Requisitos: 23.2, 23.8–23.12, SGA-03_
 
-  - [ ] 25.4 Escribir `pages/sga/ArticuloDetalle.test.jsx`
+  - [x] 25.4 Escribir `pages/sga/ArticuloDetalle.test.jsx`
     - Área: frontend · Responsable: Paula
     - `AJUSTE` sin observación bloqueado localmente sin petición, existencia resultante tras el 201 y 409 `EXISTENCIA_INSUFICIENTE` junto a la cantidad con los valores conservados
     - _Requisitos: 23.8–23.11, 27.5, 27.7_
