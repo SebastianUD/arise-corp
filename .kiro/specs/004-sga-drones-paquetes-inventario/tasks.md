@@ -469,9 +469,10 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - `components/EstadoPaqueteEtiqueta.jsx` (`REGISTRADO` y `ASIGNADO → borrador`, `EN_TRANSITO` y `ENTREGADO → activo`, `CANCELADO` y `DEVUELTO → inactivo`) y `components/EstadoDronEtiqueta.jsx` (`DISPONIBLE → activo`, `EN_MISION → borrador`, `MANTENIMIENTO → finalizado`, `FUERA_DE_SERVICIO → inactivo`), con las clases existentes. Ningún componente usa `dangerouslySetInnerHTML`
     - _Requisitos: 21.8, 22.1, 22.4, 22.11, NF-06_
 
-- [ ] 22. Checkpoint de la base del frontend
+- [x] 22. Checkpoint de la base del frontend
   - Área: verificación · Responsable: Paula
   - Ejecutar `npm test` desde `frontend/`: las pruebas nuevas del servicio y de las reglas pasan junto con las de `001-foundation`, `002-crm-clientes-contratos` y `003-erp-empleados-proveedores-finanzas`. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
+  - Verificación (2026-11-24): `npm test -- --reporter=dot`, 33 archivos y 317 pruebas aprobadas, incluidas las suites de las specs anteriores. Sin cambios en backend ni dependencias.
 
 - [ ] 23. Implementar las vistas de drones
   - [ ] 23.1 Implementar `pages/sga/DronesLista.jsx`
