@@ -608,7 +608,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - `git diff main` sin cambios en `pom.xml`, `package.json`, los `.env.example`, el Dockerfile, `.dockerignore`, `docker-compose.yml`, `.github/workflows` ni `SecurityConfig`; `product.md` indica que `004-sga-drones-paquetes-inventario` queda cerrada al integrar el PR. Registrar el resultado en este `tasks.md`
     - _Requisitos: 1.5, 1.8, 28.4–28.8, 29.1, 29.4, 29.6, CA-01, CA-07, NF-01, ENG-04_
 
-  - [ ] 32.2 Comprobar los checks obligatorios en la protección de `main`
+  - [x] 32.2 Comprobar los checks obligatorios en la protección de `main`
     - Área: CI · Responsable: Sebastián
     - La protección configurada en `002-crm-clientes-contratos` sigue activa: PR obligatorio con una aprobación de otro integrante, *squash merge*, rama actualizada antes de integrar y `backend-ci`, `integration-tests` y `frontend-ci` como checks obligatorios. Si algo cambió, restablecerlo sin guardar tokens ni credenciales en el repositorio
     - _Requisitos: 28.7, DP-SDD-05_
@@ -829,6 +829,29 @@ Alcance respetado:
 - No se abrió, leyó ni mostró `backend/.env`; el build no recibe credenciales.
 - No se modificaron `backend/Dockerfile`, `backend/.dockerignore` ni `docker-compose.yml`.
 - Sin credenciales, tokens ni valores de configuración en este registro.
+
+### Protección de `main` (tarea 32.2)
+
+Comprobación del 2026-11-23 con la API de GitHub (`GET /repos/SebastianUD/arise-corp/branches/main/protection`), usando la credencial del almacén local de Git Credential Manager sin escribirla ni mostrarla:
+
+| Ajuste | Valor comprobado |
+|---|---|
+| Pull request obligatorio | Sí, con **1 aprobación** |
+| Rama actualizada antes de integrar | `strict = true` |
+| Checks obligatorios | `backend-ci`, `integration-tests`, `frontend-ci` |
+| Conversaciones resueltas | Sí |
+| Reglas aplicadas a administradores | Sí (`enforce_admins = true`) |
+| Force push y borrado de `main` | Deshabilitados |
+| Merges permitidos | Solo *squash* (`allow_merge_commit` y `allow_rebase_merge` en `false`) |
+| Bypass y restricciones de descarte | Sin excepciones configuradas |
+
+Resultado: la protección sigue activa tal como se configuró en `002-crm-clientes-contratos`; no hubo que restablecer nada.
+
+Alcance respetado:
+
+- Solo se consultó la configuración; no se modificaron reglas, workflows ni el repositorio.
+- La credencial se usó desde el almacén local y no se escribió, mostró ni registró.
+- Sin tokens, credenciales ni UUID en este registro.
 
 
 
