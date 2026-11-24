@@ -308,24 +308,24 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - **Property 10: La matriz de acceso se aplica a todos los endpoints del SGA** · **Validates: Requirements 4.11, 9.9, 13.10, 18.1, 18.2, 18.3, 18.4, 18.5, 25.4, 25.5**
     - _Requisitos: 18.1–18.6, 25.4, 25.5, 25.8, CA-02, CA-03, NF-02, NF-07_
 
-- [ ] 12. Escribir las pruebas de controlador y de logs del SGA
-  - [ ] 12.1 Escribir `sga/controller/DronControllerTests`
+- [x] 12. Escribir las pruebas de controlador y de logs del SGA
+  - [x] 12.1 Escribir `sga/controller/DronControllerTests`
     - Área: backend · Responsable: Sebastián
     - MockMvc + H2 con `SgaDatosPrueba`: 201 con `Location`, 200, un 400 de `DronRequest` con `errors` por campo, 400 de `EstadoDronRequest` con un `estado` desconocido, `id` no UUID, 404, 409 `DRON_CODIGO_DUPLICADO` con el código escrito con espacios y minúsculas, 409 `TRANSICION_DRON_NO_PERMITIDA` con `campo`, `estadoActual` y `estadoSolicitado`, 409 `DRON_CON_PAQUETE_EN_CURSO` con `paqueteId`, campos del servidor ignorados, `paqueteEnCurso` en la lista y en el detalle, y 405 de `DELETE` con `Allow`
     - _Requisitos: 3.2, 4.1–4.11, 5.7–5.9, 6.1–6.6, 19.2, 19.4, 19.5, 25.6, NF-07_
 
-  - [ ] 12.2 Escribir `sga/controller/PaqueteControllerTests`
+  - [x] 12.2 Escribir `sga/controller/PaqueteControllerTests`
     - Área: backend · Responsable: Sebastián
     - 201 con `Location` (alta y `.../estados` con la colección); un 400 de `PaqueteCrearRequest`, `PaqueteActualizarRequest` y `TransicionPaqueteRequest` (incluido `dronId` según el estado); 404 de la ruta y de `clienteId`, `contratoId` y `dronId` con `campo`; un caso por código: `PAQUETE_CODIGO_DUPLICADO`, `CLIENTE_INACTIVO`, `CONTRATO_DE_OTRO_CLIENTE`, `CONTRATO_NO_ACTIVO`, `PAQUETE_NO_EDITABLE`, `TRANSICION_NO_PERMITIDA`, `DRON_NO_DISPONIBLE` y `DRON_CON_PAQUETE_EN_CURSO` con `conflicto`, `campo` y extensiones
     - 405 de `DELETE` y de `PUT`, `PATCH` y `DELETE` sobre `.../estados` con `Allow`; `estado` y `dronId` del alta ignorados; historial como arreglo ordenado; cliente con solo `id`, `nombre` y `activo`, leído del CRM en cada consulta; `detail` sin dirección, observación ni nombre del cliente
     - _Requisitos: 7.1–7.11, 8.7–8.9, 9.1–9.9, 10.1–10.4, 11.1–11.5, 12.1, 12.6, 12.7, 17.2, 17.4, 19.2, 19.4–19.6, 25.6, NF-07_
 
-  - [ ] 12.3 Escribir `sga/controller/ArticuloControllerTests`
+  - [x] 12.3 Escribir `sga/controller/ArticuloControllerTests`
     - Área: backend · Responsable: Sebastián
     - 201 con `Location` (artículo y colección de movimientos); un 400 de `ArticuloRequest` y de `MovimientoInventarioRequest` (incluido `cantidad: 1.5`); 404 de la ruta y de los movimientos; 409 `ARTICULO_CODIGO_DUPLICADO` y `EXISTENCIA_INSUFICIENTE` con `campo = "cantidad"`, `existenciaActual` y `cantidadSolicitada`; 405 de `DELETE` y de `PUT`, `PATCH` y `DELETE` sobre `.../movimientos` con `Allow`; `existencia` del cuerpo ignorada; `bajoStockMinimo` en la respuesta
     - _Requisitos: 13.1–13.10, 14.6, 14.7, 15.1, 15.5–15.8, 15.13, 15.14, 19.2, 19.4, 19.5, 25.6, NF-07_
 
-  - [ ] 12.4 Escribir `sga/SgaLogsTests`
+  - [x] 12.4 Escribir `sga/SgaLogsTests`
     - Área: backend · Responsable: Sebastián
     - Con `OutputCaptureExtension` y `@MockitoBean ContratoReferenciaService` cuyo `buscarParaAsociar` lanza una excepción sin datos: crear y editar paquetes sin contrato, provocar un 409 de código duplicado y un 500 (alta con `contratoId`, que llega al doble), con una dirección de entrega, una observación y un nombre de cliente ficticios conocidos; la salida capturada no contiene esos valores
     - _Requisitos: 17.3, 25.7, CA-06_
@@ -754,5 +754,23 @@ Alcance respetado:
 - Sin credenciales, tokens, UUID ni datos personales en este registro.
 
 Commits: `f28f47a` (`feat(sga)` para 11.1–11.5).
+
+### Pruebas de controlador y de logs del SGA (tareas 12.1–12.4)
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 12.1 | `sga/controller/DronControllerTests` | 10 pruebas con MockMvc y H2: alta con 201 y `Location`, campos del servidor ignorados (`id`, `estado`, `creadoEn`, `actualizadoPor`), 400 de `DronRequest` por `codigo`/`modelo`/`observaciones`, 400 de `EstadoDronRequest` con `estado` desconocido y el mensaje de las cuatro constantes, 400 por `id` no UUID y por `page`, `size`, `sort`, `q`, `estado` y `asignable`, 404 de `GET`/`PUT`/`PATCH`, 409 `DRON_CODIGO_DUPLICADO` con el código escrito con espacios y minúsculas en el alta y en la edición, 409 `TRANSICION_DRON_NO_PERMITIDA` con `campo`, `estadoActual` y `estadoSolicitado` (desde `EN_MISION` y con el mismo estado), 409 `DRON_CON_PAQUETE_EN_CURSO` con `paqueteId`, `paqueteEnCurso` en lista y detalle, cambio manual con la auditoría del estado sin tocar `actualizadoEn`, edición que conserva estado y `creadoEn`, los once campos de la representación y 405 de `DELETE` con `Allow` |
+| 12.2 | `sga/controller/PaqueteControllerTests` | 10 pruebas: alta con 201 y `Location` que ignora `id`, `estado`, `dronId`, `creadoEn` y `actualizadoPor`; alta con contrato activo y filtros de lista; 400 de `PaqueteCrearRequest`, `PaqueteActualizarRequest` y `TransicionPaqueteRequest` (incluidos `dronId` obligatorio al asignar y prohibido en otro estado) y de los parámetros de lista; 404 de la ruta, del historial y de `clienteId`, `contratoId` y `dronId` con `campo`; un caso por cada uno de los ocho conflictos con `conflicto`, `campo` y extensiones (`PAQUETE_CODIGO_DUPLICADO`, `CLIENTE_INACTIVO`, `CONTRATO_DE_OTRO_CLIENTE`, `CONTRATO_NO_ACTIVO`, `PAQUETE_NO_EDITABLE`, `TRANSICION_NO_PERMITIDA`, `DRON_NO_DISPONIBLE` y `DRON_CON_PAQUETE_EN_CURSO`); transición a `ASIGNADO` con 201 y `Location` de la colección; historial como arreglo ordenado por secuencia con el dron solo en `ASIGNADO`; cliente con solo `id`, `nombre` y `activo` releído del CRM en cada consulta; 405 de `DELETE` y de `PUT`, `PATCH` y `DELETE` sobre `.../estados` con `Allow`; los `detail` no contienen dirección, observación ni nombre del cliente; los trece campos de la representación |
+| 12.3 | `sga/controller/ArticuloControllerTests` | 8 pruebas: alta con 201 y `Location` que ignora `id`, `existencia`, `creadoEn` y `actualizadoPor`; filtros por `bajoStockMinimo`, `categoria` y `q`; 400 de `ArticuloRequest` (`codigo`, `nombre`, `categoria`, `unidad`, `stockMinimo` con `1.5`, `-1` y `1 000 001`) y de `MovimientoInventarioRequest` (`cantidad: 1.5`, `SALIDA` con 0, `AJUSTE` sin observación, `observacion` de 501 y `tipo` ausente) y de los parámetros de lista; 404 de la ruta y de los movimientos; 409 `ARTICULO_CODIGO_DUPLICADO` con el código normalizado y `EXISTENCIA_INSUFICIENTE` con `campo = "cantidad"`, `existenciaActual` y `cantidadSolicitada`, sin tocar la existencia; movimiento con 201 y `Location` de la colección, `existenciaAnterior`/`existenciaResultante` y `bajoStockMinimo` recalculado; 405 de `DELETE` y de `PUT`, `PATCH` y `DELETE` sobre `.../movimientos` con `Allow`; los once campos del artículo y los nueve del movimiento |
+| 12.4 | `sga/SgaLogsTests` | Con `OutputCaptureExtension` y `@MockitoBean ContratoReferenciaService` cuyo `buscarParaAsociar` lanza una excepción sin datos: alta y edición de un paquete sin contrato, 409 de código duplicado y 500 con un alta que lleva `contratoId` hasta el doble, con una dirección, una observación y un nombre de cliente ficticios conocidos. La salida capturada no contiene ninguno de esos valores |
+
+Verificación: `.\mvnw.cmd -B "-Dtest=DronControllerTests,PaqueteControllerTests,ArticuloControllerTests,SgaLogsTests" test` desde `backend/` → **29 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**. Regresión: `.\mvnw.cmd -B clean test` → **1418 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**, sin Docker, Supabase ni `.env`.
+
+Alcance respetado:
+
+- Solo se añadieron las cuatro clases de prueba; no se modificaron los controladores, servicios, entidades ni repositorios del SGA de Davidson, ni el CRM, el ERP o `001-foundation`.
+- Las pruebas usan `SgaDatosPrueba` y `CrmDatosPrueba` con el `PerfilJwtAuthenticationConverter` real sobre H2; los datos son ficticios y no hay tokens ni credenciales.
+- Sin credenciales, tokens, UUID personales ni datos personales en este registro.
+
 
 
