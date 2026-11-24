@@ -6,7 +6,7 @@ import AppLayout from './components/AppLayout.jsx'
 import Login from './pages/Login.jsx'
 import Perfil from './pages/Perfil.jsx'
 import RolRoute from './routes/RolRoute.jsx'
-import { puedeAdministrarUsuarios, puedeGestionarCrm, puedeGestionarErp, puedeLeerClientes, puedeLeerContratos } from './lib/permisos.js'
+import { puedeAdministrarUsuarios, puedeGestionarCrm, puedeGestionarErp, puedeGestionarSga, puedeLeerClientes, puedeLeerContratos } from './lib/permisos.js'
 
 const Inicio = lazy(() => import('./pages/Inicio.jsx'))
 const Panel = lazy(() => import('./pages/Panel.jsx'))
@@ -31,6 +31,16 @@ const MovimientosLista = lazy(() => import('./pages/erp/MovimientosLista.jsx'))
 const MovimientoFormulario = lazy(() => import('./pages/erp/MovimientoFormulario.jsx'))
 const MovimientoDetalle = lazy(() => import('./pages/erp/MovimientoDetalle.jsx'))
 const PanelFinanciero = lazy(() => import('./pages/erp/PanelFinanciero.jsx'))
+const DronesLista = lazy(() => import('./pages/sga/DronesLista.jsx'))
+const DronFormulario = lazy(() => import('./pages/sga/DronFormulario.jsx'))
+const DronDetalle = lazy(() => import('./pages/sga/DronDetalle.jsx'))
+const PaquetesLista = lazy(() => import('./pages/sga/PaquetesLista.jsx'))
+const PaqueteFormulario = lazy(() => import('./pages/sga/PaqueteFormulario.jsx'))
+const PaqueteDetalle = lazy(() => import('./pages/sga/PaqueteDetalle.jsx'))
+const ArticulosLista = lazy(() => import('./pages/sga/ArticulosLista.jsx'))
+const ArticuloFormulario = lazy(() => import('./pages/sga/ArticuloFormulario.jsx'))
+const ArticuloDetalle = lazy(() => import('./pages/sga/ArticuloDetalle.jsx'))
+const IndicadoresSga = lazy(() => import('./pages/sga/IndicadoresSga.jsx'))
 
 export default function App() {
   return (
@@ -43,6 +53,21 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route path="/panel" element={<Panel />} />
               <Route path="/perfil" element={<Perfil />} />
+              <Route element={<RolRoute permite={puedeGestionarSga} />}>
+                <Route path="/sga/drones" element={<DronesLista />} />
+                <Route path="/sga/drones/nuevo" element={<DronFormulario />} />
+                <Route path="/sga/drones/:id" element={<DronDetalle />} />
+                <Route path="/sga/drones/:id/editar" element={<DronFormulario />} />
+                <Route path="/sga/paquetes" element={<PaquetesLista />} />
+                <Route path="/sga/paquetes/nuevo" element={<PaqueteFormulario />} />
+                <Route path="/sga/paquetes/:id" element={<PaqueteDetalle />} />
+                <Route path="/sga/paquetes/:id/editar" element={<PaqueteFormulario />} />
+                <Route path="/sga/inventario" element={<ArticulosLista />} />
+                <Route path="/sga/inventario/nuevo" element={<ArticuloFormulario />} />
+                <Route path="/sga/inventario/:id" element={<ArticuloDetalle />} />
+                <Route path="/sga/inventario/:id/editar" element={<ArticuloFormulario />} />
+                <Route path="/sga/resumen" element={<IndicadoresSga />} />
+              </Route>
               <Route element={<RolRoute permite={puedeGestionarErp} />}>
                 <Route path="/erp/empleados" element={<EmpleadosLista />} />
                 <Route path="/erp/empleados/nuevo" element={<EmpleadoFormulario />} />

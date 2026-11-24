@@ -560,13 +560,13 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Estados con 0 visibles, totales, enlace a los artículos bajo stock mínimo, y carga y error con "Reintentar"
     - _Requisitos: 24.1–24.5, 27.5, 27.7_
 
-- [ ] 27. Integrar las rutas SGA en la aplicación
-  - [ ] 27.1 Registrar las rutas `/sga/*` en `App.jsx`
+- [x] 27. Integrar las rutas SGA en la aplicación
+  - [x] 27.1 Registrar las rutas `/sga/*` en `App.jsx`
     - Área: frontend · Responsable: Paula
     - Bloque `<Route element={<RolRoute permite={puedeGestionarSga} />}>` dentro de `<Route element={<AppLayout />}>`, con las 13 rutas de la tabla "Rutas" del diseño y las páginas cargadas con `lazy(() => import(...))`; `/login`, `/perfil`, `/panel`, `/admin/usuarios`, `/crm/*` y `/erp/*` no cambian
     - _Requisitos: 20.9, 20.11, 21.1, 22.1, 23.1, 24.1_
 
-  - [ ] 27.2 Ampliar `App.test.jsx` con la navegación SGA
+  - [x] 27.2 Ampliar `App.test.jsx` con la navegación SGA
     - Área: frontend · Responsable: Paula
     - Menú y tarjetas SGA por rol; una ruta `/sga/*` con COMERCIAL o FINANZAS_RRHH muestra el mensaje de permisos sin peticiones a la API; OPERACIONES conserva Clientes y Contratos y no ve el ERP; las pruebas existentes siguen en verde
     - _Requisitos: 20.5–20.9, 27.6, 27.7, 27.8_

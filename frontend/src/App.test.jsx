@@ -8,6 +8,8 @@ import { puedeGestionarCrm } from './lib/permisos.js'
 import RolRoute from './routes/RolRoute.jsx'
 import { OPCIONES_ERP } from './lib/permisos.js'
 import { empleado, proveedor, movimiento, pagina } from './test/datosErp.jsx'
+import { OPCIONES_SGA } from './lib/permisos.js'
+import { articulo, contrato as contratoSga, dron, paquete } from './test/datosSga.jsx'
 
 const { auth, store } = vi.hoisted(() => ({
   auth: { getSession: vi.fn(), signInWithPassword: vi.fn(), signOut: vi.fn(), onAuthStateChange: vi.fn() },
@@ -547,5 +549,86 @@ it.each([
   mount(ruta)
   expect(await screen.findByRole('heading', { name: titulo, level: 1 })).toBeVisible()
   await waitFor(() => expect(screen.queryByRole('status')).toBeNull())
+  expect(auth.signOut).not.toHaveBeenCalled()
+})
+
+it.each(['ADMINISTRADOR', 'OPERACIONES', 'COMERCIAL', 'FINANZAS_RRHH'])('muestra menú y tarjetas SGA según el rol %s y conserva CRM y ERP', async role => {
+  store.session = session
+  fetch.mockImplementation(async url => ({ ok: true, status: 200, json: async () => url.endsWith('/me') ? { ...profile, role } : {
+    clientes: { activos: 0, inactivos: 0 }, contratos: { porEstado: { ACTIVO: 0, BORRADOR: 0 } }, totalElements: 0,
+  } }))
+  mount('/panel')
+  await screen.findByRole('heading', { name: 'Tu operación, conectada.' })
+  const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
+  const permitido = ['ADMINISTRADOR', 'OPERACIONES'].includes(role)
+  if (permitido) fireEvent.click(within(nav).getByRole('button', { name: 'SGA', exact: true }))
+  for (const { texto, ruta, accion } of OPCIONES_SGA) {
+    if (permitido) {
+      expect(within(nav).getByRole('link', { name: texto })).toHaveAttribute('href', ruta)
+      expect(screen.getByRole('link', { name: accion + ' →' })).toHaveAttribute('href', ruta)
+    } else {
+      expect(within(nav).queryByRole('button', { name: 'SGA', exact: true })).toBeNull()
+      expect(screen.queryByRole('link', { name: accion + ' →' })).toBeNull()
+    }
+  }
+  if (role === 'OPERACIONES') {
+    expect(within(nav).queryByRole('button', { name: 'ERP', exact: true })).toBeNull()
+    fireEvent.click(within(nav).getByRole('button', { name: 'CRM', exact: true }))
+    expect(within(nav).getByRole('link', { name: 'Clientes' })).toBeVisible()
+    expect(within(nav).getByRole('link', { name: 'Contratos' })).toBeVisible()
+  }
+})
+
+it.each(['COMERCIAL', 'FINANZAS_RRHH', null, 'DESCONOCIDO'])('deniega las rutas SGA a %s antes de pedir datos', async role => {
+  store.session = session
+  fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
+  mount('/sga/drones')
+  expect(await screen.findByRole('alert')).toHaveTextContent('No tienes permisos para acceder a esta sección.')
+  expect(fetch).toHaveBeenCalledExactlyOnceWith('http://localhost:8080/api/me', expect.anything())
+})
+
+const resumenSga = {
+  paquetes: { porEstado: {}, total: 0 }, drones: { porEstado: {}, total: 0 }, articulos: { bajoStockMinimo: 0, total: 0 },
+}
+it.each([
+  ['/sga/drones', 'Drones'], ['/sga/drones/nuevo', 'Nuevo dron'],
+  ['/sga/drones/' + dron.id, dron.codigo], ['/sga/drones/' + dron.id + '/editar', 'Editar dron'],
+  ['/sga/paquetes', 'Paquetes'], ['/sga/paquetes/nuevo', 'Nuevo paquete'],
+  ['/sga/paquetes/' + paquete.id, paquete.codigo], ['/sga/paquetes/' + paquete.id + '/editar', 'Editar paquete'],
+  ['/sga/inventario', 'Inventario'], ['/sga/inventario/nuevo', 'Nuevo artículo'],
+  ['/sga/inventario/' + articulo.id, articulo.nombre], ['/sga/inventario/' + articulo.id + '/editar', 'Editar artículo'],
+  ['/sga/resumen', 'Indicadores SGA'],
+])('registra la ruta %s con carga diferida para OPERACIONES', async (ruta, titulo) => {
+  store.session = session
+  fetch.mockImplementation(async url => {
+    const path = new URL(url).pathname
+    const datos = path === '/api/me' ? { ...profile, role: 'OPERACIONES' }
+      : path === '/api/sga/drones/' + dron.id ? dron
+      : path === '/api/sga/paquetes/' + paquete.id ? paquete
+      : path === '/api/sga/paquetes/' + paquete.id + '/estados' ? []
+      : path === '/api/sga/articulos/' + articulo.id ? articulo
+      : path === '/api/sga/resumen' ? resumenSga
+      : path === '/api/crm/contratos' ? pagina([contratoSga]) : pagina([])
+    return { ok: true, status: 200, json: async () => datos }
+  })
+  mount(ruta)
+  expect(await screen.findByRole('heading', { name: titulo, level: 1 })).toBeVisible()
+  await waitFor(() => expect(screen.queryByRole('status')).toBeNull())
+  expect(document.querySelector('.breadcrumbs')).toHaveTextContent('SGA')
+  expect(auth.signOut).not.toHaveBeenCalled()
+})
+
+it('conserva la sesión ante un 403 de escritura SGA tras cambiar el rol', async () => {
+  store.session = session
+  fetch.mockImplementation(async (url, options) => ({
+    ok: options.method !== 'POST', status: options.method === 'POST' ? 403 : 200,
+    json: async () => url.endsWith('/me') ? { ...profile, role: 'OPERACIONES' } : {},
+  }))
+  mount('/sga/drones/nuevo')
+  fireEvent.change(await screen.findByLabelText(/^Código/), { target: { value: 'DRN-001' } })
+  fireEvent.change(screen.getByLabelText(/^Modelo/), { target: { value: 'Carga' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('No tienes permisos para realizar esta operación.')
+  expect(screen.getByLabelText(/^Modelo/)).toHaveValue('Carga')
   expect(auth.signOut).not.toHaveBeenCalled()
 })
