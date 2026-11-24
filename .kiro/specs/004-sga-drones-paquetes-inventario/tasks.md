@@ -202,12 +202,12 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - **Property 9: Los indicadores son consistentes con los datos** (función pura) · **Validates: Requirements 16.1, 16.2, 16.3, 16.4**
     - _Requisitos: 16.2, 16.3, NF-07, SGA-06_
 
-- [ ] 7. Checkpoint de persistencia y DTO
+- [x] 7. Checkpoint de persistencia y DTO
   - Área: verificación · Responsable: Davidson
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/`: el contexto arranca con las entidades del SGA en H2, las pruebas nuevas de enumeraciones, `ContratoReferenciaServiceTests` y DTO pasan y las pruebas existentes de `001-foundation`, `002-crm-clientes-contratos` y `003-erp-empleados-proveedores-finanzas` siguen en verde. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
-- [ ] 8. Implementar el servicio de drones
-  - [ ] 8.1 Implementar `FiltroDrones` y `DronService`
+- [x] 8. Implementar el servicio de drones
+  - [x] 8.1 Implementar `FiltroDrones` y `DronService`
     - Área: backend · Responsable: Davidson
     - Record `sga.service.FiltroDrones(String q, EstadoDron estado, Boolean asignable)`
     - `listar` con `EspecificacionesSga` y una sola consulta `findByDronIdInAndEstadoIn(ids de la página, EN_CURSO)` para el `paqueteEnCurso` (interpretación 4); `obtener` (404 "El dron no existe." y `findFirstByDronIdAndEstadoIn`); `crear` (`DRON_CODIGO_DUPLICADO`; `Dron.crear` en `DISPONIBLE`); `actualizar` (`findParaModificarById`, 404, código de otro dron → `DRON_CODIGO_DUPLICADO`, conserva el estado, su auditoría y `creadoEn`)
@@ -215,14 +215,14 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - `@Transactional`, `Clock` con `Instant.now(clock).truncatedTo(ChronoUnit.MICROS)`, actor con `UUID.fromString(sub)` y conversión a DTO dentro de la transacción. No registrar observaciones en logs
     - _Requisitos: 1.3, 4.1, 4.6, 4.8, 4.10, 5.1, 5.3–5.5, 5.7, 5.8, 6.1–6.3, 6.5, 6.6, 18.6, SGA-01, SGA-05, DP-SEG-06_
 
-  - [ ] 8.2 Escribir `sga/service/DronServiceTests`
+  - [x] 8.2 Escribir `sga/service/DronServiceTests`
     - Área: backend · Responsable: Davidson
     - Mockito y `Clock.fixed`: creación con la auditoría de datos y de estado iguales y el `sub` del actor; duplicado de código en el alta y en la edición; la edición conserva el estado y su auditoría
     - **Property 2: El dron solo cambia a mano entre sus estados manuales y sin paquete en curso** (nivel servicio: 16 pares × con y sin paquete en curso; en los rechazos el dron no cambia) · **Validates: Requirements 6.1, 6.2, 6.3, 6.5**
     - _Requisitos: 25.1, 25.2, NF-07, SGA-01_
 
-- [ ] 9. Implementar el servicio de paquetes
-  - [ ] 9.1 Implementar `FiltroPaquetes` y las consultas, el alta y la edición de `PaqueteService`
+- [x] 9. Implementar el servicio de paquetes
+  - [x] 9.1 Implementar `FiltroPaquetes` y las consultas, el alta y la edición de `PaqueteService`
     - Área: backend · Responsable: Davidson
     - Record `sga.service.FiltroPaquetes(EstadoPaquete estado, UUID clienteId, UUID contratoId, UUID dronId, String q)`
     - `listar` con `Specification.allOf`, `findAll` con `@EntityGraph("dron")` y una llamada a `clientesCrm.buscarTodos` y otra a `contratosCrm.buscarTodos` con los identificadores de la página (D3); un identificador sin paquetes o sin registro produce una lista vacía. `obtener` con `findConDronById` (404 "El paquete no existe."), `clientesCrm.buscar` y, si hay contrato, `contratosCrm.buscar`. `historial` con `existsById` (404) y `findByPaqueteIdOrderBySecuenciaAsc`
@@ -231,20 +231,20 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Mismo patrón transaccional, de reloj y de auditoría que `DronService`. No usa `crm.entity` ni `crm.repository` y no registra direcciones, observaciones ni nombres de clientes en logs
     - _Requisitos: 1.3, 1.5, 7.1, 7.5–7.10, 7.12, 8.1–8.5, 8.7–8.9, 9.1, 9.3–9.8, 12.1, 12.7, 17.3, DP-ARQ-01, DP-SEG-06, SGA-02, SGA-04, SGA-05_
 
-  - [ ] 9.2 Implementar `PaqueteService.cambiarEstado`
+  - [x] 9.2 Implementar `PaqueteService.cambiarEstado`
     - Área: backend · Responsable: Davidson
     - Según el fragmento del diseño: `findParaModificarById` del paquete (404) → `findParaModificarById` del dron (el de `dronId` en `ASIGNADO`, con 404 "El dron indicado no existe." y `campo = "dronId"`; el asignado cuando `efectoSobreDron` tiene valor) → `TRANSICION_NO_PERMITIDA` → `DRON_NO_DISPONIBLE` (`campo = "dronId"` al asignar; sin campo en `EN_TRANSITO`) → `DRON_CON_PAQUETE_EN_CURSO` con `paqueteId` → `secuencia = countByPaqueteId + 1` → `paquete.aplicarTransicion(...)` → `save(HistorialEstadoPaquete.transicion(...))` con el dron solo en `ASIGNADO`
     - Bloqueo en el orden paquete → dron (D10); no tiene en cuenta el estado del cliente ni del contrato (Requirement 10.6); no toca los datos del paquete ni `actualizado_*`
     - _Requisitos: 10.1–10.8, 11.3–11.12, 12.2–12.5, 18.6, DP-API-05, DP-SEG-06, SGA-01, SGA-04, SGA-05_
 
-  - [ ] 9.3 Escribir `sga/service/PaqueteServiceTests` del alta y la edición
+  - [x] 9.3 Escribir `sga/service/PaqueteServiceTests` del alta y la edición
     - Área: backend · Responsable: Davidson
     - Mockito y `Clock.fixed` con `ClienteReferenciaService` y `ContratoReferenciaService` simulados: el alta crea el paquete en `REGISTRADO` sin dron y su primer registro (secuencia 1, anterior nulo y la observación del alta) con el `sub` del actor; orden de D9 (cliente inactivo con código duplicado → `CLIENTE_INACTIVO`; `PUT` sobre un paquete `EN_TRANSITO` con un contrato inexistente → 404 en `contratoId`); en los rechazos no se llama a `save`
     - **Property 6: Solo se asocian clientes activos y contratos activos del mismo cliente** (todas las combinaciones del alta y del `PUT`) · **Validates: Requirements 7.6, 7.7, 7.8, 7.9, 7.10, 9.5, 9.6, 9.7**
     - **Property 1: Solo se aplican las transiciones permitidas del paquete** (edición solo en `REGISTRADO` y `ASIGNADO`) · **Validates: Requirements 9.1, 9.3**
     - _Requisitos: 25.1, NF-07, SGA-02, SGA-05_
 
-  - [ ] 9.4 Ampliar `sga/service/PaqueteServiceTests` con las transiciones
+  - [x] 9.4 Ampliar `sga/service/PaqueteServiceTests` con las transiciones
     - Área: backend · Responsable: Davidson
     - Entidades reales con repositorios simulados que guardan en memoria: todos los prefijos de los recorridos `R→C`, `R→A→C`, `R→A→T→E` y `R→A→T→D`, intercalados con solicitudes rechazadas; en los rechazos no se llama a `historial.save` ni cambia el dron; orden de D9 (`ASIGNADO` con un `dronId` inexistente sobre un paquete `ENTREGADO` → 404 en `dronId`); el `sub` del actor en el paquete, el dron y el historial
     - **Property 1: Solo se aplican las transiciones permitidas del paquete** (nivel servicio, 36 pares) · **Validates: Requirements 10.1, 10.2, 10.7**
@@ -253,26 +253,26 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - **Property 5: El historial está encadenado** · **Validates: Requirements 7.1, 12.2, 12.3, 12.4, 12.5**
     - _Requisitos: 25.1, 25.2, NF-07, SGA-04, SGA-05_
 
-- [ ] 10. Implementar los servicios de inventario y de indicadores
-  - [ ] 10.1 Implementar `FiltroArticulos` y `ArticuloService`
+- [x] 10. Implementar los servicios de inventario y de indicadores
+  - [x] 10.1 Implementar `FiltroArticulos` y `ArticuloService`
     - Área: backend · Responsable: Davidson
     - Record `sga.service.FiltroArticulos(String q, CategoriaArticulo categoria, Boolean bajoStockMinimo)`; `listar` con `EspecificacionesSga`; `obtener` (404 "El artículo no existe."); `crear` (`ARTICULO_CODIGO_DUPLICADO`; existencia 0); `actualizar` (`findParaModificarById`, 404, código de otro artículo → 409, sin tocar la existencia)
     - Mismo patrón transaccional, de reloj y de auditoría que `DronService`
     - _Requisitos: 1.3, 13.1, 13.6, 13.8, 13.9, 14.1–14.4, 14.6, 14.7, SGA-03, DP-SEG-06_
 
-  - [ ] 10.2 Implementar `MovimientoInventarioService`
+  - [x] 10.2 Implementar `MovimientoInventarioService`
     - Área: backend · Responsable: Davidson
     - `registrar`: `articulos.findParaModificarById` con `PESSIMISTIC_WRITE` (404) → `anterior = articulo.getExistencia()` → `resultante = tipo.existenciaResultante(anterior, cantidadEntera())` → `resultante < 0` → `EXISTENCIA_INSUFICIENTE` con `existenciaActual = anterior` y `cantidadSolicitada` → `articulo.aplicarMovimiento(...)` → `save(MovimientoInventario.registrar(...))`, sin tocar `actualizado_*` del artículo. Un `AJUSTE` con la misma cantidad que la existencia se registra y una `SALIDA` que deja la existencia en 0 se acepta (interpretaciones 8 y 9)
     - `listar`: `articulos.existsById` (404) y `movimientos.findByArticuloId(articuloId, pageable)`
     - _Requisitos: 15.1–15.5, 15.9–15.12, 15.14, 15.15, 18.6, SGA-03, DP-API-05, DP-SEG-06_
 
-  - [ ] 10.3 Escribir `sga/service/MovimientoInventarioServiceTests`
+  - [x] 10.3 Escribir `sga/service/MovimientoInventarioServiceTests`
     - Área: backend · Responsable: Davidson
     - Mockito y `Clock.fixed` sobre una entidad real, con secuencias de `GeneradoresSga`: `sub` del actor en el movimiento; `AJUSTE` con la misma cantidad que la existencia
     - **Property 7: La existencia sigue la aritmética de los movimientos y nunca es negativa** · **Validates: Requirements 15.1, 15.2, 15.3, 15.4, 15.5, 15.15, 25.3**
     - _Requisitos: 25.1, 25.3, NF-07, SGA-03_
 
-  - [ ] 10.4 Implementar `ResumenSgaService`
+  - [x] 10.4 Implementar `ResumenSgaService`
     - Área: backend · Responsable: Davidson
     - `@Service @Transactional(readOnly = true)`; `obtener()` llama una vez a `paquetes.contarPorEstado()`, `drones.contarPorEstado()` y `articulos.contarArticulos()` y construye la respuesta con `ResumenSgaResponse.desde` (D13)
     - _Requisitos: 16.1, 16.3, CA-04, SGA-06_
