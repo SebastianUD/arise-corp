@@ -462,8 +462,8 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Si `puedeGestionarSga(rol)`, una tarjeta por cada elemento de `OPCIONES_SGA` con `<small>SGA</small>`, el título y el enlace `accion →`; ninguna tarjeta SGA para COMERCIAL ni FINANZAS_RRHH
     - _Requisitos: 20.7, 20.8, SGA-06_
 
-- [ ] 21. Crear los componentes compartidos del SGA
-  - [ ] 21.1 Ampliar `SelectorRegistro` y crear `EstadoPaqueteEtiqueta` y `EstadoDronEtiqueta`
+- [x] 21. Crear los componentes compartidos del SGA
+  - [x] 21.1 Ampliar `SelectorRegistro` y crear `EstadoPaqueteEtiqueta` y `EstadoDronEtiqueta`
     - Área: frontend · Responsable: Paula
     - `components/SelectorRegistro.jsx`: prop opcional `textoVacio` (por defecto "Sin asociación") para la primera opción; el resto no cambia y las vistas ERP lo siguen usando igual (D20)
     - `components/EstadoPaqueteEtiqueta.jsx` (`REGISTRADO` y `ASIGNADO → borrador`, `EN_TRANSITO` y `ENTREGADO → activo`, `CANCELADO` y `DEVUELTO → inactivo`) y `components/EstadoDronEtiqueta.jsx` (`DISPONIBLE → activo`, `EN_MISION → borrador`, `MANTENIMIENTO → finalizado`, `FUERA_DE_SERVICIO → inactivo`), con las clases existentes. Ningún componente usa `dangerouslySetInnerHTML`
