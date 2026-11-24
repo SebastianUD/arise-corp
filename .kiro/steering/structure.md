@@ -32,10 +32,16 @@ arise-corp/
 │       │   │   └── dto/                         # MeResponse, PerfilRequest, EstadoPerfilRequest, PerfilUsuarioResponse
 │       │   ├── crm/                             # clientes, contratos y cuentas corporativas
 │       │   │   ├── controller/                  # Cliente, Contrato, CuentaCorporativa y ResumenComercial
-│       │   │   ├── service/                     # reglas, transacciones y auditoría de estado
+│       │   │   ├── service/                     # reglas, transacciones, auditoría de estado y ContratoReferenciaService
 │       │   │   ├── repository/                  # repositorios JPA y especificaciones de filtros
 │       │   │   ├── entity/                      # Cliente, Contrato, CuentaCorporativa y enums
-│       │   │   └── dto/                         # requests, responses y vistas por rol
+│       │   │   └── dto/                         # requests, responses, vistas por rol y referencias para otros módulos
+│       │   ├── sga/                             # drones, paquetes con historial e inventario
+│       │   │   ├── controller/                  # Dron, Paquete, Articulo y ResumenSga
+│       │   │   ├── service/                     # reglas, transacciones, ConflictosSga y filtros
+│       │   │   ├── repository/                  # repositorios JPA, proyecciones y EspecificacionesSga
+│       │   │   ├── entity/                      # Dron, Paquete, HistorialEstadoPaquete, ArticuloInventario, MovimientoInventario y enums
+│       │   │   └── dto/                         # requests, responses y validaciones del SGA
 │       │   └── shared/
 │       │       ├── error/                       # Problem Details y handlers comunes
 │       │       ├── normalizacion/               # NormalizadorTexto
@@ -50,11 +56,14 @@ arise-corp/
 │           ├── config/                       # pruebas del converter de autorización
 │           ├── login/                        # pruebas de /api/me, admin y matriz de módulos
 │           ├── crm/                          # pruebas *Tests en el paquete de la clase probada
+│           ├── sga/                          # pruebas *Tests y datos ficticios del SGA
 │           └── integration/                  # pruebas PostgreSQL *IT (Failsafe)
-├── frontend/                                # SPA React con acceso, perfil y vistas CRM
-├── supabase/migrations/                     # migraciones de perfiles y CRM                [Implementado]
+├── frontend/                                # SPA React con acceso, perfil y vistas CRM y ERP
+├── supabase/migrations/                     # migraciones de perfiles, CRM, ERP y SGA      [Implementado]
 │   ├── 20261108000000_app_perfiles_usuario.sql
-│   └── 20261111120000_app_crm_clientes_contratos.sql
+│   ├── 20261111120000_app_crm_clientes_contratos.sql
+│   ├── 20261118095500_app_erp_empleados_proveedores_movimientos.sql
+│   └── 20261121120000_app_sga_drones_paquetes_inventario.sql
 ├── .github/workflows/                       # workflows CI de GitHub Actions           [Implementado]
 │   ├── backend-ci.yml                       # CI backend y build de Docker
 │   ├── frontend-ci.yml                      # CI frontend
@@ -72,7 +81,7 @@ arise-corp/
 
 ## Backend
 ### Organización de paquetes
-- Actual [Implementado]: `com.arise.corp.config` para seguridad transversal y reloj, `com.arise.corp.login` con capas `controller`, `entity`, `repository`, `service` y `dto`, `com.arise.corp.crm` con la misma separación (incluido `service/ClienteReferenciaService` para los módulos consumidores), `com.arise.corp.erp` con `controller`, `service`, `repository`, `entity` y `dto`, y `com.arise.corp.shared` para error (`ParametroInvalidoException` incluida), normalización, paginación y validación ampliada (`@FechaNoFutura`, `@ValorCopPositivo`).
+- Actual [Implementado]: `com.arise.corp.config` para seguridad transversal y reloj, `com.arise.corp.login` con capas `controller`, `entity`, `repository`, `service` y `dto`, `com.arise.corp.crm` con la misma separación (incluidos `service/ClienteReferenciaService`, `service/ContratoReferenciaService` y `dto/ContratoReferencia` para los módulos consumidores), `com.arise.corp.erp` con `controller`, `service`, `repository`, `entity` y `dto`, `com.arise.corp.sga` con `controller`, `service`, `repository`, `entity` y `dto` (incluidas `ConflictosSga`, `EspecificacionesSga`, las proyecciones de conteo y las validaciones `@CantidadEntera`, `@MovimientoInventarioValido` y `@DronSegunEstado`), y `com.arise.corp.shared` para error (`ParametroInvalidoException` incluida), normalización, paginación y validación ampliada (`@FechaNoFutura`, `@ValorCopPositivo`).
 - Objetivo [Aprobado, MVP §9 y NF-04]: monolito modular con los módulos `login`, `crm`, `erp` y `sga`, y separación Controller → Service → Repository dentro de cada módulo.
 - Distribución adoptada (DP-EST-01):
 
@@ -109,7 +118,7 @@ com.arise.corp
 - Comentarios y encabezados de sección de `application.properties` en español.
 
 ## Frontend [Aprobado, MVP §9]
-La SPA organiza las vistas de acceso, perfil, CRM y ERP en `frontend/src/`. La sección 11.6 del README enumera las rutas disponibles por rol. El frontend ERP está implementado sobre el contrato de la spec 003; su validación con Supabase real sigue pendiente del backend y la migración.
+La SPA organiza las vistas de acceso, perfil, CRM y ERP en `frontend/src/`. La sección 11.6 del README enumera las rutas disponibles por rol. El frontend ERP está implementado sobre el contrato de la spec 003; su validación con Supabase real sigue pendiente del backend y la migración. Las vistas del SGA (`pages/sga`, `services/sgaApi.js`, `lib/validacionSga.js`, las etiquetas de estado y el icono `public/assets/sga.svg`) se implementan en las tareas 19–28 de la spec 004.
 
 ```text
 frontend/
@@ -119,8 +128,9 @@ frontend/
     ├── App.jsx                    # registro de rutas y agrupación por permiso
     ├── pages/                     # Login.jsx y Perfil.jsx
     │   ├── crm/                   # clientes, contratos, cuentas corporativas y resumen
-    │   └── erp/                   # empleados, proveedores, movimientos y panel financiero
-    │       └── RegistroCompartido.jsx # lista, formulario y detalle comunes de empleados/proveedores
+    │   ├── erp/                   # empleados, proveedores, movimientos y panel financiero
+    │   │   └── RegistroCompartido.jsx # lista, formulario y detalle comunes de empleados/proveedores
+    │   └── sga/                   # drones, paquetes, inventario e indicadores (spec 004, tareas 19-28)
     ├── context/
     │   ├── AuthContext.jsx        # sesión de Supabase
     │   └── PerfilContext.jsx      # perfil y rol compartidos de GET /api/me
@@ -134,12 +144,14 @@ frontend/
     ├── services/
     │   ├── apiClient.js           # cliente HTTP autenticado y errores de la API
     │   ├── crmApi.js              # consultas y escrituras del CRM
-    │   └── erpApi.js              # consultas y escrituras del ERP con importes como texto
+    │   ├── erpApi.js              # consultas y escrituras del ERP con importes como texto
+    │   └── sgaApi.js              # consultas y escrituras del SGA (spec 004, tareas 19-28)
     └── lib/
         ├── supabase.js            # cliente de autenticación
         ├── permisos.js            # menú, permisos y transiciones visibles
         ├── validacionCrm.js       # normalización y validación de formularios
         ├── validacionErp.js       # documentos, importes positivos, asociaciones y fechas de Colombia
+        ├── validacionSga.js       # validación del SGA (spec 004, tareas 19-28)
         └── formato.js             # importes en COP, fechas e instantes en es-CO
 ```
 
@@ -151,7 +163,7 @@ frontend/
 - No incluir archivos `.env` ni secretos dentro de la imagen Docker, del contexto de construcción ni en archivos YAML versionados.
 
 ## Pruebas
-- Backend: pruebas unitarias en `backend/src/test/java/`; pruebas de integración con PostgreSQL aislado/efímero. Las pruebas unitarias y de contexto usan el sufijo `Tests` y van en el paquete de la clase probada (práctica de `001-foundation`); el paquete `unit` no se usa. Las pruebas PostgreSQL usan el paquete `integration`, el sufijo `IT` y Maven Failsafe (DP-EST-05, D19). El ERP añade pruebas en `erp/` (DTO, entidad, servicio, controlador, repositorios, especificaciones y `ErpDatosPrueba`) y la IT de su migración; las migraciones del ERP viven en `supabase/migrations/`.
+- Backend: pruebas unitarias en `backend/src/test/java/`; pruebas de integración con PostgreSQL aislado/efímero. Las pruebas unitarias y de contexto usan el sufijo `Tests` y van en el paquete de la clase probada (práctica de `001-foundation`); el paquete `unit` no se usa. Las pruebas PostgreSQL usan el paquete `integration`, el sufijo `IT` y Maven Failsafe (DP-EST-05, D19). El ERP añade pruebas en `erp/` (DTO, entidad, servicio, controlador, repositorios, especificaciones y `ErpDatosPrueba`) y la IT de su migración; las migraciones del ERP viven en `supabase/migrations/`. El SGA añade pruebas en `sga/` (enumeraciones y máquinas de estado, DTO, servicios, controladores, autorización, logs, `GeneradoresSga` y `SgaDatosPrueba`) y las IT `MigracionesSgaIT`, `FlujoSgaIT` y `SgaTransaccionIT`.
 - Frontend: pruebas unitarias y de integración junto a los componentes o bajo una carpeta `tests/`, junto a los módulos bajo `frontend/src/`.
 - Los workflows de GitHub Actions ejecutan los comandos de prueba documentados por cada proyecto.
 

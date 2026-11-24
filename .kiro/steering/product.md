@@ -107,6 +107,8 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - Primera fase `001-foundation` cerrada: tareas 1–21 completadas; backend/frontend, build, secretos, migración y documentación verificados (tarea 21).
 - CRM backend completo (CRM-01 a CRM-05): migración `app.clientes`, `app.contratos` y `app.cuentas_corporativas`; entidades, repositorios, servicios, controladores, DTO, normalización, paginación, máquina de estados de contratos, resumen comercial y pruebas unitarias, MockMvc y de integración con PostgreSQL efímero.
 - ERP backend implementado (ERP-01 a ERP-05): migración `app.empleados`, `app.proveedores` y `app.movimientos_financieros` aplicada en `arise-corp-dev`; entidades, repositorios, servicios, controladores, DTO, validaciones, máquina de estados, asociación con clientes y proveedores, panel financiero, pruebas unitarias, MockMvc, autorización, logs y de integración con PostgreSQL efímero.
+- SGA backend implementado (SGA-01 a SGA-06): migración `app.drones`, `app.paquetes`, `app.historial_estados_paquete`, `app.articulos_inventario` y `app.movimientos_inventario` preparada y validada en PostgreSQL efímero (pendiente de aplicar en `arise-corp-dev`, tarea 15.1); entidades, repositorios, especificaciones, servicios, controladores, DTO, validaciones de cantidades y coherencia del dron, máquinas de estado del paquete y del dron, sincronización dron–paquete, historial encadenado, inventario con operaciones controladas, indicadores, y pruebas unitarias, MockMvc, autorización, logs y de integración con PostgreSQL efímero. El flujo cliente → contrato → paquete → estado y trazabilidad (CA-05) queda demostrable por la API.
+- `004-sga-drones-paquetes-inventario` queda cerrada al integrar su Pull Request; hasta entonces permanecen abiertas las vistas del frontend del SGA (tareas 19–28), la aplicación de la migración, la validación extremo a extremo y la entrega.
 - Pruebas de integración con Testcontainers (`.\mvnw.cmd verify`, Failsafe) y workflow `integration-tests`.
 - Dockerfile multi-stage, `.dockerignore` y `docker-compose.yml` para ejecutar el backend en local con la configuración inyectada en tiempo de ejecución.
 - CI de GitHub Actions con `backend-ci`, `integration-tests` y `frontend-ci`.
@@ -114,7 +116,7 @@ Esta sección es la referencia única del avance. Actualizarla cuando una funcio
 - `003-erp-empleados-proveedores-finanzas` queda cerrada al integrar su Pull Request; el PR queda abierto hacia `main` tras completar la verificación y entrega.
 
 [Aprobado, pendiente de implementar]
-- Módulo SGA y sus interfaces; tareas pendientes en `.kiro/specs/`.
+- Vistas SGA del frontend (tareas 19–28 de `004-sga-drones-paquetes-inventario`).
 
 ## Idioma
 - Documentación, especificaciones y steering files: español (práctica de todo el repositorio).

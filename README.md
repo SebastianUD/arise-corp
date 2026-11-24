@@ -2,7 +2,7 @@
 
 Plataforma web de gestión empresarial para centralizar los procesos comerciales, administrativos y operativos de Arise Corp., empresa colombiana orientada al transporte y entrega de paquetes mediante drones.
 
-> **Estado del proyecto:** `001-foundation` está completada y `002-crm-clientes-contratos` tiene el backend, el frontend, la migración, Docker y CI implementados; quedan la validación extremo a extremo y la entrega del PR. `003-erp-empleados-proveedores-finanzas` tiene implementados el backend, el frontend y la migración, ya aplicada en `arise-corp-dev`; quedan la validación extremo a extremo, los checkpoints finales y el PR. El resumen vigente y las próximas funcionalidades están en `.kiro/steering/product.md`.
+> **Estado del proyecto:** `001-foundation` está completada y `002-crm-clientes-contratos` tiene el backend, el frontend, la migración, Docker y CI implementados; quedan la validación extremo a extremo y la entrega del PR. `003-erp-empleados-proveedores-finanzas` tiene implementados el backend, el frontend y la migración, ya aplicada en `arise-corp-dev`; quedan la validación extremo a extremo, los checkpoints finales y el PR. `004-sga-drones-paquetes-inventario` tiene implementados el backend del SGA (drones, paquetes con historial, inventario e indicadores), la migración y las pruebas; faltan las vistas del frontend, la aplicación de la migración, la validación extremo a extremo y la entrega. El resumen vigente y las próximas funcionalidades están en `.kiro/steering/product.md`.
 
 ## 1. Objetivo del proyecto
 
@@ -100,7 +100,7 @@ Las versiones y dependencias adicionales que aún no estén aprobadas se definir
 
 ## 4. Estado actual del desarrollo
 
-El estado implementado y las próximas funcionalidades se mantienen en `.kiro/steering/product.md`. La spec `001-foundation` está cerrada y `002-crm-clientes-contratos` tiene implementados el backend, el frontend, la migración, Docker y CI; sus tareas pendientes son la validación extremo a extremo con Supabase real, los checkpoints finales y la entrega del PR. `003-erp-empleados-proveedores-finanzas` tiene implementados el backend del ERP (empleados, proveedores, movimientos y panel financiero), sus vistas, la migración ya aplicada en `arise-corp-dev` y las pruebas unitarias, MockMvc y de integración; quedan la validación extremo a extremo, los checkpoints finales y el PR. Las tareas y evidencias de verificación se conservan en `.kiro/specs/`. Este README concentra instalación y uso.
+El estado implementado y las próximas funcionalidades se mantienen en `.kiro/steering/product.md`. La spec `001-foundation` está cerrada y `002-crm-clientes-contratos` tiene implementados el backend, el frontend, la migración, Docker y CI; sus tareas pendientes son la validación extremo a extremo con Supabase real, los checkpoints finales y la entrega del PR. `003-erp-empleados-proveedores-finanzas` tiene implementados el backend del ERP (empleados, proveedores, movimientos y panel financiero), sus vistas, la migración ya aplicada en `arise-corp-dev` y las pruebas unitarias, MockMvc y de integración; quedan la validación extremo a extremo, los checkpoints finales y el PR. `004-sga-drones-paquetes-inventario` tiene implementado el backend del SGA (drones, paquetes con historial de estados, inventario con operaciones controladas e indicadores), su migración y las pruebas unitarias, MockMvc y de integración; quedan las vistas del frontend, la aplicación controlada de la migración en `arise-corp-dev`, la validación extremo a extremo y el PR, con lo que el flujo **cliente → contrato → paquete → estado y trazabilidad (CA-05)** queda demostrable. Las tareas y evidencias de verificación se conservan en `.kiro/specs/`. Este README concentra instalación y uso.
 
 El proyecto se ejecuta localmente (`localhost`) con el backend en Docker Compose o con Maven, y el frontend con Vite. No incluye CD, publicación de imágenes ni entornos remotos.
 
@@ -121,7 +121,8 @@ arise-corp/
 │   └── specs/
 │       ├── 001-foundation/             # Autenticación, perfil y errores (cerrada)
 │       ├── 002-crm-clientes-contratos/ # CRM de clientes, cuentas y contratos
-│       └── 003-erp-empleados-proveedores-finanzas/ # ERP: empleados, proveedores y finanzas
+│       ├── 003-erp-empleados-proveedores-finanzas/ # ERP: empleados, proveedores y finanzas
+│       └── 004-sga-drones-paquetes-inventario/ # SGA: drones, paquetes, inventario e indicadores
 │
 ├── backend/
 │   ├── .env                            # Local; no versionar
@@ -137,8 +138,9 @@ arise-corp/
 │       │   │   ├── AriseBackendApplication.java
 │       │   │   ├── config/                    # SecurityConfig, CORS, reloj y converter JWT de rol
 │       │   │   ├── login/                     # Perfil y administración de usuarios
-│       │   │   ├── crm/                       # clientes, contratos, cuentas y ClienteReferenciaService
+│       │   │   ├── crm/                       # clientes, contratos, cuentas, ClienteReferenciaService y ContratoReferenciaService
 │       │   │   ├── erp/                       # empleados, proveedores, movimientos y panel
+│       │   │   ├── sga/                       # drones, paquetes, historial, inventario e indicadores
 │       │   │   └── shared/                    # error, normalizacion, paginacion y validacion
 │       │   └── resources/
 │       │       └── application.properties
@@ -150,12 +152,15 @@ arise-corp/
 ├── frontend/
 │   ├── package.json                   # React/Vite y herramientas de prueba
 │   └── src/                            # login, perfil, sesión y vistas CRM y ERP
+│       ├── pages/sga/                  # vistas SGA (spec 004, tareas 19-28)
+│       └── services/sgaApi.js          # servicio del SGA (spec 004, tareas 19-28)
 │
 ├── supabase/
 │   └── migrations/
 │       ├── 20261108000000_app_perfiles_usuario.sql
 │       ├── 20261111120000_app_crm_clientes_contratos.sql
-│       └── 20261118095500_app_erp_empleados_proveedores_movimientos.sql
+│       ├── 20261118095500_app_erp_empleados_proveedores_movimientos.sql
+│       └── 20261121120000_app_sga_drones_paquetes_inventario.sql
 │
 ├── docs/
 │   └── def_MVP/
@@ -169,6 +174,8 @@ arise-corp/
 Los Steering Files de `.kiro/steering/` contienen las reglas permanentes del proyecto; las especificaciones funcionales se desarrollan en `.kiro/specs/`.
 
 Piezas añadidas por `003-erp-empleados-proveedores-finanzas`: `crm/service/ClienteReferenciaService` (lectura de clientes para otros módulos, sin dependencia inversa), `shared/error/ParametroInvalidoException`, `shared/validacion` ampliado con `@FechaNoFutura` y `@ValorCopPositivo`, el módulo `erp/` con sus capas `controller`, `service`, `repository`, `entity` y `dto`, las pruebas `erp/` y `MigracionesErpIT`, las vistas `frontend/src/pages/erp/`, `components/SelectorRegistro.jsx`, `lib/validacionErp.js`, `services/erpApi.js` y la migración `20261118095500_app_erp_empleados_proveedores_movimientos.sql`.
+
+Piezas añadidas por `004-sga-drones-paquetes-inventario`: `crm/service/ContratoReferenciaService` y `crm/dto/ContratoReferencia` (lectura de contratos para otros módulos, sin dependencia inversa), el módulo `sga/` con sus capas `controller`, `service`, `repository`, `entity` y `dto` (incluidas las validaciones `@CantidadEntera`, `@MovimientoInventarioValido` y `@DronSegunEstado`), las pruebas `sga/` (enumeraciones, DTO, servicios, controladores, autorización y logs), las IT `MigracionesSgaIT`, `FlujoSgaIT` y `SgaTransaccionIT`, y la migración `20261121120000_app_sga_drones_paquetes_inventario.sql`. Las vistas del frontend del SGA (`pages/sga`, `services/sgaApi.js`, `lib/validacionSga.js`, las etiquetas de estado y el icono `public/assets/sga.svg`) se añaden en las tareas 19-28 de la misma spec.
 
 ## 6. Equipo y responsabilidades
 

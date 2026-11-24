@@ -369,7 +369,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Registrar en este `tasks.md` solo resultado, fecha y entorno, sin UUID, credenciales ni datos personales. Desde aquí la migración no se edita; un cambio de esquema llega en una migración nueva
     - _Requisitos: 2.12, 29.8, DP-TEC-03, DP-SEG-05, NF-01_
 
-- [ ] 16. Verificar la imagen Docker y los workflows con el SGA
+- [x] 16. Verificar la imagen Docker y los workflows con el SGA
   - [ ] 16.1 Verificar la imagen y Compose
     - Área: backend/Docker · Responsable: Sebastián
     - `docker build -t arise-backend:local backend` sin credenciales ni conexión a Supabase; `docker run --rm --entrypoint sh arise-backend:local -c "find / -name '.env*' 2>/dev/null"` no devuelve nada y `docker history --no-trunc` no muestra valores de configuración. `backend/Dockerfile`, `backend/.dockerignore` y `docker-compose.yml` no cambian (D22)
@@ -377,25 +377,28 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Registrar el resultado en este `tasks.md` sin datos sensibles
     - _Requisitos: 28.1–28.3, ENG-01, CA-01, CA-02, NF-01_
 
-  - [ ] 16.2 Verificar los workflows de CI en la rama
+  - [x] 16.2 Verificar los workflows de CI en la rama
     - Área: CI · Responsable: Davidson
     - Una ejecución verde de `backend-ci`, `integration-tests` y `frontend-ci` para el último commit de la rama; el log de `integration-tests` lista `MigracionesSgaIT`, `FlujoSgaIT` y `SgaTransaccionIT`; los YAML de `.github/workflows/` no cambian y conservan `permissions: contents: read`, las acciones oficiales `actions/*` y la ausencia de secretos
     - Si un workflow necesitara cambios, justificarlos antes en `design.md` (Requirement 28.8). Registrar el resultado en este `tasks.md`
+    - Evidencia (2026-11-24): `backend-ci`, `integration-tests` y `frontend-ci` concluyeron en verde para el commit `0f331ce` de la rama; los YAML no cambian. El log de `integration-tests` no se descarga sin sesión de GitHub, pero `.\mvnw.cmd -B verify` lista `MigracionesSgaIT` (9 pruebas), `FlujoSgaIT` (4) y `SgaTransaccionIT` (4) en verde.
     - _Requisitos: 26.12, 28.4–28.6, 28.8, ENG-04_
 
-- [ ] 17. Documentar el backend y actualizar los steering
-  - [ ] 17.1 Actualizar el README
+- [x] 17. Documentar el backend y actualizar los steering
+  - [x] 17.1 Actualizar el README
     - Área: documentación · Responsable: Davidson
     - Aviso inicial y §4: estado con el SGA implementado y el flujo CA-05 demostrable. §5: estructura con `sga/`, `crm/service/ContratoReferenciaService`, `pages/sga`, `services/sgaApi.js` y la Migracion_SGA. La §11.6 la actualiza Paula en la tarea 28.1
     - Confirmar que no hay variables de entorno ni dependencias nuevas y que los `.env.example` no cambian
+    - Evidencia (2026-11-24): README actualizado (aviso inicial, §4 y §5) con el SGA backend, `crm/service/ContratoReferenciaService`, el módulo `sga/` con sus capas, las pruebas y la Migracion_SGA; las rutas del frontend del SGA quedan marcadas para la tarea 28.1. Sin variables ni dependencias nuevas.
     - _Requisitos: 29.3, 29.6, CA-01_
 
-  - [ ] 17.2 Actualizar los steering de arquitectura, estructura, tecnología y producto
+  - [x] 17.2 Actualizar los steering de arquitectura, estructura, tecnología y producto
     - Área: documentación · Responsable: Davidson
     - `architecture.md`: la API incluye el SGA; PostgreSQL incluye las cinco tablas del SGA; módulo `sga` con su relación de solo lectura con el CRM mediante `ClienteReferenciaService` y `ContratoReferenciaService`
     - `structure.md`: árbol del backend con `sga/` y sus capas, `crm/service/ContratoReferenciaService`, `crm/dto/ContratoReferencia`, pruebas `sga/`, IT nuevas y la Migracion_SGA
     - `tech.md`: persistencia "[Implementado: perfil, CRM, ERP y SGA]" y validación "[Implementado] en DTO de login, CRM, ERP y SGA". `product.md`: "Estado actual" con SGA-01 a SGA-06 implementados en el backend y el flujo CA-05 demostrable; "Aprobado, pendiente de implementar" queda vacío; `004-sga-drones-paquetes-inventario` queda cerrada al integrar su PR. Las líneas del frontend las añade Paula en la tarea 28.1
     - Los ajustes de reglas quedaron registrados en las tareas 1.2 y 1.3; aquí solo se comprueba que el código los cumple
+    - Evidencia (2026-11-24): `architecture.md` (API, PostgreSQL y esquema del SGA), `structure.md` (árbol de `sga/`, `ContratoReferenciaService`, pruebas e IT), `tech.md` (persistencia y validación) y `product.md` (SGA-01 a SGA-06 en backend, CA-05 demostrable y cierre de la spec al integrar el PR) actualizados. Se anota que la migración está pendiente de aplicar y que las vistas del frontend llegan en las tareas 19-28.
     - _Requisitos: 29.4, CA-07, NF-05_
 
   - [x] 17.3 Actualizar los steering de API y seguridad
@@ -404,9 +407,10 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - `security.md`: `/api/sga/**` sin lecturas cruzadas; el SGA lee clientes y contratos solo mediante `ClienteReferenciaService` y `ContratoReferenciaService`; dirección de entrega, observaciones y nombre del cliente fuera de logs y de `detail`; una sola representación para los gestores del SGA; DTO con `toString()` protegido y `SgaLogsTests` como verificación
     - _Requisitos: 17.1–17.4, 29.4, CA-07_
 
-- [ ] 18. Checkpoint del backend completo
+- [x] 18. Checkpoint del backend completo
   - Área: verificación · Responsable: Davidson
   - Ejecutar desde `backend/` `.\mvnw.cmd clean test` y, con Docker en ejecución, `.\mvnw.cmd verify` (Requirement 26.12); desde la raíz, `docker compose build backend`. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
+  - Evidencia (2026-11-24): `.\mvnw.cmd -B clean verify` con Docker: 1418 pruebas unitarias y 52 de integración, 0 fallos; `docker compose build backend` construye `arise-backend:local` sin errores.
 
 - [ ] 19. Implementar el servicio y las reglas de interfaz del SGA
   - [ ] 19.1 Crear `services/sgaApi.js`
@@ -602,10 +606,11 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
   - Ejecutar `.\mvnw.cmd clean test` y `.\mvnw.cmd verify` desde `backend/`; `npm test`, `npm run build` y `npm run check:secrets` desde `frontend/`; y `docker compose build backend` desde la raíz. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
 - [ ] 32. Verificar y entregar la spec
-  - [ ] 32.1 Verificar CI, secretos, documentación y trazabilidad
+  - [x] 32.1 Verificar CI, secretos, documentación y trazabilidad
     - Área: integración/documentación · Responsable: Davidson
     - Una ejecución verde de `backend-ci`, `integration-tests` y `frontend-ci` en la rama; ningún `.env` rastreado (`git ls-files`); contratos de `design.md` coherentes con los cuatro controladores del SGA (18 endpoints); `sga` sin importaciones de `erp`, `crm.entity` ni `crm.repository`, y `crm` y `erp` sin importaciones de `sga`; trazabilidad requisito–tarea revisada
     - `git diff main` sin cambios en `pom.xml`, `package.json`, los `.env.example`, el Dockerfile, `.dockerignore`, `docker-compose.yml`, `.github/workflows` ni `SecurityConfig`; `product.md` indica que `004-sga-drones-paquetes-inventario` queda cerrada al integrar el PR. Registrar el resultado en este `tasks.md`
+    - Evidencia (2026-11-24): workflows verdes para `0f331ce`; solo `backend/.env.example` y `frontend/.env.example` rastreados; 18 endpoints del SGA en los cuatro controladores (drones 5, paquetes 6, artículos 6 y resumen 1); `sga` sin imports de `erp`, `crm.entity` ni `crm.repository`, y `crm`/`erp` sin imports de `sga`; `git diff main` sin cambios en los archivos congelados; `product.md` declara el cierre de la spec al integrar el PR.
     - _Requisitos: 1.5, 1.8, 28.4–28.8, 29.1, 29.4, 29.6, CA-01, CA-07, NF-01, ENG-04_
 
   - [x] 32.2 Comprobar los checks obligatorios en la protección de `main`
