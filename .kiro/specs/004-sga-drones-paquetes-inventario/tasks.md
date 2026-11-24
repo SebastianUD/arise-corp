@@ -277,31 +277,31 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - `@Service @Transactional(readOnly = true)`; `obtener()` llama una vez a `paquetes.contarPorEstado()`, `drones.contarPorEstado()` y `articulos.contarArticulos()` y construye la respuesta con `ResumenSgaResponse.desde` (D13)
     - _Requisitos: 16.1, 16.3, CA-04, SGA-06_
 
-- [ ] 11. Implementar los controladores del SGA y la matriz de autorización
-  - [ ] 11.1 Implementar `DronController`
+- [x] 11. Implementar los controladores del SGA y la matriz de autorización
+  - [x] 11.1 Implementar `DronController`
     - Área: backend · Responsable: Sebastián
     - `GET`, `GET /{id}`, `POST` (201 con `Location` relativa), `PUT /{id}` y `PATCH /{id}/estado` en `/api/sga/drones`; parámetros `q`, `estado`, `asignable`, `page`, `size` y `sort` (`codigo`, `modelo` o `creadoEn`; por defecto `codigo,asc`) con las restricciones en los `@RequestParam` y sin `@Validated` a nivel de clase
     - Actor tomado de `@AuthenticationPrincipal Jwt`; sin `DELETE` mapeado, de modo que el gestor recibe 405 con `Allow`
     - _Requisitos: 1.2, 1.3, 4.1, 4.8, 4.11, 5.1–5.9, 6.1, 6.4, 18.6, SGA-01_
 
-  - [ ] 11.2 Implementar `ArticuloController`
+  - [x] 11.2 Implementar `ArticuloController`
     - Área: backend · Responsable: Sebastián
     - `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `GET /{id}/movimientos` (`sort` solo `registradoEn`; por defecto `registradoEn,desc`) y `POST /{id}/movimientos` (201 con `Location: /api/sga/articulos/{id}/movimientos`) en `/api/sga/articulos`; parámetros `q`, `categoria`, `bajoStockMinimo`, `page`, `size` y `sort` (`codigo`, `nombre`, `existencia` o `creadoEn`; por defecto `nombre,asc`); sin `DELETE` mapeado
     - _Requisitos: 1.2, 13.1, 13.8, 13.10, 14.1–14.7, 15.1, 15.11, 15.13, 15.14, SGA-03_
 
-  - [ ] 11.3 Implementar `ResumenSgaController`
+  - [x] 11.3 Implementar `ResumenSgaController`
     - Área: backend · Responsable: Sebastián
     - `GET /api/sga/resumen` sin parámetros, que delega en `ResumenSgaService.obtener()`
     - _Requisitos: 1.2, 16.1, SGA-06_
 
-  - [ ] 11.4 Implementar `PaqueteController` y retirar `AutorizacionModulosTests`
+  - [x] 11.4 Implementar `PaqueteController` y retirar `AutorizacionModulosTests`
     - Área: backend · Responsable: Sebastián
     - `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `GET /{id}/estados` (arreglo JSON) y `POST /{id}/estados` (201 con `Location: /api/sga/paquetes/{id}/estados`) en `/api/sga/paquetes`, según el fragmento del diseño; filtros `estado`, `clienteId`, `contratoId`, `dronId` y `q`, y `sort` (`codigo`, `creadoEn` o `estadoActualizadoEn`; por defecto `creadoEn,desc`); sin `DELETE` mapeado
     - En el mismo cambio, eliminar `backend/src/test/java/com/arise/corp/login/controller/AutorizacionModulosTests.java`: su único endpoint es el doble `GET /api/sga/paquetes`, que con el controlador real provoca un error de mapeo ambiguo al arrancar el contexto (D16)
     - Confirmar en el mismo commit que la tarea 11.5 (`SgaAutorizacionTests`), que recoge los casos de la clase retirada (Requirement 25.8)
     - _Requisitos: 1.2, 7.1, 8.1–8.9, 9.1, 9.9, 10.1, 12.1, 12.6, 12.7, 25.8, SGA-02, SGA-04_
 
-  - [ ] 11.5 Escribir `sga/controller/SgaAutorizacionTests`
+  - [x] 11.5 Escribir `sga/controller/SgaAutorizacionTests`
     - Área: backend · Responsable: Sebastián
     - Matriz exhaustiva parametrizada: 21 operaciones (18 endpoints y los tres `DELETE`) × {sin token, sin perfil, perfil inactivo, ADMINISTRADOR, COMERCIAL, FINANZAS_RRHH, OPERACIONES}, con `SgaDatosPrueba` y el `PerfilJwtAuthenticationConverter` real sobre perfiles persistidos en H2. Sin token, 401 con `WWW-Authenticate`; en los denegados, 403 sin cambios en los datos y también con un `{id}` inexistente; `DELETE` con un rol gestor → 405 con `Allow` y registro conservado; éxito para ADMINISTRADOR y OPERACIONES
     - Recoge los casos de `AutorizacionModulosTests` (`sinTokenDevuelve401`, `sinPerfilActivoDevuelve403EnCualquierModulo`, `perfilInactivoDevuelve403EnCualquierModulo`, `operacionesAccedeASgaYFinanzasNo`, `comercialNoAccedeASga` y `administradorAccedeASga`); el Javadoc indica que la matriz de los tres módulos se prueba sobre controladores reales en `CrmAutorizacionTests`, `ErpAutorizacionTests` y `SgaAutorizacionTests`. Las lecturas de OPERACIONES sobre el CRM siguen en `CrmAutorizacionTests` y `ClienteControllerTests`, sin duplicarlas (interpretación 14)
@@ -734,5 +734,25 @@ Alcance respetado:
 - Sin credenciales, tokens, UUID personales ni datos personales en este registro.
 
 Commits: `645bd61` (`test(sga)` para 14.1–14.2).
+
+### Controladores del SGA y matriz de autorización (tareas 11.1–11.5)
+
+| Tarea | Entregable | Verificación |
+|---|---|---|
+| 11.1 | `sga/controller/DronController` | `GET`, `GET /{id}`, `POST` (201 con `Location: /api/sga/drones/{id}`), `PUT /{id}` y `PATCH /{id}/estado`; `q` con `@Size(100)`, `estado` como `EstadoDron`, `asignable` como `Boolean`, `page`/`size` con sus mínimos y máximos y `sort` `(codigo|modelo|creadoEn),(asc|desc)` por defecto `codigo,asc`, todos en los `@RequestParam` y sin `@Validated` de clase. El actor sale de `@AuthenticationPrincipal Jwt` y no hay `DELETE` mapeado |
+| 11.2 | `sga/controller/ArticuloController` | `GET`, `GET /{id}`, `POST` (201), `PUT /{id}`, `GET /{id}/movimientos` (`sort` solo `registradoEn`, por defecto `registradoEn,desc`) y `POST /{id}/movimientos` (201 con `Location: /api/sga/articulos/{id}/movimientos`); filtros `q`, `categoria` y `bajoStockMinimo` y orden `(codigo|nombre|existencia|creadoEn),(asc|desc)` por defecto `nombre,asc`; sin `DELETE` mapeado |
+| 11.3 | `sga/controller/ResumenSgaController` | `GET /api/sga/resumen` sin parámetros, delega en `ResumenSgaService.obtener()` |
+| 11.4 | `sga/controller/PaqueteController` y retirada de `AutorizacionModulosTests` | `GET`, `GET /{id}`, `POST` (201), `PUT /{id}`, `GET /{id}/estados` como arreglo y `POST /{id}/estados` (201 con `Location: /api/sga/paquetes/{id}/estados`); filtros `estado`, `clienteId`, `contratoId`, `dronId` y `q`, y `sort` `(codigo|creadoEn|estadoActualizadoEn),(asc|desc)` por defecto `creadoEn,desc`; sin `DELETE` mapeado. Se eliminó `login/controller/AutorizacionModulosTests.java`, cuyo doble `GET /api/sga/paquetes` provocaba un mapeo ambiguo al arrancar el contexto, en el mismo commit que el controlador real (D16) |
+| 11.5 | `sga/controller/SgaAutorizacionTests` | 147 casos parametrizados: las 21 operaciones (18 endpoints y los tres `DELETE`) × siete identidades (sin token, sin perfil, perfil inactivo y los cuatro roles) con `SgaDatosPrueba` y el `PerfilJwtAuthenticationConverter` real sobre perfiles persistidos en H2. Sin token responde 401 con `WWW-Authenticate`; los denegados responden 403 sin cambios en las cinco tablas y también con un `{id}` inexistente; `DELETE` con ADMINISTRADOR u OPERACIONES responde 405 con `Allow` y conserva el registro; las demás operaciones responden 200 o 201 para los dos roles gestores. Recoge los seis casos de la clase retirada |
+
+Verificación: `.\mvnw.cmd -B "-Dtest=SgaAutorizacionTests" test` desde `backend/` → **147 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**. Regresión: `.\mvnw.cmd -B clean test` → **1389 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**, sin Docker, Supabase ni `.env`.
+
+Alcance respetado:
+
+- Solo se añadieron los cuatro controladores y la prueba de autorización; no se modificaron los servicios, entidades ni repositorios del SGA de Davidson, ni el CRM, el ERP o `001-foundation`.
+- Las rutas, los parámetros, los códigos de estado, las `Location` y los roles siguen los contratos de `design.md`; las lecturas de OPERACIONES sobre el CRM no se duplican (interpretación 14).
+- Sin credenciales, tokens, UUID ni datos personales en este registro.
+
+Commits: `f28f47a` (`feat(sga)` para 11.1–11.5).
 
 
