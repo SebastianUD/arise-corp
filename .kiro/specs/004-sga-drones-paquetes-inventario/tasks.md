@@ -330,7 +330,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Con `OutputCaptureExtension` y `@MockitoBean ContratoReferenciaService` cuyo `buscarParaAsociar` lanza una excepción sin datos: crear y editar paquetes sin contrato, provocar un 409 de código duplicado y un 500 (alta con `contratoId`, que llega al doble), con una dirección de entrega, una observación y un nombre de cliente ficticios conocidos; la salida capturada no contiene esos valores
     - _Requisitos: 17.3, 25.7, CA-06_
 
-- [ ] 13. Checkpoint del backend sin Docker
+- [x] 13. Checkpoint del backend sin Docker
   - Área: verificación · Responsable: Sebastián
   - Ejecutar `.\mvnw.cmd clean test` desde `backend/` sin Docker, sin Supabase y sin `.env` (Requirement 25.10), con las pruebas de `001-foundation`, `002-crm-clientes-contratos` y `003-erp-empleados-proveedores-finanzas` en verde, incluidas `CrmAutorizacionTests` y `ClienteControllerTests` sin cambios (Requirement 25.9). Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
@@ -771,6 +771,15 @@ Alcance respetado:
 - Solo se añadieron las cuatro clases de prueba; no se modificaron los controladores, servicios, entidades ni repositorios del SGA de Davidson, ni el CRM, el ERP o `001-foundation`.
 - Las pruebas usan `SgaDatosPrueba` y `CrmDatosPrueba` con el `PerfilJwtAuthenticationConverter` real sobre H2; los datos son ficticios y no hay tokens ni credenciales.
 - Sin credenciales, tokens, UUID personales ni datos personales en este registro.
+
+### Checkpoint del backend sin Docker (tarea 13)
+
+Verificación: `.\mvnw.cmd -B clean test` desde `backend/` → **1418 pruebas, 0 fallos, 0 errores, 0 omitidas, BUILD SUCCESS**, con H2 en memoria, sin Docker, sin Supabase, sin `.env` y sin red. Las suites de `001-foundation`, `002-crm-clientes-contratos` y `003-erp-empleados-proveedores-finanzas` quedan en verde, incluidas `CrmAutorizacionTests` (119 pruebas) y `ClienteControllerTests` (62 pruebas), que no se modificaron en esta rama.
+
+Alcance respetado:
+
+- No se cambió código de producción ni pruebas de los módulos anteriores; el checkpoint solo ejecuta y registra la regresión.
+- Sin credenciales, tokens ni datos personales en este registro.
 
 
 
