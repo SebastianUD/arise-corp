@@ -584,7 +584,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
   - Verificación (2026-11-24): `npm test -- --reporter=dot`, 39 archivos y 375 pruebas aprobadas; `npm run build` y `npm run check:secrets` aprobados. Se incluyen las suites anteriores de autenticación, CRM y ERP.
   - Revisión en navegador con sesión y API ficticias: las 13 rutas SGA a 390 × 844 sin desbordamiento de página; detalle del paquete a 768 × 1024; listas e indicadores en escritorio; temas claro/oscuro, campos, etiquetas y tablas con desplazamiento dentro de su contenedor. Comprobada la validación de dron obligatorio. Ajustadas la casilla de bajo stock en móvil y las etiquetas de búsqueda. Configuración temporal de QA retirada.
 
-- [ ] 30. Validar el SGA y el flujo integrado de extremo a extremo con Supabase real
+- [x] 30. Validar el SGA y el flujo integrado de extremo a extremo con Supabase real
   - [x] 30.1 Validar el flujo cliente → contrato → paquete → estado y trazabilidad (CA-05)
     - Área: integración · Responsable: Paula
     - Validación real (2026-11-24): `frontend/manual/ejecutar-real.mjs` con las cuentas de demostración autorizadas. Las vistas React se ejecutaron en jsdom, sin simular Auth ni HTTP, contra Spring Boot local y Supabase real. Comercial registró un cliente empresarial y un contrato y lo activó; Operaciones registró un dron y un paquete asociado, lo asignó y pasó a tránsito y entregado con confirmación. Al remontar la aplicación, persistieron los cuatro registros encadenados; se consultaron cliente y contrato en modo lectura; el dron quedó `DISPONIBLE` y sin paquete en curso. Resultado: 1 prueba real aprobada. Las altas de cliente/contrato/dron se reutilizaron tras corregir el alcance del selector de búsqueda del ejecutor manual, evitando duplicados. Esta evidencia verifica interacción y persistencia; la revisión visual en navegador quedó limitada porque Computer Use detuvo el acceso al no poder verificar la URL de Brave. No se almacenaron contraseñas ni tokens en archivos.
@@ -595,10 +595,11 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Registrar en este `tasks.md` fecha, pasos y resultado sin credenciales, tokens, UUID ni datos personales reales
     - _Requisitos: 30.1, 30.6, CA-04, CA-05, SGA-01, SGA-02, SGA-04, SGA-05_
 
-  - [ ] 30.2 Validar el inventario y los indicadores
+  - [x] 30.2 Validar el inventario y los indicadores
     - Área: integración · Responsable: Davidson
     - Con OPERACIONES: registrar un artículo ficticio, una `ENTRADA` de 10, una `SALIDA` de 4 y una `SALIDA` de 20; la última responde 409 con la existencia disponible (6) y no cambia la existencia. Recargar y comprobar la existencia, los movimientos y los indicadores de paquetes, drones y artículos bajo stock mínimo
     - Registrar en este `tasks.md` fecha, pasos y resultado sin datos sensibles
+    - Evidencia (2026-11-25): con una cuenta de prueba con perfil OPERACIONES activo y el backend en Docker contra `arise-corp-dev`. Se creó el artículo ficticio `ART-VAL-302-01` (REPUESTO, UNIDAD, stock mínimo 10) con existencia 0; una `ENTRADA` de 10 (0 → 10) y una `SALIDA` de 4 (10 → 6) respondieron 201; la `SALIDA` de 20 respondió 409 `EXISTENCIA_INSUFICIENTE` con `campo = "cantidad"`, `existenciaActual = 6` y `cantidadSolicitada = 20`, sin cambiar la existencia. Al recargar, el artículo quedó con existencia 6 y `bajoStockMinimo = true`, y sus movimientos son solo los dos aceptados (el rechazado no se registró). El resumen coincidió con la base: paquetes 13 (REGISTRADO 2, ASIGNADO 2, EN_TRANSITO 2, ENTREGADO 3, CANCELADO 2, DEVUELTO 2), drones 9 (DISPONIBLE 5, EN_MISION 2, MANTENIMIENTO 1, FUERA_DE_SERVICIO 1) y artículos 10 con 5 bajo stock mínimo; la lista `bajoStockMinimo=true` incluye el artículo creado.
     - _Requisitos: 30.2, 30.6, CA-04, SGA-03, SGA-06_
 
   - [x] 30.3 Validar las denegaciones del SGA y del CRM
