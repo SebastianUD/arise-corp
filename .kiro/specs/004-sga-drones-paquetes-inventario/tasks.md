@@ -613,7 +613,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
   - Área: verificación · Responsable: Sebastián
   - Ejecutar `.\mvnw.cmd clean test` y `.\mvnw.cmd verify` desde `backend/`; `npm test`, `npm run build` y `npm run check:secrets` desde `frontend/`; y `docker compose build backend` desde la raíz. Asegurar que todas las pruebas pasan; consultar a la usuaria si surgen dudas.
 
-- [ ] 32. Verificar y entregar la spec
+- [x] 32. Verificar y entregar la spec
   - [x] 32.1 Verificar CI, secretos, documentación y trazabilidad
     - Área: integración/documentación · Responsable: Davidson
     - Una ejecución verde de `backend-ci`, `integration-tests` y `frontend-ci` en la rama; ningún `.env` rastreado (`git ls-files`); contratos de `design.md` coherentes con los cuatro controladores del SGA (18 endpoints); `sga` sin importaciones de `erp`, `crm.entity` ni `crm.repository`, y `crm` y `erp` sin importaciones de `sga`; trazabilidad requisito–tarea revisada
@@ -626,9 +626,10 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - La protección configurada en `002-crm-clientes-contratos` sigue activa: PR obligatorio con una aprobación de otro integrante, *squash merge*, rama actualizada antes de integrar y `backend-ci`, `integration-tests` y `frontend-ci` como checks obligatorios. Si algo cambió, restablecerlo sin guardar tokens ni credenciales en el repositorio
     - _Requisitos: 28.7, DP-SDD-05_
 
-  - [ ] 32.3 Abrir el Pull Request único hacia `main`
+  - [x] 32.3 Abrir el Pull Request único hacia `main`
     - Área: integración · Responsable: Sebastián
-    - PR desde `feat/sga-drones-paquetes-inventario` con enlace a la spec, requisitos y tareas, instrucciones de prueba, resultados de las suites, construcción Docker, CI en verde, nombre de la Migracion_SGA aplicada, evidencia del flujo CA-05 y la lista de comprobación de `sdd-workflow.md`; revisión de un integrante distinto del autor de cada cambio; sin secretos en la descripción ni en las capturas
+    - PR desde `feature/sga-drones-paquetes-inventario` con enlace a la spec, requisitos y tareas, instrucciones de prueba, resultados de las suites, construcción Docker, CI en verde, nombre de la Migracion_SGA aplicada, evidencia del flujo CA-05 y la lista de comprobación de `sdd-workflow.md`; revisión de un integrante distinto del autor de cada cambio; sin secretos en la descripción ni en las capturas
+    - Evidencia (2026-11-25): PR [#5](https://github.com/SebastianUD/arise-corp/pull/5) abierto desde `feature/sga-drones-paquetes-inventario` hacia `main` sobre `806d05c`, con la especificación y los requisitos 1–30 enlazados, instrucciones de prueba, resultados de las suites, construcción Docker, nombre de la migración aplicada y evidencia de CA-05. Los workflows `backend-ci`, `integration-tests` y `frontend-ci` están en verde para el HEAD. Sin secretos ni `.env` en la descripción. Pendiente la revisión y aprobación de un integrante distinto del autor de cada cambio antes del *squash merge*.
     - _Requisitos: 29.7, CA-05, CA-07, DP-SDD-04, DP-SDD-05_
 
 ## Notes
@@ -904,6 +905,25 @@ Alcance respetado:
 
 - Solo se usaron datos ficticios; no se registraron credenciales, tokens, UUID ni datos personales.
 - No se copiaron tokens entre sesiones ni se modificó código.
+
+### Apertura del Pull Request (tarea 32.3)
+
+PR [#5](https://github.com/SebastianUD/arise-corp/pull/5), abierto el 2026-11-25 desde `feature/sga-drones-paquetes-inventario` hacia `main` sobre el commit `806d05c`.
+
+| Comprobación | Resultado |
+|---|---|
+| Workflows `backend-ci`, `integration-tests` y `frontend-ci` | En verde para `806d05c` |
+| Backend | 1418 pruebas unitarias y de controlador; 52 de integración con PostgreSQL efímero |
+| Frontend | 40 archivos y 377 pruebas; `npm run build` y `npm run check:secrets` aprobados |
+| Docker | `arise-backend:local` construida sin `.env`; `GET /api/sga/drones` responde 401 con `WWW-Authenticate` |
+| Migración | `20261121120000_app_sga_drones_paquetes_inventario` aplicada en `arise-corp-dev` con RLS y grants |
+| Secretos | Sin `.env`, credenciales, tokens, UUID ni datos personales en la descripción ni en los commits |
+| Revisión | Pendiente de un integrante distinto del autor de cada cambio; el autor no aprueba su propio PR |
+
+Alcance respetado:
+
+- El PR incluye la especificación, los steering de la spec y los comandos de prueba; no introduce cambios en `pom.xml`, `package.json`, `.env.example`, Dockerfile, `docker-compose.yml`, workflows ni `SecurityConfig`.
+- La integración se hará con *squash merge* una vez que `main` tenga la aprobación y los checks obligatorios en verde.
 
 
 
