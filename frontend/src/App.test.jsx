@@ -94,6 +94,7 @@ it('abre un solo grupo del sidebar y permite cerrar el grupo activo', async () =
   await screen.findByText(profile.email)
   const crm = screen.getByRole('button', { name: 'CRM', exact: true })
   const erp = screen.getByRole('button', { name: 'ERP', exact: true })
+  expect(within(screen.getByRole('navigation', { name: 'Navegación principal' })).queryByRole('link', { name: 'Inicio', exact: true })).toBeNull()
   expect(crm).toHaveAttribute('aria-expanded', 'false')
   expect(erp).toHaveAttribute('aria-expanded', 'false')
   expect(screen.queryByRole('link', { name: 'Clientes', exact: true })).toBeNull()
@@ -130,6 +131,19 @@ it('valida campos obligatorios sin solicitar autenticación', async () => {
   submit()
   expect(screen.getByText('El correo es obligatorio.')).toBeVisible()
   expect(screen.getByText('La contraseña es obligatoria.')).toBeVisible()
+  expect(auth.signInWithPassword).not.toHaveBeenCalled()
+})
+
+it('permite mostrar y ocultar la contraseña sin enviar el formulario', async () => {
+  mount()
+  await loginForm()
+  const campo = screen.getByLabelText(/^Contraseña/)
+  expect(campo).toHaveAttribute('type', 'password')
+  fireEvent.click(screen.getByRole('button', { name: 'Mostrar contraseña' }))
+  expect(campo).toHaveAttribute('type', 'text')
+  expect(campo).toHaveValue('fake-password')
+  fireEvent.click(screen.getByRole('button', { name: 'Ocultar contraseña' }))
+  expect(campo).toHaveAttribute('type', 'password')
   expect(auth.signInWithPassword).not.toHaveBeenCalled()
 })
 
@@ -332,7 +346,7 @@ it.each([
   fetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ ...profile, role }) })
   mount('/perfil', true)
   await screen.findByText(profile.email)
-  expect(screen.getByRole('link', { name: 'Inicio', exact: true })).toHaveAttribute('href', '/')
+  expect(screen.queryByRole('link', { name: 'Inicio', exact: true })).toBeNull()
   expect(screen.queryByRole('link', { name: 'Clientes', exact: true })).toBeNull()
   expect(screen.queryByRole('link', { name: 'Empleados', exact: true })).toBeNull()
   const destinos = {
@@ -429,7 +443,7 @@ it('abre las tres vistas desde el menú comercial compartiendo una sola consulta
     fireEvent.click(screen.getByRole('link', { name: nombre }))
     expect(await screen.findByText(texto)).toBeVisible()
     expect(screen.getByRole('link', { name: nombre })).toHaveAttribute('aria-current', 'page')
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8080/api' + ruta, expect.anything())
+    expect(fetch).toHaveBeenCalledWith('http://localhost:8080/api' + ruta + (ruta === '/crm/clientes' ? '?size=5' : ''), expect.anything())
   }
   expect(fetch.mock.calls.filter(([url]) => url.endsWith('/me'))).toHaveLength(1)
 })

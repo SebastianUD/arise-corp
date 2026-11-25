@@ -31,7 +31,6 @@ function EspacioTrabajo() {
       <img className="sidebar-logo" src="/assets/arise-logo.png" alt="Arise Corp." width="176" height="68" />
       <div className="workspace-id">Arise Corp. <span>/</span> Colombia</div>
       <nav className="app-nav" aria-label="Navegación principal">
-        <NavLink to="/" className="nav-item"><img src="/assets/inicio.svg" alt="" />Inicio</NavLink>
         {rol && <NavLink to="/panel" className="nav-item"><img src="/assets/inicio.svg" alt="" />Panel general</NavLink>}
         {crm.length > 0 && <GrupoMenu nombre="CRM" icono="/assets/crm.svg" opciones={crm}
           abierto={grupoAbierto === 'CRM'} activo={seccion === 'CRM'}

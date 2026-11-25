@@ -8,6 +8,7 @@ export default function Login() {
   const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [mostrarPassword, setMostrarPassword] = useState(false)
   const [errors, setErrors] = useState({})
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -43,6 +44,7 @@ export default function Login() {
   return (
     <AccessLayout>
     <section className="access-card" aria-labelledby="login-title">
+      <p className="access-kicker">TU CENTRO DE OPERACIONES</p>
       <h1 id="login-title" className="access-title">Bienvenido de nuevo</h1>
       <p className="access-subtitle">Ingresa con tu cuenta corporativa.</p>
       <form noValidate onSubmit={handleSubmit} className="access-form" aria-label="Inicio de sesión">
@@ -61,15 +63,18 @@ export default function Login() {
         </div>
         <div className="access-field">
           <label htmlFor="password">Contraseña <span aria-hidden="true">*</span></label>
-          <input id="password" type="password" autoComplete="current-password" required value={password}
+          <div className="password-control">
+          <input id="password" type={mostrarPassword ? 'text' : 'password'} autoComplete="current-password" required value={password}
             placeholder="Ingresa tu contraseña"
             onChange={event => setPassword(event.target.value)} disabled={submitting}
             aria-invalid={!!errors.password} aria-describedby={errors.password ? 'password-error' : undefined} />
+          <button type="button" className="password-toggle" aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} aria-pressed={mostrarPassword}
+            disabled={submitting} onClick={() => setMostrarPassword(!mostrarPassword)}>{mostrarPassword ? 'Ocultar' : 'Ver'}</button>
+          </div>
           {errors.password && <p id="password-error" className="access-field-error">{errors.password}</p>}
         </div>
         <button type="submit" className="access-submit" disabled={submitting || !!configurationError}>
           {submitting ? 'Iniciando sesión…' : 'Iniciar sesión'}
-          {!submitting && <span aria-hidden="true">→</span>}
         </button>
         {submitting && <p role="status">Comprobando tus credenciales…</p>}
       </form>

@@ -11,7 +11,7 @@ Cambio solicitado por Paula: ocultar las opciones CRM y ERP hasta pulsar su enca
 
 ## Diseño
 
-Página `Inicio.jsx` con carga diferida, ruta pública explícita antes de las rutas protegidas y enlace desde el login y el menú privado. Se reutilizan el logo, la fuente Inter y la paleta azul locales. Los enlaces internos permiten llegar a misión y visión.
+Página `Inicio.jsx` con carga diferida, ruta pública explícita antes de las rutas protegidas y enlace desde el login. Se reutilizan el logo, la fuente Inter y la paleta azul locales. Los enlaces internos permiten llegar a misión y visión. El ajuste del 2026-11-24 retira el enlace «Inicio» del menú privado y conserva «Panel general» (ver `ajustes-presentacion.md`).
 
 Componente `GrupoMenu.jsx` con botón nativo, `aria-expanded`, `aria-controls` y contenedor `hidden`. `AppLayout` mantiene un único identificador de grupo abierto. No se añaden dependencias ni se cambian contratos de API.
 
