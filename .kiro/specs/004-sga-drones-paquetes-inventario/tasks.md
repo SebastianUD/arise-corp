@@ -600,7 +600,7 @@ El total es igual para los tres y la diferencia en las obligatorias es de una su
     - Registrar en este `tasks.md` fecha, pasos y resultado sin datos sensibles
     - _Requisitos: 30.2, 30.6, CA-04, SGA-03, SGA-06_
 
-  - [ ] 30.3 Validar las denegaciones del SGA y del CRM
+  - [x] 30.3 Validar las denegaciones del SGA y del CRM
     - Área: integración · Responsable: Sebastián
     - Con COMERCIAL y con FINANZAS_RRHH, `/sga/drones` muestra el mensaje de falta de permisos sin pedir datos. Sin copiar tokens: el usuario OPERACIONES abre la edición de un dron, el Administrador cambia temporalmente su rol a COMERCIAL y el usuario envía el formulario; el backend responde 403, el dron no cambia y la interfaz muestra "No tienes permisos para realizar esta operación." sin cerrar la sesión. Se repite con FINANZAS_RRHH
     - Con OPERACIONES, el detalle de un cliente muestra la vista reducida sin edición; un usuario COMERCIAL con el formulario de un cliente abierto, cuyo rol se cambia a OPERACIONES, recibe 403 sin cambios
@@ -883,6 +883,25 @@ Alcance respetado:
 - No se modificó código, configuración ni pruebas; el checkpoint solo ejecuta y registra.
 - No se abrió ni mostró `backend/.env`; el build de Compose no recibe credenciales en la imagen.
 - Sin credenciales, tokens, UUID ni datos personales en este registro.
+
+### Validación de denegaciones del SGA y del CRM (tarea 30.3)
+
+Validación manual del 2026-11-24 con el backend en `docker compose up backend` contra `arise-corp-dev`, el frontend en `npm run dev` y cuentas de prueba de los cuatro roles con datos ficticios. Sin copiar tokens entre sesiones.
+
+| Bloque | Pasos | Resultado |
+|---|---|---|
+| A. Guard de rutas del SGA | COMERCIAL y FINANZAS_RRHH abren `/sga/drones` | Ambos reciben "No tienes permisos para acceder a esta sección."; la ruta se rechaza antes de montar la página, sin solicitar datos del SGA |
+| B. Cambio de rol con el formulario SGA abierto | OPERACIONES abre la edición de un dron; el Administrador cambia su rol a COMERCIAL y luego a FINANZAS_RRHH; el usuario envía el formulario | En ambos casos el backend responde 403, la interfaz muestra "No tienes permisos para realizar esta operación.", la sesión sigue abierta y el dron conserva sus datos |
+| C. Vista reducida del cliente | OPERACIONES abre el detalle de un cliente | Sin acción de edición y sin correo, teléfono ni dirección |
+| D. Cambio de rol con el formulario CRM abierto | COMERCIAL abre la edición de un cliente; el Administrador lo pasa a OPERACIONES; el usuario envía el formulario | 403, "No tienes permisos para realizar esta operación.", sesión abierta y cliente sin cambios |
+| E. Limpieza | — | Dron de prueba en `FUERA_DE_SERVICIO` y roles restablecidos |
+
+Resultado: los cuatro bloques aprobados; no hubo que corregir código.
+
+Alcance respetado:
+
+- Solo se usaron datos ficticios; no se registraron credenciales, tokens, UUID ni datos personales.
+- No se copiaron tokens entre sesiones ni se modificó código.
 
 
 
