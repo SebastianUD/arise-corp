@@ -45,18 +45,30 @@
 .profile-workspace { min-width: 0; padding: clamp(20px, 3vw, 48px); }
 .access-loading { min-height: 100vh; display: grid; place-items: center; background: var(--access-background); color: var(--access-text); }
 .access-page { min-height: 100vh; min-height: 100svh; background: var(--access-background); color: var(--access-text); }
-.access-header { height: 160px; display: flex; justify-content: space-between; align-items: flex-start; padding: 48px 14.3% 0 64px; }
+.access-header { min-height: 112px; display: flex; justify-content: space-between; gap: 24px; align-items: center; padding: 20px clamp(24px, 5vw, 72px); background: white; border-bottom: 1px solid var(--access-border); }
+.access-header-note { color: var(--access-muted); font-size: 14px; }
 .access-logo { display: block; width: 200px; height: 77.009px; object-fit: contain; border-radius: 6px; }
-.access-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: 'brand form'; min-height: calc(100svh - 160px); }
-.access-brand { grid-area: brand; min-width: 0; background: var(--access-brand); padding: 62px 64px 42px; color: white; }
+.access-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: 'brand form'; min-height: calc(100svh - 118px); }
+.access-brand { grid-area: brand; min-width: 0; background: radial-gradient(ellipse at 80% 30%, #14618c 0, transparent 60%), linear-gradient(145deg, #0a243d, #093653 65%, #105481); padding: 48px clamp(28px, 4.5vw, 72px) 40px; color: white; overflow: hidden; }
 .brand-eyebrow { color: var(--brand-highlight); font-size: 12px; font-weight: 600; line-height: 15px; }
-.brand-heading { margin-top: 38px; font-size: 50px; font-weight: 600; line-height: 1.21; letter-spacing: 0; }
-.access-workspace { grid-area: form; min-width: 0; padding: 66px max(32px, calc((100% - 524px) / 2)) 60px; }
-.access-card { width: 508px; max-width: 100%;  background: white; border-radius: 16px; padding: 38px 40px 41px; }
-.access-title { margin-top: 24px; font-size: 30px; line-height: 36px; font-weight: 600; }
+.brand-heading { margin-top: 24px; font-size: clamp(36px, 3.5vw, 54px); font-weight: 600; line-height: 1.15; letter-spacing: -.035em; }
+.brand-description { max-width: 350px; margin-top: 20px; color: #c4d9ea; font-size: 16px; line-height: 1.7; }
+.brand-flight { max-width: 440px; margin: 0 auto; }
+.brand-flight svg { display: block; width: 100%; }
+.brand-modules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 20px 0 0; border-top: 1px solid #ffffff30; list-style: none; }
+.brand-modules strong { display: block; color: #8fd6ff; font-size: 16px; }
+.brand-modules span { display: block; margin-top: 8px; color: #c4d9ea; font-size: 13px; line-height: 1.6; }
+.access-workspace { grid-area: form; min-width: 0; display: grid; align-content: center; justify-items: center; padding: 48px 32px; background: radial-gradient(ellipse at top right, #dceaff, transparent 65%); }
+.access-card { width: 468px; max-width: 100%; background: white; border: 1px solid var(--access-border); box-shadow: 0 16px 60px #142b430c; border-radius: 20px; padding: 36px; }
+.access-kicker { display: inline-block; padding: 7px 10px; border-radius: 6px; color: #125cc5; background: #eaf2ff; font-size: 12px; font-weight: 600; letter-spacing: .06em; }
+.access-title { margin-top: 24px; font-size: 30px; line-height: 36px; font-weight: 600; letter-spacing: -.035em; }
 .access-subtitle { margin-top: 11px; color: var(--access-muted); font-size: 14px; line-height: 17px; }
 .access-form { margin-top: 43px; }
-.access-field label { display: block; margin-bottom: 9px; font-size: 12px; line-height: 15px; font-weight: 500; }
+.access-field label { display: block; margin-bottom: 9px; font-size: 14px; line-height: 20px; font-weight: 500; }
+.password-control { position: relative; }
+.access-field .password-control input { padding-right: 72px; }
+.password-toggle { position: absolute; top: 4px; right: 4px; min-height: 40px; min-width: 56px; border-radius: 5px; color: var(--access-accent); font-size: 13px; font-weight: 500; }
+.password-toggle:hover { background: #eaf2ff; }
 .access-email { margin-bottom: 24px; }
 .access-field input { display: block; width: 100%; height: 48px; border: 1px solid var(--access-border); border-radius: 7px; background: white; padding: 0 13px; font-size: 14px; color: var(--access-text); }
 .access-field input::placeholder { color: var(--access-muted); opacity: 1; }
@@ -88,6 +100,7 @@
   .access-field input { font-size: 16px; }
 }
 @media (max-width: 480px) {
+  .access-header-note { display: none; }
   .access-header { min-height: 96px; padding: 20px; gap: 12px; }
   .access-logo { flex-shrink: 0; width: clamp(128px, 37vw, 145px); height: auto; aspect-ratio: 200 / 77.009; }
   .access-brand { padding: 32px 24px; }
@@ -144,6 +157,7 @@
 .app-nav,.nav-tools { display: grid; gap: 6px; }
 .nav-tools { margin: auto 8px 36px; padding-top: 12px; border-top: 1px solid var(--line); }
 .nav-item { display: flex; gap: 14px; align-items: center; min-height: 42px; padding: 10px 12px; border-radius: 7px; text-align: left; font-weight: 500; }
+.nav-icon { display: inline-block; flex: 0 0 20px; width: 20px; height: 20px; background-color: currentColor; mask: var(--nav-icon) center / contain no-repeat; }
 .nav-sub { display: grid; }
 .nav-sub[hidden] { display: none; }
 .nav-group { width: 100%; }
@@ -183,6 +197,14 @@
 .secondary { border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
 .crm-filtros,.crm-panel > .crm-filtros { padding: 12px 18px; }
 .push-right { margin-left: auto; }
+.crm-filtros .button { gap: 8px; }
+.list-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; color: var(--muted); font-size: 13px; }
+.clientes-resultados { min-width: 0; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.clientes-resultados > .overflow-x-auto { border: 0; border-radius: 0; }
+.clientes-resultados > .list-footer { padding: 16px 20px; }
+.clientes-resultados > p { padding: 24px; }
+.clientes-resultados td { color: var(--muted); }
+.clientes-resultados td:first-child a { color: var(--ink); font-weight: 500; }
 .metrics,.dashboard-cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(180px,100%),1fr)); gap: 20px; }
 .metrics dt,.profile-summary dt { font-size: 13px; color: var(--muted); }
 .metrics dd { font-size: 30px; font-weight: 600; margin-top: 10px; }
@@ -223,6 +245,28 @@
 .badge.inactivo { background: #fff0f1; color: #a31b39; }
 .badge.borrador { background: #fff3dc; color: #834b00; }
 .badge.finalizado { background: #eaf2ff; color: #1755a9; }
+.sga-panel { font-size: 1rem; }
+.sga-panel .sga-eyebrow { margin: 0 0 8px; color: var(--link); font-size: .875rem; font-weight: 600; }
+.sga-panel :is(label,.button,.secondary,table,.badge) { font-size: .875rem; }
+.sga-panel :is(input,select,textarea,fieldset) { min-width: 0; max-width: 100%; }
+.sga-panel :is(input:not([type="checkbox"]),select,textarea) { width: 100%; }
+.sga-panel :is(th,dt) { font-size: .875rem; color: var(--muted); }
+.sga-panel :is(td,dd,p) { overflow-wrap: anywhere; }
+.sga-panel dd { margin-top: 6px; white-space: pre-wrap; }
+.sga-panel table { min-width: 540px; }
+.sga-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 24px; }
+.sga-checkbox { display: flex; align-items: center; gap: 10px; min-height: 44px; flex: 1 1 200px; }
+.sga-checkbox input { accent-color: var(--link); width: 18px; height: 18px; min-height: 18px; padding: 0; flex: 0 0 18px; }
+.sga-vacio { padding: 40px 24px; text-align: center; color: var(--muted); }
+.sga-vacio h2 { color: var(--ink); }
+.sga-panel :is(button,a,input,select,textarea):focus-visible { outline: 2px solid var(--link); outline-offset: 3px; }
+.sga-panel button:disabled { opacity: .6; cursor: wait; }
+@media (max-width: 540px) {
+  .sga-panel .crm-filtros > div { width: 100%; }
+  .sga-panel .sga-checkbox { flex-basis: 100%; }
+  .sga-panel .crm-cabecera > .button { width: 100%; }
+  .sga-panel .surface,.sga-panel > form,.sga-panel > dl { padding: 18px; }
+}
 .app-shell[data-tema="oscuro"] :is(.bg-white,dialog) { background: var(--panel); color: var(--ink); }
 .app-shell[data-tema="oscuro"] :is(.text-slate-600,.text-slate-900) { color: var(--muted); }
 .app-shell[data-tema="oscuro"] :is(.border-slate-200,.border-slate-300) { border-color: var(--line); }

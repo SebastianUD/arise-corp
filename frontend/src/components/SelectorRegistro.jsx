@@ -3,7 +3,7 @@ import Campo from './Campo.jsx'
 import EstadoConsulta from './EstadoConsulta.jsx'
 import { useConsulta } from '../lib/useConsulta.js'
 
-export default function SelectorRegistro({ etiqueta, buscar, valor, onCambiar, error, deshabilitado }) {
+export default function SelectorRegistro({ etiqueta, buscar, valor, onCambiar, error, deshabilitado, textoVacio = 'Sin asociación' }) {
   const [texto, setTexto] = useState('')
   const [q, setQ] = useState('')
   const consulta = useConsulta(useCallback(() => buscar(q), [buscar, q]))
@@ -24,7 +24,7 @@ export default function SelectorRegistro({ etiqueta, buscar, valor, onCambiar, e
     <Campo etiqueta={etiqueta} error={error}>
       <select value={valor?.id ?? ''} disabled={deshabilitado} onChange={evento =>
         onCambiar(opciones.find(registro => registro.id === evento.target.value) ?? null)}>
-        <option value="">Sin asociación</option>
+        <option value="">{textoVacio}</option>
         {opciones.map(registro => <option key={registro.id} value={registro.id}>
           {registro.nombre}{registro.activo === false ? ' (inactivo)' : ''}
         </option>)}
